@@ -54,7 +54,7 @@ public class ObjetoController {
     @GetMapping("/count")
     public ResponseEntity<Integer> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam String exercicio
+        @RequestParam String exercicio, @RequestParam int numPag, @RequestParam int qtPorPag
     ) {
         return ResponseEntity.ok(service.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio));
     }

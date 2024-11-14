@@ -29,6 +29,7 @@ public class Usuario extends Entidade {
 
     public Usuario(UsuarioDto dto){
 
+        this.setId(dto.getId());
         this.sub = dto.getSub();
         this.name = dto.getName();
         this.email = dto.getEmail();
