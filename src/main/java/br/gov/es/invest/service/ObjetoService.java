@@ -36,4 +36,8 @@ public class ObjetoService {
     public List<Objeto> getAllByIds(List<String> ids) {
         return repository.findAllById(ids);
     }
+
+    public int countByInvestimentoFilter(String nome, String codUnidade, String codPO, String exercicio) {
+        return repository.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio);
+    }
 }

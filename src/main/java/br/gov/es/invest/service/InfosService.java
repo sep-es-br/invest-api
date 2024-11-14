@@ -31,11 +31,8 @@ public class InfosService {
 
     public List<String> getAllAnos() {
 
-        List<Custo> custos = custoRepository.findAll();
-        List<ExecucaoOrcamentaria> execucoes = execucaoRepository.findAll();
-
-        List<String> anosCusto = custos.stream().map(custo -> custo.getAnoExercicio()).toList();
-        List<String> anosExec = execucoes.stream().map(exec -> exec.getAnoExercicio()).toList();
+        List<String> anosCusto = custoRepository.findAllAnos();
+        List<String> anosExec = execucaoRepository.findAllAnos();
         
         Set<String> anosCustoSet = new HashSet<>(anosCusto);
         Set<String> anosExecSet = new HashSet<>(anosExec);

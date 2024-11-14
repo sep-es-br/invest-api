@@ -1,5 +1,6 @@
 package br.gov.es.invest.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,11 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.gov.es.invest.dto.InvestimentoDTO;
 import br.gov.es.invest.dto.ObjetoDTO;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
-import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import lombok.RequiredArgsConstructor;
 
@@ -43,12 +41,22 @@ public class ObjetoController {
 
             List<ObjetoDTO> objetosDTO = service.getAllByFilter(filtroDTO).stream().map(obj -> new ObjetoDTO(obj)).toList();
 
+            // List<ObjetoDTO> objetosDTO = Arrays.asList();
+
             return ResponseEntity.ok(objetosDTO);
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
 
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getAmmoutByFilter(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
+        @RequestParam String exercicio
+    ) {
+        return ResponseEntity.ok(service.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio));
     }
     
 }

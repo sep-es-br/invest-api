@@ -1,5 +1,7 @@
 package br.gov.es.invest.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -33,9 +36,13 @@ public class UnidadeOrcamentariaController {
     @GetMapping("/all")
     public ResponseEntity<List<UnidadeOrcamentariaDTO>> getAllByFiltro() {
 
-        List<UnidadeOrcamentariaDTO> planosDTO = service.getAll().stream().map(unidade -> new UnidadeOrcamentariaDTO(unidade)).toList();
+        ArrayList<UnidadeOrcamentariaDTO> unidadesDTO = new ArrayList<>();
+        
+        for(UnidadeOrcamentariaDTOProjection unidade: service.getAllSimples()) {
+            unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.sigla()));
+        }
 
-        return ResponseEntity.ok(planosDTO);
+        return ResponseEntity.ok(unidadesDTO);
         
 
     }

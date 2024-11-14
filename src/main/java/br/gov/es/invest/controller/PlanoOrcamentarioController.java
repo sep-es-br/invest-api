@@ -1,5 +1,7 @@
 package br.gov.es.invest.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,7 +40,9 @@ public class PlanoOrcamentarioController {
     @GetMapping("/all")
     public ResponseEntity<List<PlanoOrcamentarioDTO>> getAllByFiltro() {
 
-        List<PlanoOrcamentarioDTO> planosDTO = service.getAll().stream().map(plano -> new PlanoOrcamentarioDTO(plano)).toList();
+        ArrayList<PlanoOrcamentarioDTO> planosDTO = new ArrayList<>();
+
+        service.getAllSimples().forEach(plano -> planosDTO.add(new PlanoOrcamentarioDTO(plano.id(), plano.codigo())));
 
         return ResponseEntity.ok(planosDTO);
         

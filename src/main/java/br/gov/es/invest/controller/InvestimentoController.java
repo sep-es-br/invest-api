@@ -1,5 +1,6 @@
 package br.gov.es.invest.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,19 +31,31 @@ public class InvestimentoController {
     private final Logger logger = Logger.getLogger("InvestimentoController");
 
     @GetMapping("/all")
-    public ResponseEntity<List<InvestimentoDTO>> getTotalPrevisto(@RequestParam String filtroJson) {
-        try {
-            InvestimentoFiltroDTO filtroDTO = new ObjectMapper().readValue(filtroJson, InvestimentoFiltroDTO.class);
+    public ResponseEntity<List<InvestimentoDTO>> getAllByFilter(
+            @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
+            @RequestParam String exercicio, @RequestParam int numPag, @RequestParam int qtPorPag
+        ) {
+            try {
+                List<InvestimentoDTO> investimentosDTO = service.findAllByFilter(
+                        nome, codUnidade, codPO, exercicio, numPag, qtPorPag 
+                    ).stream()
+                    .map(inv -> new InvestimentoDTO(inv)).toList();
 
-            List<InvestimentoDTO> investimentosDTO = service.findAllByFilter(filtroDTO).stream()
-                .map(inv -> new InvestimentoDTO(inv)).toList();
-            return ResponseEntity.ok(investimentosDTO);
-        } catch (Exception e){
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-            return ResponseEntity.internalServerError().build();
-        }
-
+                return ResponseEntity.ok(investimentosDTO);
+            } catch (Exception e){
+                logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                return ResponseEntity.internalServerError().build();
+            }
         
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getAmmoutByFilter(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
+        @RequestParam String exercicio
+    ) {
+        return ResponseEntity.ok(service.ammountByFilter(nome, codUnidade, codPO, exercicio));
+    }
+    
     
 }

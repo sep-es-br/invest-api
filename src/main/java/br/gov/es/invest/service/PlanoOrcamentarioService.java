@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.dto.projection.PlanoOrcamentarioDTOProjection;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.repository.PlanoOrcamentarioRepository;
 
@@ -18,8 +19,8 @@ public class PlanoOrcamentarioService {
         repository.saveAll(planos);
     }
 
-    public List<PlanoOrcamentario> getAll() {
-        return repository.findAll();
+    public List<PlanoOrcamentarioDTOProjection> getAllSimples() {
+        return repository.getAllSimples();
     }
 
 }

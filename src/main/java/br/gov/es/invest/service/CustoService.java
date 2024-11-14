@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.dto.ValoresTotaisCusto;
 import br.gov.es.invest.exception.BatataException;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.DataMock;
@@ -28,8 +29,16 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public void hidratarObjetoEstimado(Custo custo) {
-        custo.setObjetoEstimado(this.objetoService.getByCusto(custo));
+    public ValoresTotaisCusto getValoresTotais(String exercicio){
+        return repository.getTotais(exercicio).get(0);
+    }
+
+    public Double getTotalPrevisto(String exercicio) {
+        return repository.getTotaisPrevisto(exercicio);
+    }
+
+    public Double getTotalContratado(String exercicio){
+        return repository.getTotaisContratado(exercicio);
     }
 
     public double totalPrevisto(String exercicio){
