@@ -839,7 +839,7 @@ public class DataMock {
         
         String ano = String.valueOf(LocalDate.now().getYear()+1);
         
-        Custo custo = Custo.criar(ano, unidadeOrcamentaria, objeto);
+        Custo custo = Custo.criar(ano, objeto);
 
         return custo;
 

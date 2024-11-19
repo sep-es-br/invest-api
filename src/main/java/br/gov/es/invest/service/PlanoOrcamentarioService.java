@@ -19,7 +19,7 @@ public class PlanoOrcamentarioService {
         repository.saveAll(planos);
     }
 
-    public List<PlanoOrcamentarioDTOProjection> getAllSimples() {
+    public List<PlanoOrcamentario> getAllSimples() {
         return repository.getAllSimples();
     }
 

@@ -24,8 +24,6 @@ public class ObjetoDTO {
 
         this.nome = objeto.getNome();
         this.tipo = objeto.getTipo();
-        UnidadeOrcamentaria unidade = objeto.getCustosEstimadores().get(0).getUnidadeOrcamentariaInformadora();
-        this.unidadeResponsavel = unidade.getCodigo() + " - " + unidade.getSigla();
 
         this.totalPrevisto = 0d;
         this.totalHomologado = 0d;

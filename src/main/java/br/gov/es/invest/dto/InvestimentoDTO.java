@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +16,7 @@ public class InvestimentoDTO {
 
     private String nome;
     private String codPO;
+    private String unidadeOrcamentaria;
     private Double totalPrevisto;
     private Double totalHomologado;
     private Double totalOrcado;
@@ -28,6 +30,8 @@ public class InvestimentoDTO {
         
         this.nome = investimento.getNome();
         this.codPO = investimento.getExecucoesOrcamentariaDelimitadores().get(0).getPlanoOrcamentarioOrientador().getCodigo().toString();
+        UnidadeOrcamentaria unidadeOrcamentaria = investimento.getExecucoesOrcamentariaDelimitadores().get(0).getUnidadeOrcamentariaImplementadora();
+        this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
         this.objetos = investimento.getObjetosCusteadores().stream().map(objeto -> {
             return new ObjetoDTO(objeto);

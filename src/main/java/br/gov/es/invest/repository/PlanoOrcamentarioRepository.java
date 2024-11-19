@@ -11,6 +11,6 @@ import br.gov.es.invest.model.PlanoOrcamentario;
 public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcamentario, String> {
     
     @Query("MATCH (plano:PlanoOrcamentario) RETURN plano ORDER BY plano.codigo")
-    public List<PlanoOrcamentarioDTOProjection> getAllSimples();
+    public List<PlanoOrcamentario> getAllSimples();
 
 }

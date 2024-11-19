@@ -42,7 +42,7 @@ public class PlanoOrcamentarioController {
 
         ArrayList<PlanoOrcamentarioDTO> planosDTO = new ArrayList<>();
 
-        service.getAllSimples().forEach(plano -> planosDTO.add(new PlanoOrcamentarioDTO(plano.id(), plano.codigo())));
+        service.getAllSimples().forEach(plano -> planosDTO.add(new PlanoOrcamentarioDTO(plano.getId(), plano.getCodigo())));
 
         return ResponseEntity.ok(planosDTO);
         

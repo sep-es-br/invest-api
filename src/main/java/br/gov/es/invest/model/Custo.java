@@ -27,8 +27,6 @@ public class Custo extends Entidade implements Serializable {
     @Relationship(type = "INDICADA", direction = Direction.INCOMING)
     private FonteOrcamentaria fonteOrcamentariaIndicadora;
 
-    @Relationship(type = "INFORMA", direction = Direction.INCOMING)
-    private UnidadeOrcamentaria unidadeOrcamentariaInformadora;
 
     public Custo(String anoExercicio, double previsto, double contratado, Objeto objetoEstimado) {
         this.anoExercicio = anoExercicio;
@@ -43,32 +41,30 @@ public class Custo extends Entidade implements Serializable {
         this.fonteOrcamentariaIndicadora = fonte;
     }
 
-    public static Custo criar(String ano, UnidadeOrcamentaria unidade, Objeto objeto){
+    public static Custo criar(String ano, Objeto objeto){
         Custo novo = new Custo();
         novo.anoExercicio = ano;
-        novo.unidadeOrcamentariaInformadora = unidade;
         novo.objetoEstimado = objeto;
         DataMock.noCustos.add(novo);
         return novo;
     }
 
-    public static Custo findOrCreate(String ano, UnidadeOrcamentaria unidadeOrcamentaria, Objeto objeto){
+    public static Custo findOrCreate(String ano, Objeto objeto){
         List<Custo> result = DataMock.noCustos.stream()
             .filter(custo ->  {
                 return custo.anoExercicio.equals(ano)
-                    && custo.unidadeOrcamentariaInformadora.equals(unidadeOrcamentaria)
                     && custo.objetoEstimado.equals(objeto);
             }).toList();
 
         if(result.isEmpty()) {
-            return Custo.criar(ano, unidadeOrcamentaria, objeto);
+            return Custo.criar(ano, objeto);
         } else {
             return result.get(0);
         }
     }
 
     public static Custo findOrCreate(String ano, Custo custoBase){
-        return findOrCreate(ano, custoBase.unidadeOrcamentariaInformadora, custoBase.objetoEstimado);
+        return findOrCreate(ano, custoBase.objetoEstimado);
     }
 
 }

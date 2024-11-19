@@ -12,23 +12,23 @@ import br.gov.es.invest.model.Investimento;
 
 public interface InvestimentoRepository extends  Neo4jRepository<Investimento, String> {
 
-    @Query("MATCH " + 
-                "    (conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)<-[ri:INFORMA]-(unidade:UnidadeOrcamentaria), " + 
-                "    (conta)<-[rd:DELIMITA]-(exec:ExecucaoOrcamentaria)<-[ro:ORIENTA]-(plano:PlanoOrcamentario) " + 
-                "WHERE ($exercicio IS null OR exec.anoExercicio = $exercicio OR custo.anoExercicio = $exercicio) " + 
-                "    AND ($nome IS NULL OR apoc.text.clean(conta.nome) contains apoc.text.clean($nome) OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome)) " + 
-                "    AND ($codPO IS NULL OR elementId(plano) = $codPO) " + 
-                "    AND ($codUnidade IS NULL OR elementId(unidade) = $codUnidade) " + 
-                "RETURN conta, collect(rc), collect(obj), collect(re), collect(custo), collect(ri), collect(unidade), " + 
-                "    collect(rd), collect(exec), collect(ro), collect(plano) SKIP $page LIMIT $pgSize")
+    @Query("MATCH  \r\n" + //
+                "    (exec:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo), \r\n" + //
+                "    (unidade)-[ri:IMPLEMENTA]->(exec:ExecucaoOrcamentaria)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                "    WHERE ($exercicio IS null OR exec.anoExercicio = $exercicio OR custo.anoExercicio = $exercicio)  \r\n" + //
+                "     AND ($nome IS NULL OR apoc.text.clean(conta.nome) contains apoc.text.clean($nome) OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))\r\n" + //
+                "     AND ($codPO IS NULL OR elementId(plano) = $codPO) \r\n" + //
+                "      AND ($codUnidade IS NULL OR elementId(unidade) = $codUnidade) \r\n" + //
+                "    RETURN conta, collect(rc), collect(obj), collect(re), collect(custo), collect(ri), collect(unidade), \r\n" + //
+                "      collect(rd), collect(exec), collect(ro), collect(plano) SKIP $page LIMIT $pgSize")
     public List<Investimento> findAllByFilter(
         String nome, String codUnidade, String codPO,
         String exercicio, int page, int pgSize
     );
 
-    @Query("MATCH  " +
-            "(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)<-[ri:INFORMA]-(unidade:UnidadeOrcamentaria), " +
-            "(conta)<-[rd:DELIMITA]-(exec:ExecucaoOrcamentaria)<-[ro:ORIENTA]-(plano:PlanoOrcamentario) " +
+    @Query("MATCH  \r\n" + //
+            "    (exec:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo), \r\n" + //
+            "    (unidade)-[ri:IMPLEMENTA]->(exec:ExecucaoOrcamentaria)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
             " WHERE ($exercicio IS null OR exec.anoExercicio = $exercicio OR custo.anoExercicio = $exercicio) " + 
             "   AND ($nome IS NULL OR apoc.text.clean(conta.nome) contains apoc.text.clean($nome) OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))" + 
             "AND ($codPO IS NULL OR elementId(plano) = $codPO) " +

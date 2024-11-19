@@ -22,7 +22,6 @@ public class CustoDTO implements Serializable {
 
     private Objeto objetoEstimado;
     private FonteOrcamentaria fonteOrcamentariaIndicadora;
-    private UnidadeOrcamentaria unidadeOrcamentariaInformadora;
 
     public CustoDTO(Custo custo) {
         this.id = custo.getId();
@@ -32,7 +31,6 @@ public class CustoDTO implements Serializable {
 
         this.objetoEstimado = custo.getObjetoEstimado();
         this.fonteOrcamentariaIndicadora = custo.getFonteOrcamentariaIndicadora();
-        this.unidadeOrcamentariaInformadora = custo.getUnidadeOrcamentariaInformadora();
 
     }
 
