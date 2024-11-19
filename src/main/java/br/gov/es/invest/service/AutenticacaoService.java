@@ -35,13 +35,14 @@ public class AutenticacaoService {
         String token = tokenService.gerarToken(userInfo);
 
         Usuario user = new Usuario();
-
+        user.setSub(userInfo.subNovo());
+        
         user.setName(userInfo.apelido());
         user.setEmail(getEmailUserInfo(userInfo));
         user.setRole(userInfo.role());
-        user.setSub(userInfo.subNovo());
 
         user = usuarioService.findOrSave(user);
+        
 
 
         UsuarioDto dto = new UsuarioDto(user);

@@ -18,8 +18,8 @@ import lombok.Setter;
 public class Usuario extends Entidade {
     private String sub;
     private String name;
+    private String nomeCompleto;
     private String email;
-    private String cpf;
 
     @Relationship(type = "POSSUI")
     private Avatar imgPerfil;
@@ -32,8 +32,9 @@ public class Usuario extends Entidade {
         this.setId(dto.getId());
         this.sub = dto.getSub();
         this.name = dto.getName();
+        this.nomeCompleto = dto.getNomeCompleto();
+        
         this.email = dto.getEmail();
-        this.cpf = dto.getCpf();
 
         this.imgPerfil = dto.getImgPerfil() == null ? null : new Avatar(dto.getImgPerfil());
         this.role = (dto.getRole() == null ) ? null : new HashSet<>(dto.getRole().stream().map(funcao -> new Funcao(funcao)).toList());

@@ -33,6 +33,11 @@ public class UsuarioController {
         return ResponseEntity.ok((usuario == null || usuario.getImgPerfil() == null)  ? null : new AvatarDTO(usuario.getImgPerfil()));
     }
 
+    @GetMapping("")
+    public UsuarioDto getUsuario(@RequestParam String sub) {
+        return new UsuarioDto(service.getUserBySub(sub));
+    }
+
     @GetMapping("comAvatar")
     public UsuarioDto getUsuarioComAvatar(@RequestParam String sub) {
         return new UsuarioDto(service.getUserWithAvatarBySub(sub));

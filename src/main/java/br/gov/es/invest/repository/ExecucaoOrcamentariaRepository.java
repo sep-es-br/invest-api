@@ -12,4 +12,9 @@ public interface ExecucaoOrcamentariaRepository extends Neo4jRepository<Execucao
     @Query("MATCH (execucao:ExecucaoOrcamentaria) RETURN DISTINCT execucao.anoExercicio AS ano")
     public List<String> findAllAnos();
 
+    @Query("MATCH (execucao:ExecucaoOrcamentaria)\r\n" + //
+                "WHERE execucao.anoExercicio = $exercicio\r\n" + //
+                "RETURN SUM(execucao.orcamento)")
+    public Double getTotalOrcadoByAno(String exercicio);
+
 }

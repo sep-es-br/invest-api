@@ -18,8 +18,9 @@ public class UsuarioDto {
         private String sub;
         private AvatarDTO imgPerfil;
         private String name;
+        private String nomeCompleto;
         private String email;
-        private String cpf;
+        private String telefone;
         private Set<FuncaoDTO> role;
 
         public UsuarioDto(Usuario usuario) {
@@ -27,8 +28,9 @@ public class UsuarioDto {
                 this.sub = usuario.getSub();
                 this.imgPerfil = usuario.getImgPerfil() == null ? null : new AvatarDTO(usuario.getImgPerfil());
                 this.name = usuario.getName();
+                this.nomeCompleto = usuario.getNomeCompleto();
+                this.telefone = "(27) 9 9846-2992";
                 this.email = usuario.getEmail();
-                this.cpf = usuario.getCpf();
                 this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
         }
         

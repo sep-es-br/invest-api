@@ -76,4 +76,8 @@ public class ExecucaoOrcamentariaService {
         : result.get(0);
 
     }
+
+    public Double getTotalOrcadoByAno(String ano) {
+        return repository.getTotalOrcadoByAno(ano);
+    }
 }

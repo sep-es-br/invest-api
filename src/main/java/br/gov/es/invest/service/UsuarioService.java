@@ -1,5 +1,7 @@
 package br.gov.es.invest.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,13 @@ public class UsuarioService {
     private UsuarioRepository repository;
 
     public Usuario save(Usuario usuario) {
+        repository.getIdBySub(usuario.getSub()).ifPresent(usuario::setId);
+
         return repository.save(usuario);
+    }
+
+    public Usuario getUserBySub(String sub){
+        return repository.findBySub(sub).orElse(null);
     }
 
     public Usuario getUserWithAvatarBySub(String sub){
@@ -21,10 +29,7 @@ public class UsuarioService {
     }
 
     public Usuario findOrSave(Usuario _usuario) {
-        Usuario usuario = repository.findBySub(_usuario.getSub());
-
-        return usuario == null ? repository.save(_usuario) : usuario;
-
+        return repository.findBySub(_usuario.getSub()).orElse(save(_usuario));
     }
 
 }
