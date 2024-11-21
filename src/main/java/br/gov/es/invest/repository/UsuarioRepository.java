@@ -13,8 +13,8 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, String> {
     public Optional<Usuario> findBySub(String sub);
 
     @Query("MATCH (user:Usuario)-[ac:ATUA_COMO]->(funcao:Funcao)\r\n" + //
-                "OPTIONAL MATCH (avatar:Avatar)<-[p:POSSUI]-(user) " +
-         "WHERE user.sub = $sub " +
+    "WHERE user.sub = $sub " +
+            "OPTIONAL MATCH (avatar:Avatar)<-[p:POSSUI]-(user) " +
          "RETURN user, collect(p), collect(avatar), collect(ac), collect(funcao)")
     public Optional<Usuario> findWithAvatarBySub(String sub);
 
