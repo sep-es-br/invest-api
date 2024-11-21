@@ -1,6 +1,5 @@
 package br.gov.es.invest.controller;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,10 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import br.gov.es.invest.dto.InvestimentoDTO;
-import br.gov.es.invest.dto.InvestimentoFiltroDTO;
 import br.gov.es.invest.service.InvestimentoService;
 import lombok.RequiredArgsConstructor;
 

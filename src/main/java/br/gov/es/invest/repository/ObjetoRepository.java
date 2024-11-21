@@ -18,7 +18,7 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
     public List<Objeto> getAllByFilter(String execicio, String nome, String unidadeId, String status); 
 
 
-    @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) WHERE elementId(custo) = $custoId RETURN obj LIMIT 50")
+    @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) WHERE elementId(custo) = $custoId RETURN obj")
     public Objeto getByCusto(String custoId);
 
     @Query("MATCH (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)\r\n" + //

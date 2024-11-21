@@ -3,7 +3,6 @@ package br.gov.es.invest.dto;
 import java.util.HashSet;
 import java.util.Set;
 
-import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Usuario;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

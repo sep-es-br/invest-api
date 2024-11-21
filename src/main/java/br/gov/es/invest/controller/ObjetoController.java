@@ -1,6 +1,5 @@
 package br.gov.es.invest.controller;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,8 +39,6 @@ public class ObjetoController {
             ObjetoFiltroDTO filtroDTO = new ObjectMapper().readValue(filtroJson, ObjetoFiltroDTO.class);
 
             List<ObjetoDTO> objetosDTO = service.getAllByFilter(filtroDTO).stream().map(obj -> new ObjetoDTO(obj)).toList();
-
-            // List<ObjetoDTO> objetosDTO = Arrays.asList();
 
             return ResponseEntity.ok(objetosDTO);
         } catch(Exception e){

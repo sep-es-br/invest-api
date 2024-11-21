@@ -1,7 +1,6 @@
 package br.gov.es.invest.dto;
 
 import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

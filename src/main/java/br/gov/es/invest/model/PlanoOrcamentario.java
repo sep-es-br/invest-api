@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bouncycastle.util.test.FixedSecureRandom.Data;
-import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
@@ -34,14 +32,6 @@ public class PlanoOrcamentario extends Entidade implements Serializable{
         this.codigo = codigo;
         this.nome = nome;
         execucoes.forEach(this.execucoesOrcamentariaOrientadas::add);
-    }
-
-    public static PlanoOrcamentario criar(Long codigo, String nome) {
-        PlanoOrcamentario novo = new PlanoOrcamentario();
-        novo.codigo = codigo;
-        novo.nome = nome;
-        DataMock.noPlanoOrcamentarios.add(novo);
-        return novo;
     }
 
 }

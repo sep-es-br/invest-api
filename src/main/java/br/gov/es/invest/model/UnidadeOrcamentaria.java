@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
@@ -34,14 +33,6 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
         this.sigla = sigla;
         planoOrcamentarios.forEach(this.planosOrcamentariosControlados::add);
         execucoes.forEach(this.execucaoOrcamentariasImplementadas::add);
-    }
-
-    public static UnidadeOrcamentaria criar(Long codigo, String sigla) {
-        UnidadeOrcamentaria novo = new UnidadeOrcamentaria();
-        novo.codigo = codigo;
-        novo.sigla = sigla;
-        DataMock.noUnidadeOrcamentarias.add(novo);
-        return novo;
     }
 
 }

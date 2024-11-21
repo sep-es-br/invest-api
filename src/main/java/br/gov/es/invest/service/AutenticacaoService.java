@@ -3,11 +3,9 @@ package br.gov.es.invest.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.dto.ACUserInfoDto;
-import br.gov.es.invest.dto.ACUserInfoDtoStringRole;
 import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.UsuarioSemPermissaoException;
 import br.gov.es.invest.exception.service.InfoplanServiceException;
-import br.gov.es.invest.model.Avatar;
 import br.gov.es.invest.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -37,11 +35,12 @@ public class AutenticacaoService {
         Usuario user = new Usuario();
         user.setSub(userInfo.subNovo());
         
-        user.setName(userInfo.apelido());
+        user.setName(userInfo.apelido().split(" ")[0]);
+        user.setNomeCompleto(userInfo.apelido());
         user.setEmail(getEmailUserInfo(userInfo));
         user.setRole(userInfo.role());
 
-        user = usuarioService.findOrSave(user);
+        user = usuarioService.findOrSaveWithAvatar(user);
         
 
 

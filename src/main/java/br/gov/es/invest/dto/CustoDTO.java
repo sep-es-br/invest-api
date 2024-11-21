@@ -5,7 +5,6 @@ import java.io.Serializable;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.FonteOrcamentaria;
 import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

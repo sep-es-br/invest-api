@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 
-import br.gov.es.invest.dto.projection.PlanoOrcamentarioDTOProjection;
 import br.gov.es.invest.model.PlanoOrcamentario;
 
 public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcamentario, String> {

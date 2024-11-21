@@ -35,10 +35,4 @@ public class Objeto extends Entidade implements Serializable {
         this.contaCusteada = contaCusteada;
     }
 
-    public static Objeto criar(String nome, String tipo, Conta conta){
-        Objeto novo = new Objeto(nome, tipo, conta);
-        DataMock.noObjetos.add(novo);
-        return novo;
-    }
-
 }

@@ -1,5 +1,6 @@
 package br.gov.es.invest.service;
 
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +26,29 @@ public class UsuarioService {
     }
 
     public Usuario getUserWithAvatarBySub(String sub){
-        return repository.findWithAvatarBySub(sub);
+        return repository.findWithAvatarBySub(sub).orElse(null);
     }
 
     public Usuario findOrSave(Usuario _usuario) {
-        return repository.findBySub(_usuario.getSub()).orElse(save(_usuario));
+        Optional<Usuario> usuarioOpt = repository.findBySub(_usuario.getSub());
+
+        if(usuarioOpt.isPresent()){
+            return usuarioOpt.get();
+        } else {
+            return save(_usuario);
+        }
+        
+    }
+
+    public Usuario findOrSaveWithAvatar(Usuario _usuario) {
+        Optional<Usuario> usuarioOpt = repository.findWithAvatarBySub(_usuario.getSub());
+
+        if(usuarioOpt.isPresent()){
+            return usuarioOpt.get();
+        } else {
+            return save(_usuario);
+        }
+
     }
 
 }

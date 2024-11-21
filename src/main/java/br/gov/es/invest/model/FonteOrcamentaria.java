@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
@@ -39,13 +38,6 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
         execucoes.forEach(this.execucoesOrcamentariaVinculadas::add);
     }
 
-    public static FonteOrcamentaria criar(String codigo, String nome){
-        FonteOrcamentaria novo = new FonteOrcamentaria();
-        novo.setId(codigo);
-        novo.nome = nome;
-        DataMock.noFonteOrcamentarias.add(novo);
-        return novo;
-    }
     
 
 }

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CustoDTO;
 import br.gov.es.invest.dto.ValoresTotaisCusto;
-import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.service.CustoService;
 import lombok.RequiredArgsConstructor;
 
@@ -52,20 +51,6 @@ public class CustoController {
         double totalHomologado = service.getTotalContratado(exercicio);
 
         return ResponseEntity.ok(totalHomologado);
-    }
-    
-    @GetMapping("/totalAutorizado")
-    public ResponseEntity<Double> getTotalAutorizado() {
-        double totalAutorizado = service.totalAutorizado();
-
-        return ResponseEntity.ok(totalAutorizado);
-    }    
-    
-    @GetMapping("/totalDisponivel")
-    public ResponseEntity<Double> getTotalDisponivel() {
-        double totalDisponivel = service.totalDisponivel();
-
-        return ResponseEntity.ok(totalDisponivel);
     }
 
     
