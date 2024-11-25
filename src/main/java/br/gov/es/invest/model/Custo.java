@@ -16,9 +16,11 @@ import lombok.Setter;
 @Node
 public class Custo extends Entidade implements Serializable {
      
-    private String anoExercicio;
     private double previsto;
     private double contratado;
+
+    @Relationship(type = "EM", direction = Direction.OUTGOING)
+    private Ano anoExercicio;
 
     @Relationship(type = "ESTIMADO", direction = Direction.OUTGOING)
     private Objeto objetoEstimado;
@@ -27,7 +29,7 @@ public class Custo extends Entidade implements Serializable {
     private FonteOrcamentaria fonteOrcamentariaIndicadora;
 
 
-    public Custo(String anoExercicio, double previsto, double contratado, Objeto objetoEstimado) {
+    public Custo(Ano anoExercicio, double previsto, double contratado, Objeto objetoEstimado) {
         this.anoExercicio = anoExercicio;
         this.previsto = previsto;
         this.contratado = contratado;

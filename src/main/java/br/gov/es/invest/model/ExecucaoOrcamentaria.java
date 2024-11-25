@@ -16,10 +16,12 @@ import lombok.Setter;
 @Node
 public class ExecucaoOrcamentaria extends Entidade implements Serializable {
     
-    private String anoExercicio;
     private double orcamento;
     private double autorizado;
     private double[] liquidado;
+
+    @Relationship(type = "EM", direction = Direction.OUTGOING)
+    private Ano anoExercicio;
 
     @Relationship(type = "DELIMITA", direction = Direction.OUTGOING)
     private Conta contaDelimitada;
@@ -27,13 +29,7 @@ public class ExecucaoOrcamentaria extends Entidade implements Serializable {
     @Relationship(type = "VINCULA", direction = Direction.INCOMING)
     private FonteOrcamentaria fonteOrcamentariaVinculadora;
 
-    @Relationship(type = "ORIENTA", direction = Direction.INCOMING)
-    private PlanoOrcamentario planoOrcamentarioOrientador;
-
-    @Relationship(type = "IMPLEMENTA", direction = Direction.INCOMING)
-    private UnidadeOrcamentaria unidadeOrcamentariaImplementadora;
-
-    public ExecucaoOrcamentaria(String ano, double orcamento, double autorizado, double[] liquidado, Conta contaDelimitada) {
+    public ExecucaoOrcamentaria(Ano ano, double orcamento, double autorizado, double[] liquidado, Conta contaDelimitada) {
         this.anoExercicio = ano;
         this.orcamento = orcamento;
         this.autorizado = autorizado;
@@ -41,14 +37,12 @@ public class ExecucaoOrcamentaria extends Entidade implements Serializable {
         this.setContaDelimitada(contaDelimitada);
     }
 
-    public ExecucaoOrcamentaria(String ano, PlanoOrcamentario po, UnidadeOrcamentaria uo, Conta conta) {
+    public ExecucaoOrcamentaria(Ano ano, Conta conta) {
         this.anoExercicio = ano;
         this.orcamento = 0d;
         this.autorizado = 0d;
         this.liquidado = new double[12];
         this.contaDelimitada = conta;
-        this.planoOrcamentarioOrientador = po;
-        this.unidadeOrcamentariaImplementadora = uo;
     }
 
     public void setValores(double orcamento, double autorizado, double[] liquidado, FonteOrcamentaria fonte){

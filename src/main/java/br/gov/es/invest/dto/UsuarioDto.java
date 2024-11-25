@@ -28,7 +28,7 @@ public class UsuarioDto {
                 this.imgPerfil = usuario.getImgPerfil() == null ? null : new AvatarDTO(usuario.getImgPerfil());
                 this.name = usuario.getName();
                 this.nomeCompleto = usuario.getNomeCompleto();
-                this.telefone = "(27) 9 9846-2992";
+                this.telefone = usuario.getTelefone();
                 this.email = usuario.getEmail();
                 this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
         }

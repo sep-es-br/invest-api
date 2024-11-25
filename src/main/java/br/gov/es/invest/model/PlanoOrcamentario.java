@@ -23,15 +23,11 @@ public class PlanoOrcamentario extends Entidade implements Serializable{
     private String descricao;
 
     @Relationship(type = "ORIENTA", direction = Direction.OUTGOING)
-    private ArrayList<ExecucaoOrcamentaria> execucoesOrcamentariaOrientadas = new ArrayList<>();
-
-    @Relationship(type = "CONTROLA", direction = Direction.INCOMING)
-    private ArrayList<UnidadeOrcamentaria> unidadesOrcamentariaControladoras = new ArrayList<>();
+    private ArrayList<Conta> contasOrientadas = new ArrayList<>();
 
     public PlanoOrcamentario(Long codigo, String nome, List<ExecucaoOrcamentaria> execucoes) {
         this.codigo = codigo;
         this.nome = nome;
-        execucoes.forEach(this.execucoesOrcamentariaOrientadas::add);
     }
 
 }

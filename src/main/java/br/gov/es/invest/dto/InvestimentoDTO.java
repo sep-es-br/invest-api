@@ -29,9 +29,9 @@ public class InvestimentoDTO {
     public InvestimentoDTO(Investimento investimento){
         
         this.nome = investimento.getNome();
-        Long codPo = investimento.getExecucoesOrcamentariaDelimitadores().get(0).getPlanoOrcamentarioOrientador().getCodigo();
+        Long codPo = investimento.getPlanoOrcamentarioOrientador().getCodigo();
         this.codPO = String.format("%06d", codPo);
-        UnidadeOrcamentaria unidadeOrcamentaria = investimento.getExecucoesOrcamentariaDelimitadores().get(0).getUnidadeOrcamentariaImplementadora();
+        UnidadeOrcamentaria unidadeOrcamentaria = investimento.getUnidadeOrcamentariaImplementadora();
         this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
         this.objetos = investimento.getObjetosCusteadores().stream().map(objeto -> {

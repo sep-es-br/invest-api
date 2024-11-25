@@ -24,7 +24,7 @@ public class CustoDTO implements Serializable {
 
     public CustoDTO(Custo custo) {
         this.id = custo.getId();
-        this.anoExercicio = custo.getAnoExercicio();
+        this.anoExercicio = custo.getAnoExercicio().getAno();
         this.previsto = custo.getPrevisto();
         this.contratado = custo.getContratado();
 
