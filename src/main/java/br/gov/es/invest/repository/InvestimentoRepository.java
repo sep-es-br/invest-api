@@ -9,10 +9,10 @@ import br.gov.es.invest.model.Investimento;
 
 public interface InvestimentoRepository extends  Neo4jRepository<Investimento, String> {
 
-    @Query("MATCH  \r\n" + //
-                "    (exec:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo), \r\n" + //
-                "    (unidade)-[ri:IMPLEMENTA]->(exec:ExecucaoOrcamentaria)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-                "    WHERE ($exercicio IS null OR exec.anoExercicio = $exercicio OR custo.anoExercicio = $exercicio)  \r\n" + //
+    @Query("MATCH \r\n" + //
+                "    (ano:Ano)<-[:EM]-(exec:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[:EM]->(anoCusto:Ano), \r\n" + //
+                "    (unidade)-[ri:IMPLEMENTA]->(conta)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                "WHERE ($exercicio IS null OR ano.ano = $exercicio OR anoCusto.ano = $exercicio)  " + //
                 "     AND ($nome IS NULL OR apoc.text.clean(conta.nome) contains apoc.text.clean($nome) OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))\r\n" + //
                 "     AND ($codPO IS NULL OR elementId(plano) = $codPO) \r\n" + //
                 "      AND ($codUnidade IS NULL OR elementId(unidade) = $codUnidade) \r\n" + //
@@ -23,10 +23,10 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, S
         String exercicio, int page, int pgSize
     );
 
-    @Query("MATCH  \r\n" + //
-            "    (exec:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo), \r\n" + //
-            "    (unidade)-[ri:IMPLEMENTA]->(exec:ExecucaoOrcamentaria)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-            " WHERE ($exercicio IS null OR exec.anoExercicio = $exercicio OR custo.anoExercicio = $exercicio) " + 
+    @Query("MATCH \r\n" + //
+                "    (ano:Ano)<-[:EM]-(exec:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Investimento)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[:EM]->(anoCusto:Ano), \r\n" + //
+                "    (unidade)-[ri:IMPLEMENTA]->(conta)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                "WHERE ($exercicio IS null OR ano.ano = $exercicio OR anoCusto.ano = $exercicio)   " + 
             "   AND ($nome IS NULL OR apoc.text.clean(conta.nome) contains apoc.text.clean($nome) OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))" + 
             "AND ($codPO IS NULL OR elementId(plano) = $codPO) " +
             "AND ($codUnidade IS NULL OR elementId(unidade) = $codUnidade)" +  

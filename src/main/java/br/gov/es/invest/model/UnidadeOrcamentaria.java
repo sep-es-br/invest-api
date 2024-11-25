@@ -26,13 +26,13 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
     private ArrayList<PlanoOrcamentario> planosOrcamentariosControlados = new ArrayList<>();
 
     @Relationship(type = "IMPLEMENTA", direction = Direction.OUTGOING)
-    private ArrayList<ExecucaoOrcamentaria> execucaoOrcamentariasImplementadas = new ArrayList<>();
+    private ArrayList<Conta> ContasImplementadas = new ArrayList<>();
 
-    public UnidadeOrcamentaria(Long codigo, String sigla, List<PlanoOrcamentario> planoOrcamentarios, List<ExecucaoOrcamentaria> execucoes) {
+    public UnidadeOrcamentaria(Long codigo, String sigla, List<PlanoOrcamentario> planoOrcamentarios, List<Conta> execucoes) {
         this.codigo = codigo;
         this.sigla = sigla;
         planoOrcamentarios.forEach(this.planosOrcamentariosControlados::add);
-        execucoes.forEach(this.execucaoOrcamentariasImplementadas::add);
+        execucoes.forEach(this.ContasImplementadas::add);
     }
 
 }

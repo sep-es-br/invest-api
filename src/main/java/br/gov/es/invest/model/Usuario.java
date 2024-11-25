@@ -19,6 +19,7 @@ public class Usuario extends Entidade {
     private String sub;
     private String name;
     private String nomeCompleto;
+    private String telefone;
     private String email;
 
     @Relationship(type = "POSSUI")

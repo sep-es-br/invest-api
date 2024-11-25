@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.model.Ano;
+import br.gov.es.invest.repository.AnoRepository;
 import br.gov.es.invest.repository.CustoRepository;
 import br.gov.es.invest.repository.ExecucaoOrcamentariaRepository;
 
@@ -15,23 +18,14 @@ public class InfosService {
     
 
     @Autowired
-    private CustoRepository custoRepository;
-
-    @Autowired
-    private ExecucaoOrcamentariaRepository execucaoRepository;
+    private AnoRepository anoRepository;
 
     public List<String> getAllAnos() {
 
-        List<String> anosCusto = custoRepository.findAllAnos();
-        List<String> anosExec = execucaoRepository.findAllAnos();
-        
-        Set<String> anosCustoSet = new HashSet<>(anosCusto);
-        Set<String> anosExecSet = new HashSet<>(anosExec);
+        List<Ano> anos = anoRepository.findAll(Sort.by("ano"));
 
-        HashSet<String> todosAnos = new HashSet<>(anosCustoSet);
-        todosAnos.addAll(anosExecSet);
 
-        return todosAnos.stream().sorted((s1, s2) -> s1.compareTo(s2)).toList();
+        return anos.stream().map(ano -> ano.getAno()).toList();
     }
 
 
