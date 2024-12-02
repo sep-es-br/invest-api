@@ -1,5 +1,7 @@
 package br.gov.es.invest.model;
 
+import java.util.Set;
+
 import org.springframework.data.neo4j.core.schema.Node;
 
 import br.gov.es.invest.dto.FuncaoDTO;
@@ -22,6 +24,15 @@ public class Funcao extends Entidade {
     public Funcao(FuncaoDTO dto) {
         this.setId(dto.getId());
         this.nome = dto.getNome();
+    }
+
+    public static boolean testarFuncao(Set<Funcao> funcoes, String targetFuncao){
+        
+        for(Funcao funcao : funcoes){
+            if(funcao.getNome().equals(targetFuncao)) return true;
+        }
+
+        return false;
     }
 
 }

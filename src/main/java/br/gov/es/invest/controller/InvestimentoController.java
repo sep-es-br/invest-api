@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,11 +30,11 @@ public class InvestimentoController {
     @GetMapping("/all")
     public ResponseEntity<List<InvestimentoDTO>> getAllByFilter(
             @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-            @RequestParam String exercicio, @RequestParam int numPag, @RequestParam int qtPorPag
+            @RequestParam String exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
         ) {
             try {
                 List<InvestimentoDTO> investimentosDTO = service.findAllByFilter(
-                        nome, codUnidade, codPO, exercicio, numPag, qtPorPag 
+                        nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
                     ).stream()
                     .map(inv -> new InvestimentoDTO(inv)).toList();
 
@@ -48,9 +49,9 @@ public class InvestimentoController {
     @GetMapping("/count")
     public ResponseEntity<Integer> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam String exercicio
+        @RequestParam String exercicio, @RequestParam(required = false) String idFonte
     ) {
-        return ResponseEntity.ok(service.ammountByFilter(nome, codUnidade, codPO, exercicio));
+        return ResponseEntity.ok(service.ammountByFilter(nome, codUnidade, codPO, exercicio, idFonte));
     }
     
     

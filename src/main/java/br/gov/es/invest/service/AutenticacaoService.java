@@ -41,9 +41,8 @@ public class AutenticacaoService {
         user.setRole(userInfo.role());
 
         user = usuarioService.findOrSaveWithAvatar(user);
+        user = usuarioService.setNewACToken(user.getSub(), accessToken).get();
         
-
-
         UsuarioDto dto = new UsuarioDto(user);
         dto.setToken(token);
 

@@ -51,4 +51,8 @@ public class UsuarioService {
 
     }
 
+    public Optional<Usuario> setNewACToken(String sub, String newACToken){
+        return repository.setNewACToken(sub, newACToken);
+    }
+
 }

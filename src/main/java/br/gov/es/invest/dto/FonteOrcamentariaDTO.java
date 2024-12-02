@@ -18,12 +18,9 @@ public class FonteOrcamentariaDTO implements Serializable {
     private String nome;
     private String descricao;
 
-    private List<Custo> custosIndicados;
-
     public FonteOrcamentariaDTO ( FonteOrcamentaria fonte ) {
         this.id = fonte.getId();
         this.nome = fonte.getNome();
         this.descricao = fonte.getDescricao();
-        this.custosIndicados = fonte.getCustosIndicados();
     }
 }

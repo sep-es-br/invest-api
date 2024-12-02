@@ -22,4 +22,10 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, String> {
                 "WHERE usuario.sub = $sub\r\n" + //
                 "RETURN elementId(usuario)")
     public Optional<String> getIdBySub(String sub);
+
+    @Query("MATCH (usuario:Usuario) \r\n" + //
+            "WHERE usuario.sub = $sub \r\n" + //
+            "SET usuario.ACToken = $newACToken \r\n" + //
+            "RETURN usuario")
+    public Optional<Usuario> setNewACToken(String sub, String newACToken);
 }

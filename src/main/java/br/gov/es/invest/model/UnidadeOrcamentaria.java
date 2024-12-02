@@ -28,6 +28,9 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
     @Relationship(type = "IMPLEMENTA", direction = Direction.OUTGOING)
     private ArrayList<Conta> ContasImplementadas = new ArrayList<>();
 
+    @Relationship(type = "PERTENCE_A", direction = Direction.INCOMING)
+    private List<Setor> setores;
+
     public UnidadeOrcamentaria(Long codigo, String sigla, List<PlanoOrcamentario> planoOrcamentarios, List<Conta> execucoes) {
         this.codigo = codigo;
         this.sigla = sigla;

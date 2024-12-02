@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
@@ -21,8 +22,8 @@ public class ObjetoService {
         repository.saveAll(objetos);
     }
 
-    public List<Objeto> getAllByFilter(ObjetoFiltroDTO filtroDTO) {
-        return repository.getAllByFilter(filtroDTO.getExercicio(), filtroDTO.getNome(), filtroDTO.getUnidadeId(), filtroDTO.getStatus());
+    public List<Objeto> getAllByFilter(String exercicio, String nome, String idUnidade, String status, Pageable pageable) {
+        return repository.getAllByFilter(exercicio, nome, idUnidade, status, pageable);
     }
 
     public Objeto getByCusto(Custo custo){

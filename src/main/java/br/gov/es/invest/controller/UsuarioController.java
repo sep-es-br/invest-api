@@ -1,5 +1,6 @@
 package br.gov.es.invest.controller;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,13 +8,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.AvatarDTO;
 import br.gov.es.invest.dto.UsuarioDto;
+import br.gov.es.invest.exception.UsuarioNaoAutenticadoException;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 
@@ -24,21 +28,35 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class UsuarioController {
     
     private final UsuarioService service;
+    private final TokenService tokenService;
 
     @GetMapping("avatar")
-    public ResponseEntity<AvatarDTO> avatarFromSub(@RequestParam String sub) {
+    public AvatarDTO avatarFromSub(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
+
+        authToken = authToken.replace("Bearer ", "");
+        
+        sub = sub == null ? tokenService.validarToken(authToken) : sub;
+                
         Usuario usuario = service.getUserWithAvatarBySub(sub);
 
-        return ResponseEntity.ok((usuario == null || usuario.getImgPerfil() == null)  ? null : new AvatarDTO(usuario.getImgPerfil()));
+        return (usuario == null || usuario.getImgPerfil() == null)  ? null : new AvatarDTO(usuario.getImgPerfil());
     }
 
     @GetMapping("")
-    public UsuarioDto getUsuario(@RequestParam String sub) {
+    public UsuarioDto getUsuario(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
+        authToken = authToken.replace("Bearer ", "");
+        
+        sub = sub == null ? tokenService.validarToken(authToken) : sub;
+
         return new UsuarioDto(service.getUserBySub(sub));
     }
 
     @GetMapping("comAvatar")
-    public UsuarioDto getUsuarioComAvatar(@RequestParam String sub) {
+    public UsuarioDto getUsuarioComAvatar(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
+        authToken = authToken.replace("Bearer ", "");
+        
+        sub = sub == null ? tokenService.validarToken(authToken) : sub;
+
         return new UsuarioDto(service.getUserWithAvatarBySub(sub));
     }
     

@@ -4,7 +4,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.gov.es.invest.dto.ValoresTotaisCusto;
+import br.gov.es.invest.dto.IValoresCusto;
+import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.repository.CustoRepository;
 
@@ -23,44 +24,18 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public ValoresTotaisCusto getValoresTotais(String exercicio){
-        return repository.getTotais(exercicio).get(0);
-    }
+    public ValoresCusto getValoresTotais(String exercicio){
+        List<IValoresCusto> valores = repository.getTotais(exercicio);
 
-    public Double getTotalPrevisto(String exercicio) {
-        return repository.getTotaisPrevisto(exercicio);
-    }
+        Double totalPrevisto = 0d;
+        Double totalContratado = 0d;
 
-    public Double getTotalContratado(String exercicio){
-        return repository.getTotaisContratado(exercicio);
-    }
-
-    public double totalPrevisto(String exercicio){
-
-        double totalPrevisto = 0;
-
-        List<Custo> custosAno = repository.findByExercicio(exercicio);
-
-        for (Custo custo : custosAno) {
-            totalPrevisto += custo.getPrevisto();
+        for(IValoresCusto valor : valores) {
+            totalPrevisto += valor.getPrevisto();
+            totalContratado += valor.getContratado();
         }
-        
-        return totalPrevisto;
 
-    }
-
-    public double totalHomologado(String exercicio){
-
-        double totalPrevisto = 0;
-
-        List<Custo> custosAno = repository.findByExercicio(exercicio);
-
-        for (Custo custo : custosAno) {
-            totalPrevisto += custo.getContratado();
-        }
-        
-        return totalPrevisto;
-
+        return new ValoresCusto(totalPrevisto, totalContratado);
     }
 
 

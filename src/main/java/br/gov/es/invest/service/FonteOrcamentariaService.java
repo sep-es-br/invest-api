@@ -3,6 +3,7 @@ package br.gov.es.invest.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.FonteOrcamentaria;
@@ -16,6 +17,10 @@ public class FonteOrcamentariaService {
 
     public void saveAll(List<FonteOrcamentaria> fontes) {
         repository.saveAll(fontes);
+    }
+
+    public List<FonteOrcamentaria> findAll(){
+        return repository.findAll(Sort.by("nome"));
     }
 
 }

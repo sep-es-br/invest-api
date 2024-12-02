@@ -11,5 +11,6 @@ public class InvestimentoFiltroDTO {
     private String nome;
     private String codUnidade;
     private String codPO;
+    private String idFonte;
     private String exercicio;
 }

@@ -29,7 +29,7 @@ public class TokenService {
             Algorithm algoritmo = Algorithm.HMAC256(secret);
             return JWT.create()
                     .withIssuer(ISSUER)
-                    .withSubject(userInfo.sub())
+                    .withSubject(userInfo.subNovo())
                     .withClaim("name", userInfo.apelido())
                     .withClaim("email", userInfo.email())
                     .withClaim("roles", new ArrayList<>(userInfo.role()) )

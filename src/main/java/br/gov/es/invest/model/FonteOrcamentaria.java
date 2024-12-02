@@ -21,21 +21,13 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
     private String nome;
     private String descricao;
 
-    @Relationship(type = "INDICADA", direction = Direction.OUTGOING)
-    private ArrayList<Custo> custosIndicados = new ArrayList<>();
-
-    @Relationship(type = "VINCULA", direction = Direction.OUTGOING)
-    private ArrayList<ExecucaoOrcamentaria> execucoesOrcamentariaVinculadas = new ArrayList<>();
-
     public FonteOrcamentaria(String nome) {
         this.nome = nome;
     }
 
-    public FonteOrcamentaria(String codigo, String nome, List<Custo> custos, List<ExecucaoOrcamentaria> execucoes) {
+    public FonteOrcamentaria(String codigo, String nome) {
         this.setId(codigo);
         this.nome = nome;
-        custos.forEach(this.custosIndicados::add);
-        execucoes.forEach(this.execucoesOrcamentariaVinculadas::add);
     }
 
     

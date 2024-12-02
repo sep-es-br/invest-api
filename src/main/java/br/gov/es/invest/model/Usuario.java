@@ -15,12 +15,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Node
-public class Usuario extends Entidade {
+public class Usuario extends MembroGrupo {
+    private String ACToken;
     private String sub;
     private String name;
     private String nomeCompleto;
     private String telefone;
     private String email;
+    private String papel;
 
     @Relationship(type = "POSSUI")
     private Avatar imgPerfil;
@@ -28,12 +30,16 @@ public class Usuario extends Entidade {
     @Relationship(type = "ATUA_COMO")
     private Set<Funcao> role;
 
+    @Relationship(type = "MEMBRO_DE")
+    private Setor setor;
+
     public Usuario(UsuarioDto dto){
 
         this.setId(dto.getId());
         this.sub = dto.getSub();
         this.name = dto.getName();
         this.nomeCompleto = dto.getNomeCompleto();
+        this.telefone = dto.getTelefone();
         
         this.email = dto.getEmail();
 

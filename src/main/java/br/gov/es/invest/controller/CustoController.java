@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CustoDTO;
-import br.gov.es.invest.dto.ValoresTotaisCusto;
+import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.service.CustoService;
 import lombok.RequiredArgsConstructor;
 
@@ -34,23 +34,8 @@ public class CustoController {
     }
 
     @GetMapping("/totais")
-    public ValoresTotaisCusto getValoresTotais(@RequestParam String exercicio){
+    public ValoresCusto getValoresTotais(@RequestParam String exercicio){
         return service.getValoresTotais(exercicio);
-    }
-    
-
-    @GetMapping("/totalPrevisto")
-    public ResponseEntity<Double> getTotalPrevisto(@RequestParam String exercicio) {
-        double totalPrevisto = service.getTotalPrevisto(exercicio);
-
-        return ResponseEntity.ok(totalPrevisto);
-    }
-    
-    @GetMapping("/totalHomologado")
-    public ResponseEntity<Double> getTotalHomologado(@RequestParam String exercicio) {
-        double totalHomologado = service.getTotalContratado(exercicio);
-
-        return ResponseEntity.ok(totalHomologado);
     }
 
     

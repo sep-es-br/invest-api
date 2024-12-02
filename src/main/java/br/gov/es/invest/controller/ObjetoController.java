@@ -5,6 +5,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,12 +35,14 @@ public class ObjetoController {
     private final ObjetoService service;
 
     @GetMapping("/all")
-    public ResponseEntity<List<ObjetoDTO>> getAllByFiltro(@RequestParam String filtroJson) {
+    public ResponseEntity<List<ObjetoDTO>> getAllByFiltro(
+        String exercicio,@RequestParam(required = false) String nome,
+        @RequestParam(required = false) String idUnidade,@RequestParam(required = false) String status,
+        @RequestParam int pgAtual, @RequestParam int tamPag
+    ) {
 
         try{
-            ObjetoFiltroDTO filtroDTO = new ObjectMapper().readValue(filtroJson, ObjetoFiltroDTO.class);
-
-            List<ObjetoDTO> objetosDTO = service.getAllByFilter(filtroDTO).stream().map(obj -> new ObjetoDTO(obj)).toList();
+            List<ObjetoDTO> objetosDTO = service.getAllByFilter(exercicio, nome, idUnidade, status, PageRequest.of(pgAtual-1, tamPag)).stream().map(obj -> new ObjetoDTO(obj)).toList();
 
             return ResponseEntity.ok(objetosDTO);
         } catch(Exception e){
@@ -51,7 +55,7 @@ public class ObjetoController {
     @GetMapping("/count")
     public ResponseEntity<Integer> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam String exercicio, @RequestParam int numPag, @RequestParam int qtPorPag
+        @RequestParam String exercicio
     ) {
         return ResponseEntity.ok(service.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio));
     }
