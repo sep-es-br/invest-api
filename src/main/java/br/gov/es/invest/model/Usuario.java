@@ -42,6 +42,7 @@ public class Usuario extends MembroGrupo {
         this.telefone = dto.getTelefone();
         
         this.email = dto.getEmail();
+        this.papel = dto.getPapel();
 
         this.imgPerfil = dto.getImgPerfil() == null ? null : new Avatar(dto.getImgPerfil());
         this.role = (dto.getRole() == null ) ? null : new HashSet<>(dto.getRole().stream().map(funcao -> new Funcao(funcao)).toList());
