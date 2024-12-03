@@ -33,7 +33,7 @@ public class UnidadeOrcamentariaController {
         ArrayList<UnidadeOrcamentariaDTO> unidadesDTO = new ArrayList<>();
         
         for(UnidadeOrcamentariaDTOProjection unidade: service.getAllSimples()) {
-            unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.sigla()));
+            unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.nome(), unidade.sigla()));
         }
 
         return ResponseEntity.ok(unidadesDTO);

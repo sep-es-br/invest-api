@@ -1,6 +1,7 @@
 package br.gov.es.invest.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -13,4 +14,7 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
 
     @Query("MATCH (unidade:UnidadeOrcamentaria) RETURN unidade ORDER BY unidade.sigla")
     public List<UnidadeOrcamentariaDTOProjection> findAllUnidades();
+
+    @Query("MATCH (unidade:UnidadeOrcamentaria) WHERE unidade.guid = $guid RETURN unidade")
+    public Optional<UnidadeOrcamentaria> findByGuid(String guid);
 }

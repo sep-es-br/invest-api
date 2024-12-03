@@ -1,6 +1,8 @@
 package br.gov.es.invest.dto;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import br.gov.es.invest.model.Usuario;
@@ -22,6 +24,8 @@ public class UsuarioDto {
         private String telefone;
         private String papel;
         private Set<FuncaoDTO> role;
+
+        private List<GrupoDTO> grupos;
 
         public UsuarioDto(Usuario usuario) {
                 this.id = usuario.getId();

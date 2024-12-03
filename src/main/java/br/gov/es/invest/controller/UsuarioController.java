@@ -1,5 +1,7 @@
 package br.gov.es.invest.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -49,6 +51,12 @@ public class UsuarioController {
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
 
         return new UsuarioDto(service.getUserBySub(sub));
+    }
+
+    @GetMapping("/byGrupo")
+    public List<UsuarioDto> getUsuario(@RequestParam String grupoId) {
+
+        return service.findByGrupo(grupoId).stream().map(usuario -> new UsuarioDto(usuario)).toList();
     }
 
     @GetMapping("comAvatar")

@@ -1,6 +1,7 @@
 package br.gov.es.invest.model;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.neo4j.core.schema.Node;
@@ -15,7 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Node
-public class Usuario extends MembroGrupo {
+public class Usuario extends Entidade {
     private String ACToken;
     private String sub;
     private String name;
@@ -31,7 +32,7 @@ public class Usuario extends MembroGrupo {
     private Set<Funcao> role;
 
     @Relationship(type = "MEMBRO_DE")
-    private Setor setor;
+    private List<Grupo> grupos;
 
     public Usuario(UsuarioDto dto){
 
@@ -46,9 +47,12 @@ public class Usuario extends MembroGrupo {
 
         this.imgPerfil = dto.getImgPerfil() == null ? null : new Avatar(dto.getImgPerfil());
         this.role = (dto.getRole() == null ) ? null : new HashSet<>(dto.getRole().stream().map(funcao -> new Funcao(funcao)).toList());
+
+        this.grupos = dto.getGrupos().stream().map(grupoDto -> new Grupo(grupoDto)).toList();
     }
 
     public void setRole(Set<String> roles) {
         this.role = new HashSet<>(roles.stream().map(role -> new Funcao(role)).toList());
     }
+
 }

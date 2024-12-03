@@ -11,10 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
+import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.model.Grupo;
+import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Setor;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.GrupoService;
+import br.gov.es.invest.service.OrgaoService;
+import br.gov.es.invest.service.SetorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,6 +35,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class GrupoController {
 
     private final GrupoService service;
+
+    private final OrgaoService orgaoService;
+
+    private final SetorService setorService;
 
     @GetMapping("/")
     public GrupoDTO findById(@RequestParam String grupoId) {
@@ -56,6 +67,17 @@ public class GrupoController {
         //TODO: process POST request
         
         return new GrupoDTO(service.save(new Grupo(grupoDTO)));
+    }
+
+    @PutMapping("/addMembro")
+    public void addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
+        //TODO: process POST request
+        Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
+        Orgao orgao = orgaoService.findOrCreate(new Orgao(cadastroFormDto.orgao()));
+        Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()));
+
+
+        service.addMembro(grupo, orgao, setor, cadastroFormDto.papel() );
     }
     
     @DeleteMapping("/")

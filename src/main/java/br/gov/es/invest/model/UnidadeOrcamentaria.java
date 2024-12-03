@@ -8,17 +8,19 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
+import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @Node
 public class UnidadeOrcamentaria extends Entidade implements Serializable {
     
     private Long codigo;
+    private String guid;
     private String sigla;
     private String nome;
 
@@ -28,14 +30,19 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
     @Relationship(type = "IMPLEMENTA", direction = Direction.OUTGOING)
     private ArrayList<Conta> ContasImplementadas = new ArrayList<>();
 
-    @Relationship(type = "PERTENCE_A", direction = Direction.INCOMING)
-    private List<Setor> setores;
 
     public UnidadeOrcamentaria(Long codigo, String sigla, List<PlanoOrcamentario> planoOrcamentarios, List<Conta> execucoes) {
         this.codigo = codigo;
         this.sigla = sigla;
         planoOrcamentarios.forEach(this.planosOrcamentariosControlados::add);
         execucoes.forEach(this.ContasImplementadas::add);
+    }
+
+    public UnidadeOrcamentaria(UnidadeOrcamentariaDTO dto) {
+        this.setId(dto.id());
+        this.guid = dto.guid();
+        this.nome = dto.nome();
+        this.sigla = dto.sigla();
     }
 
 }
