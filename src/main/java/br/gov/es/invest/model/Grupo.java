@@ -2,7 +2,10 @@ package br.gov.es.invest.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -22,7 +25,10 @@ public class Grupo extends Entidade {
     private String descricao;
 
     @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
-    private List<Usuario> membros = Arrays.asList(); 
+    private HashSet<Usuario> membros = new HashSet<>(); 
+
+    @Relationship(type = "PODE")
+    private Set<Pode> permissoes;
 
     public Grupo(GrupoDTO dto){
         this.setId(dto.getId());
@@ -31,13 +37,10 @@ public class Grupo extends Entidade {
         this.nome = dto.getNome();
         this.descricao = dto.getDescricao();
 
-        this.membros = dto.getMembros().stream().map(membroDto -> new Usuario(membroDto)).toList();
-    }
-
-    public void addMembro(Usuario membro) {
-        ArrayList<Usuario> membrosArray = new ArrayList<>(this.membros);
-        membrosArray.add(membro);
-        this.membros = membrosArray;
-
+        if(dto.getMembros() != null)
+            this.membros.addAll(dto.getMembros().stream().map(membroDto -> new Usuario(membroDto)).collect(Collectors.toSet()));
+        
+        if(dto.getPermissoes() != null)
+            this.permissoes = dto.getPermissoes().stream().map(permissao -> new Pode(permissao)).collect(Collectors.toSet());
     }
 }

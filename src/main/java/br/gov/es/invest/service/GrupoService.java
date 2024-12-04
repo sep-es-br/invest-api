@@ -1,5 +1,6 @@
 package br.gov.es.invest.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,10 +10,12 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.model.Grupo;
+import br.gov.es.invest.model.Modulo;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.GrupoRepository;
+import br.gov.es.invest.repository.ModuloRepository;
 import br.gov.es.invest.repository.OrgaoRepository;
 import br.gov.es.invest.repository.SetorRepository;
 import br.gov.es.invest.repository.UsuarioRepository;
@@ -24,10 +27,7 @@ public class GrupoService {
     private GrupoRepository repository;
 
     @Autowired
-    private OrgaoRepository orgaoRepository;
-
-    @Autowired
-    private SetorRepository setorRepository;
+    private ModuloRepository moduloRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -39,6 +39,7 @@ public class GrupoService {
     }
 
     public Optional<Grupo> findById(String id){
+
         return repository.findByIdHidratado(id);
     }
 
@@ -56,19 +57,8 @@ public class GrupoService {
         return deletedGrupo;
     }
 
-    public void addMembro(Grupo grupo, Orgao orgao, Setor setor, PapelDto papelDto){
+    public Grupo addMembro(Grupo grupo, Orgao orgao, Setor setor, PapelDto papelDto){
         
-        Optional<Orgao> orgaoBanco = orgaoRepository.findByGuid(orgao.getGuid());
-
-        if(orgaoBanco.isPresent())
-            orgao.setId(orgaoBanco.get().getId());
-
-        Optional<Setor> setorBanco = setorRepository.findByGuid(setor.getGuid());
-        
-        if(setorBanco.isPresent()){
-            setor.setId(setorBanco.get().getId());
-        }
-
         setor.setOrgao(orgao);
 
         Optional<Usuario> usuarioBanco = usuarioRepository.findBySub(papelDto.agenteSub());
@@ -84,20 +74,19 @@ public class GrupoService {
         
         membro.setPapel(papelDto.nome());
         membro.setSetor(setor);
+      
+        grupo.getMembros().add(membro);
 
-        final Usuario[] userWrapper = new Usuario[]{membro};
-
-        List<Usuario> setoresExistente = grupo.getMembros().stream()
-                                        .filter(membroGrupo -> 
-                                            membroGrupo.getSub().equals(userWrapper[0].getSub())
-                                        ).toList();  
-                                
-        if(setoresExistente.isEmpty())          
-            grupo.addMembro(membro);
-
-
-        this.repository.save(grupo);
+        return this.repository.save(grupo);
         
+    }
+
+    public int quantidadeDeMembros(String grupoId){
+        return this.repository.quantidadeDeMembros(grupoId);
+    }
+
+    public Grupo removerMembro(String grupoId, String membroId){
+        return this.repository.removerMembro(grupoId, membroId);
     }
 
 }

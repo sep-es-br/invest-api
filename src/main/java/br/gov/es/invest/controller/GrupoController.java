@@ -53,6 +53,12 @@ public class GrupoController {
 
     }
 
+    @GetMapping("/quantidadeMembros")
+    public int getMethodName(@RequestParam String grupoId) {
+        return service.quantidadeDeMembros(grupoId);
+    }
+    
+
     @GetMapping("/byFilter")
     public List<GrupoDTO> findByFilter(
             @RequestParam(required = false) String nome, @RequestParam Integer pagAtual, @RequestParam Integer tamPag
@@ -70,19 +76,24 @@ public class GrupoController {
     }
 
     @PutMapping("/addMembro")
-    public void addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
+    public GrupoDTO addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
         //TODO: process POST request
         Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
         Orgao orgao = orgaoService.findOrCreate(new Orgao(cadastroFormDto.orgao()));
         Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()));
 
 
-        service.addMembro(grupo, orgao, setor, cadastroFormDto.papel() );
+        return new GrupoDTO(service.addMembro(grupo, orgao, setor, cadastroFormDto.papel() ));
     }
     
     @DeleteMapping("/")
     public GrupoDTO deleteGrupo(@RequestParam String idGrupo) {
         return new GrupoDTO(service.delete(idGrupo));
+    }
+    
+    @DeleteMapping("/membro")
+    public GrupoDTO deleteGrupo(@RequestParam String idGrupo, @RequestParam String idMembro) {
+        return new GrupoDTO(service.removerMembro(idGrupo, idMembro));
     }
 
     

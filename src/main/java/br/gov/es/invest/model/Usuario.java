@@ -54,4 +54,15 @@ public class Usuario extends Entidade {
         this.role = new HashSet<>(roles.stream().map(role -> new Funcao(role)).toList());
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        // TODO Auto-generated method stub
+        if(!(obj instanceof Usuario)) return false;
+
+        Usuario other = (Usuario) obj;
+
+        return this.sub.equals(other.getSub());
+        
+    }
+
 }
