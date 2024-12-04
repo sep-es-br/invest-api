@@ -22,9 +22,6 @@ public class Orgao extends Entidade{
     private String sigla;
     private String nome;
     
-    @Relationship(type = "PERTENCE_A", direction = Direction.INCOMING)
-    private List<Setor> setores = Arrays.asList();
-
     public Orgao(UnidadesACResponseDto unidadeAC){
         this.guid = unidadeAC.guid();
         this.sigla = unidadeAC.sigla();
@@ -36,7 +33,6 @@ public class Orgao extends Entidade{
         this.guid = dto.guid();
         this.sigla = dto.sigla();
         this.nome = dto.nome();
-        this.setores = dto.setores().stream().map(setorDto -> new Setor(setorDto)).toList();
     }
 
 

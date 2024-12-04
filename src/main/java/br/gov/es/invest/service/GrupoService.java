@@ -11,12 +11,10 @@ import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Setor;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.GrupoRepository;
 import br.gov.es.invest.repository.OrgaoRepository;
 import br.gov.es.invest.repository.SetorRepository;
-import br.gov.es.invest.repository.UnidadeOrcamentariaRepository;
 import br.gov.es.invest.repository.UsuarioRepository;
 
 @Service
@@ -85,6 +83,7 @@ public class GrupoService {
         }
         
         membro.setPapel(papelDto.nome());
+        membro.setSetor(setor);
 
         final Usuario[] userWrapper = new Usuario[]{membro};
 

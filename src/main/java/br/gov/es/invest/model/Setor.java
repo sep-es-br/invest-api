@@ -21,13 +21,11 @@ public class Setor extends Entidade {
     @Relationship(type = "PERTENCE_A")
     private Orgao orgao;
 
-    @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
-    private List<Usuario> membros;
-
     public Setor(SetorDto dto) {
         this.setId(dto.getId());
         this.guid = dto.getGuid();
         this.nome = dto.getNome();
         this.sigla = dto.getSigla();
+        this.orgao = dto.getOrgao() == null ? null : new Orgao(dto.getOrgao());
     }
 }

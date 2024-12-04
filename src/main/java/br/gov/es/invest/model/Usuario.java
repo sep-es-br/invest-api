@@ -1,7 +1,6 @@
 package br.gov.es.invest.model;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.neo4j.core.schema.Node;
@@ -31,8 +30,8 @@ public class Usuario extends Entidade {
     @Relationship(type = "ATUA_COMO")
     private Set<Funcao> role;
 
-    @Relationship(type = "MEMBRO_DE")
-    private List<Grupo> grupos;
+    @Relationship(type ="MEMBRO_DE")
+    private Setor setor;
 
     public Usuario(UsuarioDto dto){
 
@@ -48,7 +47,7 @@ public class Usuario extends Entidade {
         this.imgPerfil = dto.getImgPerfil() == null ? null : new Avatar(dto.getImgPerfil());
         this.role = (dto.getRole() == null ) ? null : new HashSet<>(dto.getRole().stream().map(funcao -> new Funcao(funcao)).toList());
 
-        this.grupos = dto.getGrupos().stream().map(grupoDto -> new Grupo(grupoDto)).toList();
+        this.setor = dto.getSetor() == null ? null : new Setor(dto.getSetor());
     }
 
     public void setRole(Set<String> roles) {

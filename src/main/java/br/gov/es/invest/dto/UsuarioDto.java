@@ -25,7 +25,7 @@ public class UsuarioDto {
         private String papel;
         private Set<FuncaoDTO> role;
 
-        private List<GrupoDTO> grupos;
+        private SetorDto setor;
 
         public UsuarioDto(Usuario usuario) {
                 this.id = usuario.getId();
@@ -37,6 +37,7 @@ public class UsuarioDto {
                 this.email = usuario.getEmail();
                 this.papel = usuario.getPapel();
                 this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
+                this.setor = usuario.getSetor() == null ? null : new SetorDto(usuario.getSetor());
         }
         
 }
