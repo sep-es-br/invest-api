@@ -26,6 +26,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import jakarta.servlet.FilterChain;
@@ -40,6 +41,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
+    private final ModuloService moduloService;
     
     @Value("${papel.geral}")
     private String papelGeral;
@@ -91,9 +93,20 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                 Usuario user = usuarioService.getUserBySub(sub);
                 
+                if(user == null) {
+                    MensagemErroRest erro = new MensagemErroRest(
+                        HttpStatus.FORBIDDEN,
+                        "Usuário não existe", 
+                        Arrays.asList("Usuário não existe", "Favor incluir o usuario em algum grupo")
+                    );
+                    enviarMensagemErro(erro, response);
+                    return;
+                }
+
                 Set<Funcao> funcoes = user.getRole();
                 
-                if(!Funcao.testarFuncao(funcoes, "GESTOR_MASTER")) {
+                if(!Funcao.testarFuncao(funcoes, "GESTOR_MASTER")
+                && !checarAcesso(request, user.getId())) {
                     MensagemErroRest erro = new MensagemErroRest(
                         HttpStatus.FORBIDDEN,
                         "Usuário sem permissão", 
@@ -121,6 +134,21 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private boolean checarAcesso(HttpServletRequest request, String userId){
+        String url = request.getHeader("Origin-URL");
+
+        if(url == null) return false;
+
+        String[] paths = url.split("/");
+
+        for(String path : paths) {
+            if(!moduloService.checarAcessoUsuario(path, userId))
+                return false;
+        }
+
+        return true;
     }
 
     private boolean checarWhiteList(HttpServletRequest request, List<String> whitelist){

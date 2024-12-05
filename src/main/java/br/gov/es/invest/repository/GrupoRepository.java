@@ -38,5 +38,14 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
                 GRUPO_HIDRATADO)
     public Grupo removerMembro(String grupoId, String usuarioId);
 
+    @Query("MATCH (modulo:Modulo)<-[pode:PODE]-(grupo:Grupo)\r\n" + //
+            "WHERE elementId(modulo) = $moduloId\r\n" + //
+            "    AND elementId(grupo) = $grupoId\r\n" + //
+            "RETURN grupo, collect(pode), collect(modulo)")
+    public Optional<Grupo> findByGrupoModulo(String moduloId, String grupoId);
 
+    @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
+                "WHERE elementId(usuario) = $usuarioId\r\n" + //
+                "RETURN grupo")
+    public List<Grupo> getGruposByUsuario(String usuarioId);
 }

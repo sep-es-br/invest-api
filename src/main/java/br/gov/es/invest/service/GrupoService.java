@@ -1,6 +1,5 @@
 package br.gov.es.invest.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,14 +9,11 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.model.Grupo;
-import br.gov.es.invest.model.Modulo;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.GrupoRepository;
 import br.gov.es.invest.repository.ModuloRepository;
-import br.gov.es.invest.repository.OrgaoRepository;
-import br.gov.es.invest.repository.SetorRepository;
 import br.gov.es.invest.repository.UsuarioRepository;
 
 @Service
@@ -87,6 +83,10 @@ public class GrupoService {
 
     public Grupo removerMembro(String grupoId, String membroId){
         return this.repository.removerMembro(grupoId, membroId);
+    }
+
+    public List<Grupo> getGruposDoUsuario(String usuarioId) {
+        return this.repository.getGruposByUsuario(usuarioId);
     }
 
 }
