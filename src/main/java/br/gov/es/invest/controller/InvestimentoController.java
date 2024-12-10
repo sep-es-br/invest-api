@@ -1,6 +1,9 @@
 package br.gov.es.invest.controller;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,8 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import br.gov.es.invest.dto.InvestimentoDTO;
+import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.service.InvestimentoService;
+import br.gov.es.invest.service.InvestimentosBIService;
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -53,11 +60,6 @@ public class InvestimentoController {
         @RequestParam String exercicio, @RequestParam(required = false) String idFonte
     ) {
         return ResponseEntity.ok(service.ammountByFilter(nome, codUnidade, codPO, exercicio, idFonte));
-    }
-
-    @PostMapping("/importarPentaho")
-    public void importarPentaho() {
-        
     }
     
     

@@ -18,7 +18,10 @@ public class ExecucaoOrcamentaria extends Entidade implements Serializable {
     
     private double orcamento;
     private double autorizado;
+    private double dispSemReserva;
     private double[] liquidado;
+    private double[] empenhado;
+    private double[] pago;
 
     @Relationship(type = "EM", direction = Direction.OUTGOING)
     private Ano anoExercicio;

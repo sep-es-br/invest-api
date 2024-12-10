@@ -11,5 +11,9 @@ public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcame
     
     @Query("MATCH (plano:PlanoOrcamentario) RETURN plano ORDER BY plano.codigo")
     public List<PlanoOrcamentario> getAllSimples();
-
+    
+    @Query("MATCH (plano:PlanoOrcamentario)\r\n" + //
+            "WHERE elementId(plano) = $idPlano\r\n" + //
+            "RETURN toString(plano.codigo)")
+    public String getCodById(String idPlano);
 }

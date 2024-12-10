@@ -18,10 +18,13 @@ import br.gov.es.invest.dto.OrgaoDto;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.ValoresCusto;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.CustoService;
 import br.gov.es.invest.service.InfosService;
-import br.gov.es.invest.service.PentahoMock;
+import br.gov.es.invest.service.InvestimentosBIService;
+import br.gov.es.invest.service.PlanoOrcamentarioService;
+import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import lombok.RequiredArgsConstructor;
 
 
@@ -34,11 +37,13 @@ public class InfosController {
     @Value("${frontend.host}")
     private String frontHost;
 
-    private final PentahoMock mock;
+    private final InvestimentosBIService investimentosBIService;
 
     private final InfosService service;
     private final ACService aCService;
     private final CustoService custoService;
+    private final UnidadeOrcamentariaService unidadeService;
+    private final PlanoOrcamentarioService planoService;
 
     @GetMapping("/allAnos")
     public ResponseEntity<List<String>> getTodosAnos() {
@@ -80,12 +85,15 @@ public class InfosController {
                     idUo, 
                     idPo
                 );
+
+            String codUo = unidadeService.getCodById(idUo);
+            String codPo = planoService.getCodById(idPo);
             
-            List<Map<String, JsonNode>> resultList = mock.getCardsTotais(
-                    idFonte, 
+            List<Map<String, JsonNode>> resultList = investimentosBIService.getCardsTotais(
+                    null, 
                     ano, 
-                    idPo, 
-                    idPo
+                    codUo, 
+                    codPo
                 );
             Map<String, JsonNode> linhaResultado = resultList.get(0);
 

@@ -22,4 +22,8 @@ public class PlanoOrcamentarioService {
         return repository.getAllSimples();
     }
 
+    public String getCodById(String idPlano) {
+        return repository.getCodById(idPlano);
+    }
+
 }

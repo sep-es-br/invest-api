@@ -27,4 +27,8 @@ public class UnidadeOrcamentariaService {
         return repository.findAllUnidades();
     }
 
+    public String getCodById(String idUnidade) {
+        return repository.getCodById(idUnidade);
+    }
+
 }

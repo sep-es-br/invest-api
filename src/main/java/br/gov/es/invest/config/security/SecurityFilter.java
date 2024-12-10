@@ -71,7 +71,8 @@ public class SecurityFilter extends OncePerRequestFilter {
             "/user-info",
             "/oauth2/authorization",
             "/acesso-cidadao-response",
-            "acesso-cidadao-response.html" 
+            "acesso-cidadao-response.html",
+            "importarPentaho" 
         ))) {
             filterChain.doFilter(request, response);
             return;

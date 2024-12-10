@@ -17,4 +17,9 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
 
     @Query("MATCH (unidade:UnidadeOrcamentaria) WHERE unidade.guid = $guid RETURN unidade")
     public Optional<UnidadeOrcamentaria> findByGuid(String guid);
+
+    @Query("MATCH (unidade:UnidadeOrcamentaria)\r\n" + //
+            "WHERE elementId(unidade) = $idUnidade\r\n" + //
+            "RETURN toString(unidade.codigo)")
+    public String getCodById(String idUnidade);
 }
