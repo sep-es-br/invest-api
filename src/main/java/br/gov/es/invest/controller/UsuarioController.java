@@ -2,24 +2,22 @@ package br.gov.es.invest.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.AvatarDTO;
 import br.gov.es.invest.dto.UsuarioDto;
-import br.gov.es.invest.exception.UsuarioNaoAutenticadoException;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 
 
@@ -48,13 +46,14 @@ public class UsuarioController {
     public UsuarioDto getUsuario(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
         authToken = authToken.replace("Bearer ", "");
         
+        
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
 
         return new UsuarioDto(service.getUserBySub(sub));
     }
 
     @GetMapping("/byGrupo")
-    public List<UsuarioDto> getUsuario(@RequestParam String grupoId) {
+    public List<UsuarioDto> getUsuarioByGrupo(@RequestParam String grupoId) {
 
         return service.findByGrupo(grupoId).stream().map(usuario -> new UsuarioDto(usuario)).toList();
     }
@@ -64,6 +63,7 @@ public class UsuarioController {
         authToken = authToken.replace("Bearer ", "");
         
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
+
 
         return new UsuarioDto(service.getUserWithAvatarBySub(sub));
     }

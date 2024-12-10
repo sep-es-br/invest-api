@@ -1,25 +1,26 @@
 package br.gov.es.invest.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-
-import java.nio.charset.Charset;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Service
 public abstract class PentahoBIService {
@@ -37,25 +38,24 @@ public abstract class PentahoBIService {
     private String password;
 
 
-    protected String buildEndpointUri(String path, String target, String dataAccessId, Map<String, String> params) {
+    protected String buildEndpointUri(String path, String target, Map<String, String> params) {
         StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append(this.baseURL);
+        strBuilder.append(this.baseURL)
+                .append("path=")
+                    .append(path).append(target);
 
         HashMap<String, String> allParams = new HashMap<>();
-        allParams.put("path", path + target);
-        allParams.put("dataAccessId", dataAccessId);
         if(params != null) allParams.putAll(params);
 
         List<String> paramPairs = allParams.entrySet().stream()
                                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                                     .toList();
         
-        strBuilder.append(String.join("&", paramPairs));
+        strBuilder.append("&")
+                    .append(String.join("&", paramPairs));
 
         return strBuilder.toString();
     }
-
-    protected abstract String buildEndpointUri(String target, String dataAccess, Map<String, String> params);
 
     protected String doRequest(String uri) throws Exception{
         

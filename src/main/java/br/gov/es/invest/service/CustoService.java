@@ -1,6 +1,7 @@
 package br.gov.es.invest.service;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,8 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public ValoresCusto getValoresTotais(String exercicio){
-        List<IValoresCusto> valores = repository.getTotais(exercicio);
+    public ValoresCusto getValoresTotais(String idFonte, String exercicio, String idUnidade, String idPlano){
+        List<IValoresCusto> valores = repository.getTotais(idFonte, exercicio, idUnidade, idPlano);
 
         Double totalPrevisto = 0d;
         Double totalContratado = 0d;

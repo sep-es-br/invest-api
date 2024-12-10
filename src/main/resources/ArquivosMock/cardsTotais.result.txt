@@ -1,0 +1,32 @@
+{
+    "metadata": [{
+            "colName": "orcado",
+            "colType": "Numeric",
+            "colIndex": 0
+        }, {
+            "colName": "autorizado",
+            "colType": "Numeric",
+            "colIndex": 1
+        }, {
+            "colName": "empenhado",
+            "colType": "Numeric",
+            "colIndex": 2
+        }, {
+            "colName": "liquidado",
+            "colType": "Numeric",
+            "colIndex": 3
+        }, {
+            "colName": "disponivel_sem_reserva",
+            "colType": "Numeric",
+            "colIndex": 4
+        }, {
+            "colName": "pago",
+            "colType": "Numeric",
+            "colIndex": 5
+        }
+    ],
+    "resultset": [[78115000, 77582718.15, 33761715.55, 22968259.19, 29478688.06, 21624605.06]],
+    "queryInfo": {
+        "totalRows": "1"
+    }
+}

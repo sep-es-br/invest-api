@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CustoDTO;
-import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.service.CustoService;
 import lombok.RequiredArgsConstructor;
 
@@ -32,11 +31,5 @@ public class CustoController {
         
         return ResponseEntity.ok(custos);
     }
-
-    @GetMapping("/totais")
-    public ValoresCusto getValoresTotais(@RequestParam String exercicio){
-        return service.getValoresTotais(exercicio);
-    }
-
     
 }
