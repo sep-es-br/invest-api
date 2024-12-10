@@ -14,6 +14,10 @@ public class ExecucaoOrcamentariaService {
     @Autowired
     private ExecucaoOrcamentariaRepository repository;
 
+    public ExecucaoOrcamentaria save(ExecucaoOrcamentaria execucao) {
+        return repository.save(execucao);
+    }
+
     public void saveAll(List<ExecucaoOrcamentaria> execucoesOrcamentarias) {
         repository.saveAll(execucoesOrcamentarias);
     }

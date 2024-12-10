@@ -23,4 +23,20 @@ public class FonteOrcamentariaService {
         return repository.findAll(Sort.by("nome"));
     }
 
+    public FonteOrcamentaria findOrCreate(Integer codigo, String nome) {
+
+        FonteOrcamentaria optFonte = repository.findByCodigo(codigo);
+        
+        if(optFonte != null) {
+            return optFonte;
+        } else {
+            FonteOrcamentaria novaFonte = new FonteOrcamentaria();
+
+            novaFonte.setCodigo(codigo);
+            novaFonte.setNome(nome);
+
+            return novaFonte;
+        }
+    }
+
 }
