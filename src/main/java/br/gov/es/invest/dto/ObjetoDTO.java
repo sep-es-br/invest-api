@@ -38,7 +38,7 @@ public class ObjetoDTO {
         objeto.getContaCusteada().getExecucoesOrcamentariaDelimitadores().forEach(exec -> {
             this.totalOrcado += exec.getOrcamento();
             this.totalAutorizado += exec.getAutorizado();
-            this.totalDisponivel += 0;
+            this.totalDisponivel += exec.getDispSemReserva();
         });
     }
 }
