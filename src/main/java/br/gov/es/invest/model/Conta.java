@@ -3,6 +3,7 @@ package br.gov.es.invest.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -26,9 +27,9 @@ public class Conta extends Entidade implements Serializable {
     private UnidadeOrcamentaria unidadeOrcamentariaImplementadora;
     
     @Relationship(type = "CUSTEADO", direction = Direction.INCOMING)
-    private List<Objeto> objetosCusteadores;
+    private Set<Objeto> objetos;
 
     @Relationship(type = "DELIMITA", direction = Direction.INCOMING)
-    private List<ExecucaoOrcamentaria> execucoesOrcamentariaDelimitadores;
+    private List<ExecucaoOrcamentaria> execucoesOrcamentaria;
 
 }

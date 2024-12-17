@@ -1,6 +1,9 @@
 package br.gov.es.invest.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -62,6 +65,16 @@ public class ModuloService {
 
         return false;
         
+    }
+
+    public List<String> montarCaminhoDeModulo(Modulo modulo, String parentPath, List<String> listaCaminhos) {
+        List<Modulo> modulos = repository.findAll();
+
+        ArrayList<String> caminhos = new ArrayList<>();
+
+
+        return Arrays.asList();
+
     }
 
 }

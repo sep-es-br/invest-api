@@ -14,7 +14,7 @@ import lombok.Setter;
 @Node
 public class FonteOrcamentaria extends Entidade implements Serializable {
 
-    private Integer codigo;
+    private String codigo;
     private String nome;
     private String descricao;
 
@@ -26,7 +26,5 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
         this.setId(codigo);
         this.nome = nome;
     }
-
-    
 
 }

@@ -18,8 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import br.gov.es.invest.dto.InvestimentoDTO;
+import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
+import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import lombok.RequiredArgsConstructor;
@@ -36,15 +37,37 @@ public class InvestimentoController {
     private final Logger logger = Logger.getLogger("InvestimentoController");
 
     @GetMapping("/all")
-    public ResponseEntity<List<InvestimentoDTO>> getAllByFilter(
+    public ResponseEntity<List<InvestimentoTiraDTO>> getAllByFilter(
             @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-            @RequestParam String exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
+            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
         ) {
             try {
-                List<InvestimentoDTO> investimentosDTO = service.findAllByFilter(
+                List<InvestimentoTiraDTO> investimentosDTO = service.findAllByFilter(
                         nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
                     ).stream()
-                    .map(inv -> new InvestimentoDTO(inv)).toList();
+                    .map(inv -> new InvestimentoTiraDTO(inv)).toList();
+
+                return ResponseEntity.ok(investimentosDTO);
+            } catch (Exception e){
+                logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                return ResponseEntity.internalServerError().build();
+            }
+        
+    }
+    
+    @GetMapping("/allTira")
+    public ResponseEntity<List<InvestimentoTiraDTO>> getAllTiraByFilter(
+            @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
+            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
+        ) {
+            try {
+
+                List<Investimento> investimentos = service.findAllByFilter(
+                    nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
+                );
+
+                List<InvestimentoTiraDTO> investimentosDTO = investimentos.stream()
+                    .map(inv -> new InvestimentoTiraDTO(inv)).toList();
 
                 return ResponseEntity.ok(investimentosDTO);
             } catch (Exception e){

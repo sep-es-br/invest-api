@@ -18,16 +18,8 @@ import lombok.Setter;
 @Node
 public class PlanoOrcamentario extends Entidade implements Serializable{
     
-    private Long codigo;
+    private String codigo;
     private String nome;
     private String descricao;
-
-    @Relationship(type = "ORIENTA", direction = Direction.OUTGOING)
-    private ArrayList<Conta> contasOrientadas = new ArrayList<>();
-
-    public PlanoOrcamentario(Long codigo, String nome, List<ExecucaoOrcamentaria> execucoes) {
-        this.codigo = codigo;
-        this.nome = nome;
-    }
 
 }

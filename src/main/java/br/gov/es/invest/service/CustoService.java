@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.IValoresCusto;
 import br.gov.es.invest.dto.ValoresCusto;
+import br.gov.es.invest.dto.projection.IValoresIndicadaPor;
 import br.gov.es.invest.model.Custo;
+import br.gov.es.invest.model.IndicadaPor;
 import br.gov.es.invest.repository.CustoRepository;
 
 @Service
@@ -25,15 +27,19 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public ValoresCusto getValoresTotais(String idFonte, String exercicio, String idUnidade, String idPlano){
-        List<IValoresCusto> valores = repository.getTotais(idFonte, exercicio, idUnidade, idPlano);
+    public ValoresCusto getValoresTotais(String idFonte, Integer exercicio, String idUnidade, String idPlano){
+        List<Custo> valores = repository.getTotais(idFonte, exercicio, idUnidade, idPlano);
 
         Double totalPrevisto = 0d;
         Double totalContratado = 0d;
 
-        for(IValoresCusto valor : valores) {
-            totalPrevisto += valor.getPrevisto();
-            totalContratado += valor.getContratado();
+        for(Custo valor : valores) {
+            for(IndicadaPor valorIndicadaPor : valor.getIndicadaPor()){
+                
+                totalPrevisto += valorIndicadaPor.getPrevisto();
+                totalContratado += valorIndicadaPor.getContratado();                
+            }
+
         }
 
         return new ValoresCusto(totalPrevisto, totalContratado);

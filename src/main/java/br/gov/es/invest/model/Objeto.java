@@ -23,16 +23,7 @@ public class Objeto extends Entidade implements Serializable {
     private int openPMOId;
     private String status;
 
-    @Relationship(type = "CUSTEADO", direction = Direction.OUTGOING)
-    private Conta contaCusteada;
-
     @Relationship(type = "ESTIMADO", direction = Direction.INCOMING)
     private ArrayList<Custo> custosEstimadores = new ArrayList<>();
-
-    public Objeto(String nome, String tipo, Conta contaCusteada) {
-        this.nome = nome;
-        this.tipo = tipo;
-        this.contaCusteada = contaCusteada;
-    }
 
 }

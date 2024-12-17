@@ -1,12 +1,16 @@
 package br.gov.es.invest.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.repository.InvestimentoRepository;
 
 @Service
@@ -22,8 +26,9 @@ public class InvestimentoService {
 
     public List<Investimento> findAllByFilter(
             String nome, String codUnidade, String codPO,
-            String exercicio, String idFonte, Pageable pageable
+            Integer exercicio, String idFonte, Pageable pageable
         ) {
+
         return repository.findAllByFilter(nome, codUnidade, codPO, exercicio, idFonte, pageable);
     }
 
@@ -31,6 +36,23 @@ public class InvestimentoService {
             String nome, String codUnidade, String codPO, String exercicio, String idFonte
         ){
         return repository.countByFilter(nome, codUnidade, codPO, exercicio, idFonte);
+    }
+
+    public Investimento getByObjetoId(String objetoId){
+        Investimento investimentoProbe = new Investimento();
+        Objeto objetoProbe = new Objeto();
+
+        objetoProbe.setId(objetoId);
+
+        investimentoProbe.setObjetos(Set.of(objetoProbe));
+
+        Example<Investimento> example = Example.of(investimentoProbe);
+        
+        Investimento result = repository.findBy(example, query -> query.oneValue());
+
+        return result;
+
+
     }
 
     public Investimento getByCodUoPo(String codUo, String codPo) {

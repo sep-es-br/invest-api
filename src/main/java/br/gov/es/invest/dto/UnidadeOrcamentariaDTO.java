@@ -5,12 +5,13 @@ import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
 public record UnidadeOrcamentariaDTO(
         String id,
         String guid,
+        String codigo,
         String nome,
         String sigla
     )  {
     
     public UnidadeOrcamentariaDTO(UnidadesACResponseDto unidadeAC){
-        this(null, unidadeAC.guid(), unidadeAC.nomeFantasia(), unidadeAC.sigla());
+        this(null, unidadeAC.guid(), "", unidadeAC.nomeFantasia(), unidadeAC.sigla());
     }
 
 }

@@ -16,8 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.gov.es.invest.dto.ObjetoDTO;
+import br.gov.es.invest.dto.ObjetoTiraDTO;
+import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
+import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import lombok.RequiredArgsConstructor;
 
@@ -33,16 +36,24 @@ public class ObjetoController {
     private final Logger logger = Logger.getLogger("ObjetoController");
 
     private final ObjetoService service;
+    private final InvestimentoService investimentoService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ObjetoDTO>> getAllByFiltro(
-        String exercicio,@RequestParam(required = false) String nome,
-        @RequestParam(required = false) String idUnidade,@RequestParam(required = false) String status,
-        @RequestParam int pgAtual, @RequestParam int tamPag
+    @GetMapping("/allTira")
+    public ResponseEntity<List<ObjetoTiraDTO>> getAllByFiltro(
+        @RequestParam Integer exercicio,@RequestParam(required = false) String nome,
+        @RequestParam(required = false) String idUnidade, @RequestParam(required = false) String idPo,@RequestParam(required = false) String status,
+        @RequestParam int pgAtual, @RequestParam int tamPag 
     ) {
 
         try{
-            List<ObjetoDTO> objetosDTO = service.getAllByFilter(exercicio, nome, idUnidade, status, PageRequest.of(pgAtual-1, tamPag)).stream().map(obj -> new ObjetoDTO(obj)).toList();
+
+            List<Objeto> objetos = service.getAllByFilter(exercicio, nome, idUnidade, idPo, status, PageRequest.of(pgAtual-1, tamPag));
+
+            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {
+                Investimento inv = investimentoService.getByObjetoId(obj.getId());
+                
+                return new ObjetoTiraDTO(obj, inv);
+            }).toList();
 
             return ResponseEntity.ok(objetosDTO);
         } catch(Exception e){
@@ -52,12 +63,20 @@ public class ObjetoController {
 
     }
 
-    @GetMapping("/count")
-    public ResponseEntity<Integer> getAmmoutByFilter(
+    @GetMapping("/countInvestimentoFiltro")
+    public ResponseEntity<Integer> getAmmoutByInvestimentoFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam String exercicio
+        @RequestParam Integer exercicio
     ) {
         return ResponseEntity.ok(service.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getAmmoutByFilter(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String idUnidade,
+        @RequestParam Integer exercicio, @RequestParam(required = false) String codPO
+    ) {
+        return ResponseEntity.ok(service.countByFilter(nome, idUnidade, codPO, exercicio));
     }
     
 }

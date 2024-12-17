@@ -23,7 +23,7 @@ public class FonteOrcamentariaController {
 
     @GetMapping("")
     public List<FonteOrcamentariaDTO> findAll() {
-        return service.findAll().stream().map(fonte -> new FonteOrcamentariaDTO(fonte)).toList();
+        return service.findAll().stream().map(fonte -> new FonteOrcamentariaDTO(fonte)).sorted((f1, f2) -> f1.getCodigo().compareTo(f2.getCodigo())).toList();
     }
     
 }

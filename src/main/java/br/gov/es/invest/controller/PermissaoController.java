@@ -1,11 +1,18 @@
 package br.gov.es.invest.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.ModuloDto;
 import br.gov.es.invest.dto.PodeDto;
+import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Modulo;
@@ -40,6 +48,18 @@ public class PermissaoController {
     private final GrupoService grupoService;
 
     private final TokenService tokenService;
+
+    @PutMapping("/acessoTeste")
+    public void testeDeAcesso(@RequestBody Map<String, String> map) {
+
+        for(Entry<String, String> entry : map.entrySet()){
+            Logger.getGlobal().info(entry.getKey() + " : " + entry.getValue());
+        }
+
+        System.out.println();
+
+    }
+    
 
 
     @GetMapping("/grupoTemAcesso")
@@ -83,7 +103,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub("95610081-61e2-4bd0-a372-72a810e62540");
+        Usuario usuario = usuarioService.getUserBySub(sub);
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) {
             return new PodeDto(
                 null, 
@@ -115,6 +135,58 @@ public class PermissaoController {
         
     }
 
+    @GetMapping("/buildMenu")
+    public List<ItemMenu> buildMenu(@RequestHeader("Authorization") String authToken){
+    
+        authToken = authToken.replace("Bearer ", "");
+        
+        String sub = tokenService.validarToken(authToken);
+        
+        Usuario usuario = usuarioService.getUserBySub("95610081-61e2-4bd0-a372-72a810e62540");
+        
+        return Arrays.asList(new ItemMenu(
+            "Inventário", 
+            "home", 
+            moduloService.checarAcessoUsuario("inventario", usuario.getId()), 
+            "/inventario", 
+            Arrays.asList(new ItemMenu(
+                "Investimentos", 
+                null, 
+                true, 
+                "/investimentos", 
+                null
+            ))
+        ), new ItemMenu(
+            "Minha Carteira", 
+            "archive", 
+            moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
+            "/carteira", 
+            Arrays.asList( new ItemMenu(
+                "Investimentos", 
+                null, 
+                moduloService.checarAcessoUsuario("investimentos", usuario.getId()), 
+                "/investimentos", 
+                null
+            ), new ItemMenu(
+                "Objetos", 
+                null, 
+                moduloService.checarAcessoUsuario("objetos", usuario.getId()), 
+                "/objetos", 
+                null
+            )
+
+            )
+        ), new ItemMenu(
+            null ,
+            "graph", 
+            false, 
+            null, 
+            null
+
+        ));
+        
+    }
+
     private Pode gerarPermissaoMaxima(List<Pode> permissoes){
         Pode out = new Pode();
         out.setModulo(permissoes.get(0).getModulo());
@@ -136,6 +208,8 @@ public class PermissaoController {
 
         return false;
     }
+
+    
     
 
 }

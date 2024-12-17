@@ -16,11 +16,13 @@ public class FonteOrcamentariaDTO implements Serializable {
 
     private String id;
     private String nome;
+    private String codigo;
     private String descricao;
 
     public FonteOrcamentariaDTO ( FonteOrcamentaria fonte ) {
         this.id = fonte.getId();
         this.nome = fonte.getNome();
+        this.codigo = fonte.getCodigo();
         this.descricao = fonte.getDescricao();
     }
 }

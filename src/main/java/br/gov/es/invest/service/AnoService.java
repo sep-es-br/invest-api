@@ -1,27 +1,36 @@
 package br.gov.es.invest.service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.gov.es.invest.model.Ano;
-import br.gov.es.invest.repository.AnoRepository;
+import br.gov.es.invest.repository.CustoRepository;
+import br.gov.es.invest.repository.ExecucaoOrcamentariaRepository;
 
 @Service
 public class AnoService {
     
     @Autowired
-    private AnoRepository repository;
+    private CustoRepository custoRepository;
 
-    public Ano findOrCreate(String ano){
+    @Autowired
+    private ExecucaoOrcamentariaRepository execucaoOrcamentariaRepository;
 
-        Ano optAno = repository.getByAno(ano);
-
-        if(optAno != null) {
-            return optAno;
-        } else {
-            return new Ano(ano); 
-        }
+    public Set<Integer> getAllAnos() {
         
+        Set<Integer> anosCusto = custoRepository.getAnosExercicio();
+        Set<Integer> anosExecucoes = execucaoOrcamentariaRepository.getAnosExercicio();
+
+        HashSet<Integer> todosAnos = new HashSet<>();
+
+        todosAnos.addAll(anosCusto);
+        todosAnos.addAll(anosExecucoes);
+
+        return todosAnos;
+
+
     }
 
 }

@@ -22,8 +22,8 @@ public class ObjetoService {
         repository.saveAll(objetos);
     }
 
-    public List<Objeto> getAllByFilter(String exercicio, String nome, String idUnidade, String status, Pageable pageable) {
-        return repository.getAllByFilter(exercicio, nome, idUnidade, status, pageable);
+    public List<Objeto> getAllByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String status, Pageable pageable) {
+        return repository.getAllByFilter(exercicio, nome, idUnidade, idPo, status, pageable);
     }
 
     public Objeto getByCusto(Custo custo){
@@ -38,7 +38,11 @@ public class ObjetoService {
         return repository.findAllById(ids);
     }
 
-    public int countByInvestimentoFilter(String nome, String codUnidade, String codPO, String exercicio) {
+    public int countByFilter(String nome, String codUnidade, String codPO, Integer exercicio) {
+        return repository.countByFilter(nome, codUnidade, codPO, exercicio);
+    }
+
+    public int countByInvestimentoFilter(String nome, String codUnidade, String codPO, Integer exercicio) {
         return repository.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio);
     }
 }

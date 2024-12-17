@@ -2,6 +2,7 @@ package br.gov.es.invest.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.ACService;
+import br.gov.es.invest.service.AnoService;
 import br.gov.es.invest.service.CustoService;
 import br.gov.es.invest.service.InfosService;
 import br.gov.es.invest.service.InvestimentosBIService;
@@ -40,15 +42,16 @@ public class InfosController {
     private final InvestimentosBIService investimentosBIService;
 
     private final InfosService service;
+    private final AnoService anoService;
     private final ACService aCService;
     private final CustoService custoService;
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
 
     @GetMapping("/allAnos")
-    public ResponseEntity<List<String>> getTodosAnos() {
+    public ResponseEntity<Set<Integer>> getTodosAnos() {
 
-        return ResponseEntity.ok(service.getAllAnos());
+        return ResponseEntity.ok(anoService.getAllAnos());
 
     }
 
@@ -81,7 +84,7 @@ public class InfosController {
 
             ValoresCusto totaisCusto = custoService.getValoresTotais(
                     idFonte,
-                    String.valueOf(ano),
+                    ano,
                     idUo, 
                     idPo
                 );

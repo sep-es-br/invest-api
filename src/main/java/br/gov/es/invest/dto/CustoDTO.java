@@ -1,6 +1,8 @@
 package br.gov.es.invest.dto;
 
 import java.io.Serializable;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.FonteOrcamentaria;
@@ -15,21 +17,16 @@ import lombok.Setter;
 public class CustoDTO implements Serializable {
     
     private String id;
-    private String anoExercicio;
-    private double previsto;
-    private double contratado;
+    private Integer anoExercicio;
 
-    private Objeto objetoEstimado;
-    private FonteOrcamentaria fonteOrcamentariaIndicadora;
+    private Set<IndicadaPorDto> indicadaPor;
 
     public CustoDTO(Custo custo) {
         this.id = custo.getId();
-        this.anoExercicio = custo.getAnoExercicio().getAno();
-        this.previsto = custo.getPrevisto();
-        this.contratado = custo.getContratado();
+        this.anoExercicio = custo.getAnoExercicio();
+        
 
-        this.objetoEstimado = custo.getObjetoEstimado();
-        this.fonteOrcamentariaIndicadora = custo.getFonteOrcamentariaIndicadora();
+        this.indicadaPor = custo.getIndicadaPor().stream().map(indicadaPor -> new IndicadaPorDto(indicadaPor)).collect(Collectors.toSet());
 
     }
 

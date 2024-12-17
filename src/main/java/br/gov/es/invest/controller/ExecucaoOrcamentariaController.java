@@ -75,19 +75,24 @@ public class ExecucaoOrcamentariaController {
             if(investimento == null) continue;
 
             // busca um objeto de execução pré existente no ano e fonte indicada
-            List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentariaDelimitadores().stream()
+            List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentaria().stream()
                 .filter(exec -> {
-                    return exec.getAnoExercicio().getAno().equals(Integer.toString(ano))
-                        && exec.getFonteOrcamentariaVinculadora().getCodigo().equals(Integer.valueOf(codFonte));
+                    return exec.getAnoExercicio().equals(ano)
+                        && exec.getVinculadaPor().stream().anyMatch(vinculadaPor -> {
+                            return vinculadaPor.getFonteOrcamentaria().getCodigo().equals(codFonte);
+                        });
                 }).toList();
             
             ExecucaoOrcamentaria execucao = null;
             // se não existir, cria outra
             if(execs.isEmpty()){
+                FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(codFonte, nomeFonte);
+                
                 execucao = new ExecucaoOrcamentaria();
                 Ano anoExercicio = anoService.findOrCreate(String.valueOf(ano));
-                FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(Integer.valueOf(codFonte), nomeFonte);
                 
+                
+
                 execucao.setAnoExercicio(anoExercicio);
                 execucao.setFonteOrcamentariaVinculadora(fonte);
 

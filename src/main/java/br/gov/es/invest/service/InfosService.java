@@ -5,14 +5,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -20,26 +16,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import br.gov.es.invest.dto.desserializer.GoogleIconsDeserializer;
-import br.gov.es.invest.model.Ano;
-import br.gov.es.invest.repository.AnoRepository;
-import br.gov.es.invest.repository.CustoRepository;
-import br.gov.es.invest.repository.ExecucaoOrcamentariaRepository;
 
 @Service
 public class InfosService {
     
-
-    @Autowired
-    private AnoRepository anoRepository;
-
-    public List<String> getAllAnos() {
-
-        List<Ano> anos = anoRepository.findAll(Sort.by("ano"));
-
-
-        return anos.stream().map(ano -> ano.getAno()).toList();
-    }
-
+    
     public List<String> getIconesDisponiveis() {
          HttpURLConnection con = null;
         try {

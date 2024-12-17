@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class InvestimentoDTO {
+public class InvestimentoTiraDTO {
 
     private String nome;
     private String codPO;
@@ -24,18 +24,17 @@ public class InvestimentoDTO {
     private Double totalDisponivel;
     
 
-    private List<ObjetoDTO> objetos;
+    private List<ObjetoTiraDTO> objetos;
     
-    public InvestimentoDTO(Investimento investimento){
+    public InvestimentoTiraDTO(Investimento investimento){
         
         this.nome = investimento.getNome();
-        Long codPo = investimento.getPlanoOrcamentarioOrientador().getCodigo();
-        this.codPO = String.format("%06d", codPo);
+        this.codPO = investimento.getPlanoOrcamentarioOrientador().getCodigo();
         UnidadeOrcamentaria unidadeOrcamentaria = investimento.getUnidadeOrcamentariaImplementadora();
         this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
-        this.objetos = investimento.getObjetosCusteadores().stream().map(objeto -> {
-            return new ObjetoDTO(objeto);
+        this.objetos = investimento.getObjetos().stream().map(objeto -> {
+            return new ObjetoTiraDTO(objeto, investimento);
         }).collect(Collectors.toList());
 
         this.totalPrevisto = 0d;
