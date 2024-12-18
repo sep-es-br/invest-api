@@ -92,8 +92,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String sub = tokenService.validarToken(token);
 
-                Usuario user = usuarioService.getUserBySub("c8c5831f-c57e-4a5c-bc91-0f3dc5da4d2b");
-                // Usuario user = usuarioService.getUserBySub(sub);
+                Usuario user = usuarioService.getUserBySub(sub);
                 
                 if(user == null) {
                     MensagemErroRest erro = new MensagemErroRest(

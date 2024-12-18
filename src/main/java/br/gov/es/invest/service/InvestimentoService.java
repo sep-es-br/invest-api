@@ -58,6 +58,12 @@ public class InvestimentoService {
 
     }
 
+    public void addExecucao (String investimentoId, String execId) {
+
+        this.repository.addExecucao(investimentoId, execId);
+
+    }
+
     public Optional<Investimento> getByCodUoPo(String codUo, String codPo) {
 
         PlanoOrcamentario probePlano = new PlanoOrcamentario();
