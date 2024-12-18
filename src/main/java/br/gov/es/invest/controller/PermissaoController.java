@@ -142,12 +142,14 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub("95610081-61e2-4bd0-a372-72a810e62540");
+        Usuario usuario = usuarioService.getUserBySub(sub);
+
+        boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
         
         return Arrays.asList(new ItemMenu(
             "Inventário", 
             "home", 
-            moduloService.checarAcessoUsuario("inventario", usuario.getId()), 
+            isGestorMaster || moduloService.checarAcessoUsuario("inventario", usuario.getId()), 
             "/inventario", 
             Arrays.asList(new ItemMenu(
                 "Investimentos", 
@@ -159,18 +161,18 @@ public class PermissaoController {
         ), new ItemMenu(
             "Minha Carteira", 
             "archive", 
-            moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
+            isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
             "/carteira", 
             Arrays.asList( new ItemMenu(
                 "Investimentos", 
                 null, 
-                moduloService.checarAcessoUsuario("investimentos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("investimentos", usuario.getId()), 
                 "/investimentos", 
                 null
             ), new ItemMenu(
                 "Objetos", 
                 null, 
-                moduloService.checarAcessoUsuario("objetos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("objetos", usuario.getId()), 
                 "/objetos", 
                 null
             )

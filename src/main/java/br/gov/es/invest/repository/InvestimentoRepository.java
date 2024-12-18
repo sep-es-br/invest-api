@@ -60,7 +60,7 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, S
                 "collect(plano), collect(fonte), collect(vincula), \r\n" + //
                 " collect(execucao), collect(em), collect(ano), \r\n" + //
                 " collect(delimita), collect(custeado), collect(objeto), collect(estimado), collect(custo), collect(fonteCusto), collect(indicada), collect(emCusto), collect(anoCusto), collect(controla), collect(unidadePlano) LIMIT 1")
-    public Investimento getBycodUoPo(Long codUo, Long codPo);
+    public Investimento getBycodUoPo(String codUo, String codPo);
 
     
     

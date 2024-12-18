@@ -3,6 +3,7 @@ package br.gov.es.invest.controller;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,8 +45,7 @@ public class ExecucaoOrcamentariaController {
     @GetMapping("/importarPentaho")
     public String importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
-        return "Rotina Desativada Temporariamente";
-
+        return "rotina desativada temporariamente";
         // // se não receber o ano de Referencia, considera o ano corrente
         // if(anoRef == null) {
         //     anoRef = LocalDate.now().getYear();
@@ -70,18 +70,15 @@ public class ExecucaoOrcamentariaController {
         //     double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
 
         //     // retorna o investimento no banco
-        //     Investimento investimento = investimentoService.getByCodUoPo(codUo, codPo);
+        //     Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(codUo, codPo);
 
         //     // se não existir no banco passa pro proximo e nem perde tempo;
-        //     if(investimento == null) continue;
+        //     if(optInvestimento.isEmpty()) continue;
 
-        //     // busca um objeto de execução pré existente no ano e fonte indicada
-        //     List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentaria().stream()
+        //     // busca um objeto de execução pré existente no ano
+        //     List<ExecucaoOrcamentaria> execs = optInvestimento.get().getExecucoesOrcamentaria().stream()
         //         .filter(exec -> {
-        //             return exec.getAnoExercicio().equals(ano)
-        //                 && exec.getVinculadaPor().stream().anyMatch(vinculadaPor -> {
-        //                     return vinculadaPor.getFonteOrcamentaria().getCodigo().equals(codFonte);
-        //                 });
+        //             return exec.getAnoExercicio().equals(ano);
         //         }).toList();
             
         //     ExecucaoOrcamentaria execucao = null;
@@ -91,11 +88,7 @@ public class ExecucaoOrcamentariaController {
                 
         //         execucao = new ExecucaoOrcamentaria();
         //         execucao.setAnoExercicio(ano);              
-                
 
-        //         execucao.setFonteOrcamentariaVinculadora(fonte);
-
-        //         execucao.setContaDelimitada(investimento);
 
         //         // salva no banco
 

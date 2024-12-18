@@ -1,8 +1,10 @@
 package br.gov.es.invest.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -25,17 +27,20 @@ public class FonteOrcamentariaService {
 
     public FonteOrcamentaria findOrCreate(String codigo, String nome) {
 
-        FonteOrcamentaria optFonte = repository.findByCodigo(codigo);
+        FonteOrcamentaria probeFonte = new FonteOrcamentaria();
+        probeFonte.setCodigo(codigo);
+
+        Optional<FonteOrcamentaria> optFonte = repository.findBy(Example.of(probeFonte), query -> query.first());
         
-        if(optFonte != null) {
-            return optFonte;
+        if(optFonte.isPresent()) {
+            return optFonte.get();
         } else {
             FonteOrcamentaria novaFonte = new FonteOrcamentaria();
 
             novaFonte.setCodigo(codigo);
             novaFonte.setNome(nome);
 
-            return novaFonte;
+            return repository.save(novaFonte);
         }
     }
 
