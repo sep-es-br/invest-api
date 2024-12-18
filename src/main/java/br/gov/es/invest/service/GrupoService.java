@@ -36,7 +36,7 @@ public class GrupoService {
 
     public Optional<Grupo> findById(String id){
 
-        return repository.findByIdHidratado(id);
+        return repository.findById(id);
     }
 
     public Grupo save(Grupo grupo){
@@ -55,8 +55,7 @@ public class GrupoService {
 
     public Grupo addMembro(Grupo grupo, Orgao orgao, Setor setor, PapelDto papelDto){
         
-        setor.setOrgao(orgao);
-
+      
         Optional<Usuario> usuarioBanco = usuarioRepository.findBySub(papelDto.agenteSub());
         Usuario membro = new Usuario();
 
@@ -70,11 +69,11 @@ public class GrupoService {
         
         membro.setPapel(papelDto.nome());
         membro.setSetor(setor);
-      
-        grupo.getMembros().add(membro);
-
-        return this.repository.save(grupo);
-        
+        membro = usuarioRepository.save(membro);
+    
+        this.repository.addMembro(membro.getId(), grupo.getId());
+    
+        return this.repository.findById(grupo.getId()).get();
     }
 
     public int quantidadeDeMembros(String grupoId){

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Usuario;
@@ -27,7 +28,14 @@ public class UsuarioService {
     }
 
     public Usuario getUserWithAvatarBySub(String sub){
-        return repository.findWithAvatarBySub(sub).orElse(null);
+        Usuario probe = new Usuario();
+        probe.setSub(sub);
+
+        Example<Usuario> example = Example.of(probe);
+
+        Usuario usuario = this.repository.findBy(example, query -> query.firstValue());
+
+        return usuario;
     }
 
     public Usuario findOrSave(Usuario _usuario) {

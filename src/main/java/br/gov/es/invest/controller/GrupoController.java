@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
+import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.model.Grupo;
@@ -67,6 +68,16 @@ public class GrupoController {
             return service.findAll(nome, PageRequest.of(pagAtual, tamPag)).stream().map(grupo -> new GrupoDTO(grupo)).toList();
 
     }
+    
+
+    @GetMapping("/byUsuario")
+    public List<GrupoDTO> findByUsuario(
+            @RequestParam String usuarioId
+        ) {
+        
+            return service.getGruposDoUsuario(usuarioId).stream().map(grupo -> new GrupoDTO(grupo)).toList();
+
+    }
 
     @PutMapping("/save")
     public GrupoDTO saveGrupo(@RequestBody GrupoDTO grupoDTO) {
@@ -80,10 +91,13 @@ public class GrupoController {
         //TODO: process POST request
         Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
         Orgao orgao = orgaoService.findOrCreate(new Orgao(cadastroFormDto.orgao()));
-        Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()));
+        Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
 
+        for(PapelDto papel : cadastroFormDto.papeis()) {
+            service.addMembro(grupo, orgao, setor, papel);
+        }
 
-        return new GrupoDTO(service.addMembro(grupo, orgao, setor, cadastroFormDto.papel() ));
+        return new GrupoDTO(service.findById(grupo.getId()).get());
     }
     
     @DeleteMapping("/")

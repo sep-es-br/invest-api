@@ -19,6 +19,7 @@ public class GrupoDTO {
 
     
     private Set<UsuarioDto> membros; 
+    private Set<SetorDto> setoresMembros;
 
     private Set<PodeDto> permissoes;
 
