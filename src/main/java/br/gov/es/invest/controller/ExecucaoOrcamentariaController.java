@@ -1,6 +1,7 @@
 package br.gov.es.invest.controller;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,12 +17,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.FonteOrcamentaria;
 import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.VinculadaPor;
 import br.gov.es.invest.service.AnoService;
 import br.gov.es.invest.service.ExecucaoOrcamentariaService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -45,118 +48,150 @@ public class ExecucaoOrcamentariaController {
     @GetMapping("/importarPentaho")
     public String importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
-        return "rotina desativada temporariamente";
-        // // se não receber o ano de Referencia, considera o ano corrente
-        // if(anoRef == null) {
-        //     anoRef = LocalDate.now().getYear();
-        // }
+        // return "rotina desativada temporariamente";
+        // se não receber o ano de Referencia, considera o ano corrente
+        if(anoRef == null) {
+            anoRef = LocalDate.now().getYear();
+        }
 
-        // // Carrega os dados do pentaho
-        // List<Map<String, JsonNode>> dadosPorMes = investimentosBIService.getDadosPorMes(anoRef-1, anoRef);
-        // List<Map<String, JsonNode>> dadosPorAno = investimentosBIService.getDadosPorAno(anoRef, anoRef+1);
+        // Carrega os dados do pentaho
+        List<Map<String, JsonNode>> dadosPorMes = investimentosBIService.getDadosPorMes(anoRef-1, anoRef);
+        List<Map<String, JsonNode>> dadosPorAno = investimentosBIService.getDadosPorAno(anoRef, anoRef+1);
 
-        // // processa os dados
+        // processa os dados
 
-        // // primeiro o mais facil, dados por ano
-        // for(Map<String, JsonNode> dado : dadosPorAno){
-        //     // guarda valores nas variaveis
-        //     String codPo = dado.get("cod_po").asText();
-        //     String codUo = dado.get("cod_uo").asText();
-        //     int ano = dado.get("ano").asInt();
-        //     String codFonte = dado.get("cod_fonte").asText();
-        //     String nomeFonte = dado.get("nome_fonte").asText();
-        //     double orcado = dado.get("orcado").asDouble();
-        //     double autorizado = dado.get("autorizado").asDouble();
-        //     double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
+        // primeiro o mais facil, dados por ano
+        for(Map<String, JsonNode> dado : dadosPorAno){
+            // guarda valores nas variaveis
+            String codPo = dado.get("cod_po").asText();
+            String codUo = dado.get("cod_uo").asText();
+            int ano = dado.get("ano").asInt();
+            String codFonte = dado.get("cod_fonte").asText();
+            String nomeFonte = dado.get("nome_fonte").asText();
+            double orcado = dado.get("orcado").asDouble();
+            double autorizado = dado.get("autorizado").asDouble();
+            double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
 
-        //     // retorna o investimento no banco
-        //     Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(codUo, codPo);
+            // retorna o investimento no banco
+            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(codUo, codPo);
 
-        //     // se não existir no banco passa pro proximo e nem perde tempo;
-        //     if(optInvestimento.isEmpty()) continue;
+            // se não existir no banco passa pro proximo e nem perde tempo;
+            if(optInvestimento.isEmpty()) continue;
 
-        //     // busca um objeto de execução pré existente no ano
-        //     List<ExecucaoOrcamentaria> execs = optInvestimento.get().getExecucoesOrcamentaria().stream()
-        //         .filter(exec -> {
-        //             return exec.getAnoExercicio().equals(ano);
-        //         }).toList();
+            // busca um objeto de execução pré existente no ano
+            Investimento investimento = optInvestimento.get();
+            List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentaria().stream()
+                .filter(exec -> {
+                    return exec.getAnoExercicio().equals(ano);
+                }).toList();
             
-        //     ExecucaoOrcamentaria execucao = null;
-        //     // se não existir, cria outra
-        //     if(execs.isEmpty()){
-        //         FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(codFonte, nomeFonte);
+            ExecucaoOrcamentaria execucao = null;
+            // se não existir, cria outra
+            if(execs.isEmpty()){
                 
-        //         execucao = new ExecucaoOrcamentaria();
-        //         execucao.setAnoExercicio(ano);              
+                execucao = new ExecucaoOrcamentaria();
+                execucao.setAnoExercicio(ano);
 
+                execucao = service.save(execucao);
 
-        //         // salva no banco
+                investimentoService.addExecucao(investimento.getId(), execucao.getId());
 
-        //     } else { // se existir atualiza a existente
-        //         execucao = execs.get(0);
-        //     }
-
-            
-        //     execucao.setOrcamento(orcado);
-        //     execucao.setAutorizado(autorizado);
-        //     execucao.setDispSemReserva(dispSemReserva);
-
-        //     service.save(execucao);
-        // }
-
-        // // agora começa a brincadeira
-        // for(Map<String, JsonNode> dado : dadosPorMes) {
-        //     int ano = dado.get("ano").asInt();
-        //     int liquidado = dado.get("liquidado").asInt();
-        //     int empenhado = dado.get("empenhado").asInt();
-        //     String codFonte = dado.get("cod_fonte").asText();
-        //     int mes = dado.get("mes").asInt();
-        //     String codUo = dado.get("cod_uo").asText();
-        //     String codPo = dado.get("cod_po").asText();
-        //     int pago = dado.get("pago").asInt();
-        //     String nomeFonte = dado.get("nome_fonte").asText();
+            } else { // se existir atualiza a existente
+                execucao = execs.get(0);
+            }
 
             
-        //     // retorna o investimento no banco
-        //     Investimento investimento = investimentoService.getByCodUoPo(codUo, codPo);
+            FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(codFonte, nomeFonte);
 
-        //     // se não existir no banco passa pro proximo e nem perde tempo;
-        //     if(investimento == null) continue;
+            List<VinculadaPor> valoresList = execucao.getVinculadaPor().stream().filter(vinculada -> {
+                return vinculada.getFonteOrcamentaria().getCodigo().equals(fonte.getCodigo());
+            }).toList();
 
-        //     // busca um objeto de execução pré existente no ano e fonte indicada
-        //     List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentariaDelimitadores().stream()
-        //         .filter(exec -> {
-        //             return exec.getAnoExercicio().getAno().equals(Integer.toString(ano))
-        //                 && exec.getFonteOrcamentariaVinculadora().getCodigo().equals(Integer.valueOf(codFonte));
-        //         }).toList();
+            VinculadaPor valores;
+            if(valoresList.isEmpty()) {
+                valores = new VinculadaPor();
+
+                valores.setFonteOrcamentaria(fonte);
+
+                execucao.getVinculadaPor().add(valores);
+            } else {
+                valores = valoresList.get(0);
+            }
             
-        //     ExecucaoOrcamentaria execucao = null;
-        //     // se não existir, cria outra
-        //     if(execs.isEmpty()){
-        //         execucao = new ExecucaoOrcamentaria();
-        //         Ano anoExercicio = anoService.findOrCreate(String.valueOf(ano));
-        //         FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(Integer.valueOf(codFonte), nomeFonte);
+            valores.setOrcado(orcado);
+            valores.setAutorizado(autorizado);
+            valores.setDispSemReserva(autorizado);
 
-        //         execucao.setAnoExercicio(anoExercicio);
-        //         execucao.setFonteOrcamentariaVinculadora(fonte);
+            service.save(execucao);
+        }
 
-        //         execucao.setContaDelimitada(investimento);
+        // agora começa a brincadeira
+        for(Map<String, JsonNode> dado : dadosPorMes) {
+            int ano = dado.get("ano").asInt();
+            int liquidado = dado.get("liquidado").asInt();
+            int empenhado = dado.get("empenhado").asInt();
+            String codFonte = dado.get("cod_fonte").asText();
+            int mes = dado.get("mes").asInt();
+            String codUo = dado.get("cod_uo").asText();
+            String codPo = dado.get("cod_po").asText();
+            int pago = dado.get("pago").asInt();
+            String nomeFonte = dado.get("nome_fonte").asText();
 
-        //         // salva no banco
+            
+            // retorna o investimento no banco
+            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(codUo, codPo);
 
-        //     } else { // se existir atualiza a existente
-        //         execucao = execs.get(0);
-        //     }
+            // se não existir no banco passa pro proximo e nem perde tempo;
+            if(optInvestimento.isEmpty()) continue;
 
-        //     execucao.getLiquidado()[mes-1] = liquidado;
-        //     execucao.getEmpenhado()[mes-1] = empenhado;
-        //     execucao.getPago()[mes-1] = pago;
+            Investimento investimento = optInvestimento.get();
+            List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentaria().stream()
+                .filter(exec -> {
+                    return exec.getAnoExercicio().equals(ano);
+                }).toList();
+            
+            ExecucaoOrcamentaria execucao = null;
+            // se não existir, cria outra
+            if(execs.isEmpty()){
+                
+                execucao = new ExecucaoOrcamentaria();
+                execucao.setAnoExercicio(ano);
 
-        //     service.save(execucao);
+                execucao = service.save(execucao);
 
-        // }
+                investimentoService.addExecucao(investimento.getId(), execucao.getId());
 
-        // return "Sucesso";
+            } else { // se existir atualiza a existente
+                execucao = execs.get(0);
+            }
+
+            
+            FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(codFonte, nomeFonte);
+
+            List<VinculadaPor> valoresList = execucao.getVinculadaPor().stream().filter(vinculada -> {
+                return vinculada.getFonteOrcamentaria().getCodigo().equals(fonte.getCodigo());
+            }).toList();
+
+            VinculadaPor valores;
+            if(valoresList.isEmpty()) {
+                valores = new VinculadaPor();
+
+                valores.setFonteOrcamentaria(fonte);
+
+                execucao.getVinculadaPor().add(valores);
+            } else {
+                valores = valoresList.get(0);
+            }
+
+            valores.getLiquidado().set(mes-1, (double) liquidado);
+            valores.getEmpenhado().set(mes-1, (double) empenhado);            
+            valores.getPago().set(mes-1, (double) pago);
+
+            service.save(execucao);
+
+        }
+
+        return "Sucesso";
 
     }
 }

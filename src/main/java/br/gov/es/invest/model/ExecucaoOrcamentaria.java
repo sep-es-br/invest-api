@@ -1,6 +1,7 @@
 package br.gov.es.invest.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.neo4j.core.schema.Node;
@@ -20,6 +21,6 @@ public class ExecucaoOrcamentaria extends Entidade implements Serializable {
     private Integer anoExercicio;
 
     @Relationship(type = "VINCULADA_POR", direction = Direction.OUTGOING)
-    private Set<VinculadaPor> vinculadaPor;
+    private HashSet<VinculadaPor> vinculadaPor;
 
 }

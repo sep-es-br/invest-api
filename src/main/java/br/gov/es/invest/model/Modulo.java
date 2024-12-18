@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 public class Modulo extends Entidade {
     
     private String nome;
+    private String path;
     private String pathId;
 
     @Relationship(type = "FILHO_DE", direction = Direction.INCOMING)

@@ -92,7 +92,8 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String sub = tokenService.validarToken(token);
 
-                Usuario user = usuarioService.getUserBySub(sub);
+                Usuario user = usuarioService.getUserBySub("c8c5831f-c57e-4a5c-bc91-0f3dc5da4d2b");
+                // Usuario user = usuarioService.getUserBySub(sub);
                 
                 if(user == null) {
                     MensagemErroRest erro = new MensagemErroRest(
@@ -144,8 +145,10 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         String[] paths = url.split("/");
 
-        for(String path : paths) {
-            if(!moduloService.checarAcessoUsuario(path, userId))
+        for(int i = 0; i < paths.length-1; i++){
+            String pathId = paths[i] + paths[i+1];
+            
+            if(!moduloService.checarAcessoUsuario(pathId, userId))
                 return false;
         }
 

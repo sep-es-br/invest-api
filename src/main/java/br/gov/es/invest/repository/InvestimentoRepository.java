@@ -62,6 +62,16 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, S
                 " collect(delimita), collect(custeado), collect(objeto), collect(estimado), collect(custo), collect(fonteCusto), collect(indicada), collect(emCusto), collect(anoCusto), collect(controla), collect(unidadePlano) LIMIT 1")
     public Investimento getBycodUoPo(String codUo, String codPo);
 
+    @Query("MATCH (investimento:Investimento)\r\n" + //
+                "WHERE elementId(investimento) = $investimentoId\r\n" + //
+                "WITH investimento\r\n" + //
+                "MATCH (exec:ExecucaoOrcamentaria)\r\n" + //
+                "WHERE elementId(exec) = $execId\r\n" + //
+                "WITH investimento, exec\r\n" + //
+                "CREATE (investimento)<-[:DELIMITA]-(exec)")
+    public void addExecucao(String investimentoId, String execId);
+
+
     
     
 } 
