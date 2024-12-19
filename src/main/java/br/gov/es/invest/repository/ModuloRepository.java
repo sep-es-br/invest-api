@@ -9,7 +9,9 @@ import br.gov.es.invest.model.Modulo;
 
 public interface ModuloRepository extends Neo4jRepository<Modulo, String> {
     
-    @Query("MATCH (m:Modulo)<-[r:FILHO_DE*]-(n:Modulo) RETURN m, collect(r), collect(n)")
+    @Query("MATCH (m:Modulo)<-[r:FILHO_DE*]-(n:Modulo) \r\n" + //
+                "WHERE NOT EXISTS((m)-[:FILHO_DE]->(:Modulo))\r\n" + //
+                "RETURN m, collect(r), collect(n)")
     public List<Modulo> findAll();
 
     @Query("MATCH (modulo:Modulo)\r\n" + //
