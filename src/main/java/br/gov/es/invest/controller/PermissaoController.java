@@ -146,6 +146,8 @@ public class PermissaoController {
 
         boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
         
+        // boolean isGestorMaster = false;
+
         return Arrays.asList(new ItemMenu(
             "Inventário", 
             "home", 
@@ -154,7 +156,7 @@ public class PermissaoController {
             Arrays.asList(new ItemMenu(
                 "Investimentos", 
                 null, 
-                true, 
+                isGestorMaster || moduloService.checarAcessoUsuario("inventarioinvestimentos", usuario.getId()), 
                 "/investimentos", 
                 null
             ))
@@ -166,13 +168,13 @@ public class PermissaoController {
             Arrays.asList( new ItemMenu(
                 "Investimentos", 
                 null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("investimentos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
                 "/investimentos", 
                 null
             ), new ItemMenu(
                 "Objetos", 
                 null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("objetos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", usuario.getId()), 
                 "/objetos", 
                 null
             )
