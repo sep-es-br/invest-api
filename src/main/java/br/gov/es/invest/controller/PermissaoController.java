@@ -145,14 +145,16 @@ public class PermissaoController {
 
         List<Grupo> gruposDoUsuario = grupoService.getGruposDoUsuario(usuario.getId());
 
-        for(Grupo grupo : gruposDoUsuario) {
-            if(grupo.isPodeVerTodasUnidades()){
-                return true;
-            }
-        }
+        return testarFuncao(usuario.getRole(), "GESTOR_MASTER");
+
+        // for(Grupo grupo : gruposDoUsuario) {
+        //     if(grupo.isPodeVerTodasUnidades()){
+        //         return true;
+        //     }
+        // }
         
         
-        return false;
+        // return false;
     }
     
 
