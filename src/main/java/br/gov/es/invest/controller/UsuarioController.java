@@ -38,7 +38,7 @@ public class UsuarioController {
         
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
                 
-        Optional<Usuario> optUsuario = service.getUserWithAvatarBySub(sub);
+        Optional<Usuario> optUsuario = service.getUserBySub(sub);
 
         return (optUsuario.isEmpty() || optUsuario.get().getImgPerfil() == null)  ? null : new AvatarDTO(optUsuario.get().getImgPerfil());
     }
@@ -50,7 +50,9 @@ public class UsuarioController {
         
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
 
-        return new UsuarioDto(service.getUserBySub(sub));
+        Optional<Usuario> optUsuario = service.getUserBySub(sub);
+
+        return optUsuario.isPresent() ? new UsuarioDto(optUsuario.get()) : null;
     }
 
     @GetMapping("/byGrupo")
@@ -65,7 +67,7 @@ public class UsuarioController {
         
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
 
-        Optional<Usuario> optUsuario = service.getUserWithAvatarBySub(sub);
+        Optional<Usuario> optUsuario = service.getUserBySub(sub);
 
         return optUsuario.isPresent() ? new UsuarioDto(optUsuario.get()) : null;
     }

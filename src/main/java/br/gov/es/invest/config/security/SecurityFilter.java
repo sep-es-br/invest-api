@@ -92,7 +92,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String sub = tokenService.validarToken(token);
 
-                Usuario user = usuarioService.getUserBySub(sub);
+                Usuario user = usuarioService.getUserBySub(sub).orElse(null);
                 
                 if(user == null) {
                     MensagemErroRest erro = new MensagemErroRest(

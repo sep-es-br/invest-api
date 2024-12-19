@@ -23,18 +23,17 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
-    public Usuario getUserBySub(String sub){
-        return repository.findBySub(sub).orElse(null);
-    }
+    public Optional<Usuario> getUserBySub(String sub){
 
-    public Optional<Usuario> getUserWithAvatarBySub(String sub){
         Usuario probe = new Usuario();
         probe.setSub(sub);
 
         Example<Usuario> example = Example.of(probe);
 
         return this.repository.findBy(example, query -> query.first());
+
     }
+
 
     public Usuario findOrSave(Usuario _usuario) {
         Optional<Usuario> usuarioOpt = repository.findBySub(_usuario.getSub());
@@ -48,7 +47,7 @@ public class UsuarioService {
     }
 
     public Usuario findOrSaveWithAvatar(Usuario _usuario) {
-        Optional<Usuario> usuarioOpt = this.getUserWithAvatarBySub(_usuario.getSub());
+        Optional<Usuario> usuarioOpt = this.getUserBySub(_usuario.getSub());
 
         if(usuarioOpt.isPresent()){
             return usuarioOpt.get();

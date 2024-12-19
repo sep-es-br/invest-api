@@ -81,7 +81,9 @@ public class GrupoService {
     }
 
     public Grupo removerMembro(String grupoId, String membroId){
-        return this.repository.removerMembro(grupoId, membroId);
+        this.repository.removerMembro(grupoId, membroId);
+        
+        return this.repository.findById(grupoId).orElse(null);
     }
 
     public List<Grupo> getGruposDoUsuario(String usuarioId) {

@@ -76,7 +76,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
                 
-        Usuario usuario = usuarioService.getUserBySub(sub);
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
 
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) 
             return true;
@@ -103,7 +103,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub);
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) {
             return new PodeDto(
                 null, 
@@ -142,7 +142,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub);
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
 
         boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
         

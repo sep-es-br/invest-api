@@ -36,11 +36,13 @@ public class AutenticacaoService {
         String token = tokenService.gerarToken(userInfo);
 
         
-        Usuario usuario = usuarioService.getUserBySub(userInfo.subNovo());
+        Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());
         
-        if(usuario == null){
+        if(optUsuario.isEmpty()){
             throw new UsuarioInexistenteException();
         }
+
+        Usuario usuario = optUsuario.get();
 
         if (usuario.getName() == null)
             usuario.setName(userInfo.apelido().split(" ")[0]);
