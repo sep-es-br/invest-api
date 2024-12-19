@@ -1,6 +1,7 @@
 package br.gov.es.invest.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -37,9 +38,9 @@ public class UsuarioController {
         
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
                 
-        Usuario usuario = service.getUserWithAvatarBySub(sub);
+        Optional<Usuario> optUsuario = service.getUserWithAvatarBySub(sub);
 
-        return (usuario == null || usuario.getImgPerfil() == null)  ? null : new AvatarDTO(usuario.getImgPerfil());
+        return (optUsuario.isEmpty() || optUsuario.get().getImgPerfil() == null)  ? null : new AvatarDTO(optUsuario.get().getImgPerfil());
     }
 
     @GetMapping("")
@@ -64,8 +65,9 @@ public class UsuarioController {
         
         sub = sub == null ? tokenService.validarToken(authToken) : sub;
 
+        Optional<Usuario> optUsuario = service.getUserWithAvatarBySub(sub);
 
-        return new UsuarioDto(service.getUserWithAvatarBySub(sub));
+        return optUsuario.isPresent() ? new UsuarioDto(optUsuario.get()) : null;
     }
     
 

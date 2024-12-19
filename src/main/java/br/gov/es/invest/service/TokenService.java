@@ -7,6 +7,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import br.gov.es.invest.dto.ACUserInfoDto;
 import br.gov.es.invest.exception.service.InfoplanServiceException;
+import br.gov.es.invest.model.Usuario;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,22 @@ public class TokenService {
                     .withClaim("name", userInfo.apelido())
                     .withClaim("email", userInfo.email())
                     .withClaim("roles", new ArrayList<>(userInfo.role()) )
+                    .withExpiresAt(getDataExpiracao())
+                    .sign(algoritmo);
+        } catch (JWTCreationException exception) {
+            throw new InfoplanServiceException(List.of("Erro ao gerar o token", exception.getMessage()));
+        }
+    }
+
+    
+    public String gerarTokenByUsuario(Usuario user) {
+        try {
+            Algorithm algoritmo = Algorithm.HMAC256(secret);
+            return JWT.create()
+                    .withIssuer(ISSUER)
+                    .withSubject(user.getSub())
+                    .withClaim("name", user.getName())
+                    .withClaim("roles", new ArrayList<>(user.getRole()) )
                     .withExpiresAt(getDataExpiracao())
                     .sign(algoritmo);
         } catch (JWTCreationException exception) {

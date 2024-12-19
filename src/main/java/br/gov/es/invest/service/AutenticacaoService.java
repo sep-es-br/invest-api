@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.dto.ACUserInfoDto;
 import br.gov.es.invest.dto.UsuarioDto;
+import br.gov.es.invest.exception.UsuarioInexistenteException;
 import br.gov.es.invest.exception.UsuarioSemPermissaoException;
 import br.gov.es.invest.exception.service.InfoplanServiceException;
 import br.gov.es.invest.model.Usuario;
@@ -18,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,21 +31,27 @@ public class AutenticacaoService {
 
     public UsuarioDto autenticar(String accessToken) {
         logger.info("Autenticar usuário SPO.");
+
         ACUserInfoDto userInfo = getUserInfo(accessToken);
         String token = tokenService.gerarToken(userInfo);
 
-        Usuario user = new Usuario();
-        user.setSub(userInfo.subNovo());
         
-        user.setName(userInfo.apelido().split(" ")[0]);
-        user.setNomeCompleto(userInfo.apelido());
-        user.setEmail(getEmailUserInfo(userInfo));
-        user.setRole(userInfo.role());
+        Usuario usuario = usuarioService.getUserBySub(userInfo.subNovo());
+        
+        if(usuario == null){
+            throw new UsuarioInexistenteException();
+        }
 
-        user = usuarioService.findOrSaveWithAvatar(user);
-        user = usuarioService.setNewACToken(user.getSub(), accessToken).get();
+        if (usuario.getName() == null)
+            usuario.setName(userInfo.apelido().split(" ")[0]);
+
+        usuario.setNomeCompleto(userInfo.apelido());
+        usuario.setEmail(getEmailUserInfo(userInfo));
+        usuario.setRole(userInfo.role());
+                
+        usuario = usuarioService.save(usuario);
         
-        UsuarioDto dto = new UsuarioDto(user);
+        UsuarioDto dto = new UsuarioDto(usuario);
         dto.setToken(token);
 
         return dto;
