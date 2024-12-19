@@ -135,6 +135,27 @@ public class PermissaoController {
         
     }
 
+    @GetMapping("/podeVerUnidades")
+    public boolean userPodeVerUnidades(@RequestHeader("Authorization") String authToken) {
+        authToken = authToken.replace("Bearer ", "");
+        
+        String sub = tokenService.validarToken(authToken);
+        
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+
+        List<Grupo> gruposDoUsuario = grupoService.getGruposDoUsuario(usuario.getId());
+
+        for(Grupo grupo : gruposDoUsuario) {
+            if(grupo.isPodeVerTodasUnidades()){
+                return true;
+            }
+        }
+        
+        
+        return false;
+    }
+    
+
     @GetMapping("/buildMenu")
     public List<ItemMenu> buildMenu(@RequestHeader("Authorization") String authToken){
     

@@ -16,6 +16,7 @@ public class GrupoDTO {
     private String sigla;
     private String nome;
     private String descricao;
+    private Boolean podeVerTodasUnidades;
 
     
     private Set<UsuarioDto> membros; 
@@ -30,6 +31,7 @@ public class GrupoDTO {
         this.sigla = grupo.getSigla();
         this.nome = grupo.getNome();
         this.descricao = grupo.getDescricao();
+        this.podeVerTodasUnidades = grupo.isPodeVerTodasUnidades();
         
         if(grupo.getMembros() != null)
             this.membros = grupo.getMembros().stream().map(usuario -> new UsuarioDto(usuario)).collect(Collectors.toSet());

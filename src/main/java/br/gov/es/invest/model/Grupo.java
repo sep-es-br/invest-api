@@ -23,6 +23,7 @@ public class Grupo extends Entidade {
     private String icone;
     private String nome;
     private String descricao;
+    private boolean podeVerTodasUnidades;
 
     @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
     private HashSet<Usuario> membros = new HashSet<>(); 
@@ -36,6 +37,7 @@ public class Grupo extends Entidade {
         this.icone = dto.getIcone();
         this.nome = dto.getNome();
         this.descricao = dto.getDescricao();
+        this.podeVerTodasUnidades = dto.getPodeVerTodasUnidades();
 
         if(dto.getMembros() != null)
             this.membros.addAll(dto.getMembros().stream().map(membroDto -> new Usuario(membroDto)).collect(Collectors.toSet()));
