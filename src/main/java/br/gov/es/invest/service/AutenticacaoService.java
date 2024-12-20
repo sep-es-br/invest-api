@@ -38,11 +38,15 @@ public class AutenticacaoService {
         
         Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());
         
+        Usuario usuario;
+
         if(!userInfo.role().contains("GESTOR_MASTER") && optUsuario.isEmpty()){
             throw new UsuarioInexistenteException();
+        } else if(optUsuario.isEmpty()) {
+            usuario = new Usuario(userInfo);
+        } else {
+            usuario = optUsuario.get();
         }
-
-        Usuario usuario = optUsuario.get();
 
         if (usuario.getName() == null)
             usuario.setName(userInfo.apelido().split(" ")[0]);

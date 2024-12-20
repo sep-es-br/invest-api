@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import br.gov.es.invest.dto.ACUserInfoDto;
 import br.gov.es.invest.dto.UsuarioDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,6 +49,12 @@ public class Usuario extends Entidade {
         this.role = (dto.getRole() == null ) ? null : new HashSet<>(dto.getRole().stream().map(funcao -> new Funcao(funcao)).toList());
 
         this.setor = dto.getSetor() == null ? null : new Setor(dto.getSetor());
+    }
+
+    public Usuario(ACUserInfoDto acUser) {
+        this.nomeCompleto = acUser.apelido();
+        this.sub = acUser.subNovo();
+        this.email = acUser.emailCorporativo() == null ? acUser.email() : acUser.emailCorporativo();
     }
 
     public void setRole(Set<String> roles) {
