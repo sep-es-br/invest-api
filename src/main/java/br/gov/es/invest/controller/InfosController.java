@@ -78,11 +78,13 @@ public class InfosController {
 
     @GetMapping("/cardsTotais")
     public CardsTotaisDto getCardsTotais(
+        @RequestParam(required=false) String nome,
         @RequestParam(required=false) String idUo, @RequestParam(required=false) String idFonte,
         @RequestParam(required=false) String idPo, @RequestParam Integer ano
         ) {
 
             ValoresCusto totaisCusto = custoService.getValoresTotais(
+                    nome,
                     idFonte,
                     ano,
                     idUo, 

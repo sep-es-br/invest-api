@@ -36,33 +36,33 @@ public class InvestimentoController {
 
     private final Logger logger = Logger.getLogger("InvestimentoController");
 
-    @GetMapping("/all")
-    public ResponseEntity<List<InvestimentoTiraDTO>> getAllByFilter(
-            @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
-        ) {
-            try {
-                List<InvestimentoTiraDTO> investimentosDTO = service.findAllByFilter(
-                        nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
-                    ).stream()
-                    .map(inv -> new InvestimentoTiraDTO(inv)).toList();
+    // @GetMapping("/all")
+    // public ResponseEntity<List<InvestimentoTiraDTO>> getAllByFilter(
+    //         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
+    //         @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
+    //     ) {
+    //         try {
+    //             List<InvestimentoTiraDTO> investimentosDTO = service.findAllByFilter(
+    //                     nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
+    //                 ).stream()
+    //                 .map(inv -> new InvestimentoTiraDTO(inv)).toList();
 
-                return ResponseEntity.ok(investimentosDTO);
-            } catch (Exception e){
-                logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-                return ResponseEntity.internalServerError().build();
-            }
+    //             return ResponseEntity.ok(investimentosDTO);
+    //         } catch (Exception e){
+    //             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+    //             return ResponseEntity.internalServerError().build();
+    //         }
         
-    }
+    // }
     
-    @GetMapping("/allTira")
+    @GetMapping("/filtrarValores")
     public ResponseEntity<List<InvestimentoTiraDTO>> getAllTiraByFilter(
             @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
             @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
         ) {
             try {
 
-                List<Investimento> investimentos = service.findAllByFilter(
+                List<Investimento> investimentos = service.findAllByFilterValores(
                     nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
                 );
 
@@ -77,12 +77,12 @@ public class InvestimentoController {
         
     }
 
-    @GetMapping("/count")
+    @GetMapping("/countValores")
     public ResponseEntity<Integer> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam String exercicio, @RequestParam(required = false) String idFonte
+        @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte
     ) {
-        return ResponseEntity.ok(service.ammountByFilter(nome, codUnidade, codPO, exercicio, idFonte));
+        return ResponseEntity.ok(service.ammountByFilterValores(nome, codUnidade, codPO, exercicio, idFonte));
     }
     
     

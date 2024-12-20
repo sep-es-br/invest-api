@@ -19,12 +19,12 @@ public class VinculadaPor extends Entidade {
     @TargetNode
     private FonteOrcamentaria fonteOrcamentaria;
 
-    private Double autorizado;
-    private Double dispSemReserva;
+    private double autorizado;
+    private double dispSemReserva;
     private double[] empenhado = new double[12];
     private double[] liquidado = new double[12];
     private double[] pago = new double[12];
-    private Double orcado;
+    private double orcado;
 
 
 

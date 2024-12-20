@@ -7,6 +7,7 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.dto.IValoresCusto;
+import br.gov.es.invest.dto.projection.IValoresIndicadaPor;
 import br.gov.es.invest.model.Custo;
 
 public interface CustoRepository extends Neo4jRepository<Custo, String> {

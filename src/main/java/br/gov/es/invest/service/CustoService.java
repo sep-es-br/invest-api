@@ -1,5 +1,6 @@
 package br.gov.es.invest.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.dto.projection.IValoresIndicadaPor;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
+import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.repository.CustoRepository;
 
 @Service
@@ -17,6 +20,8 @@ public class CustoService {
     
     @Autowired
     private CustoRepository repository;
+
+    private InvestimentoService investimentoService;
 
 
     public void saveAll(List<Custo> custos) {
@@ -27,8 +32,19 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public ValoresCusto getValoresTotais(String idFonte, Integer exercicio, String idUnidade, String idPlano){
-        List<Custo> valores = repository.getTotais(idFonte, exercicio, idUnidade, idPlano);
+    public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, String idUnidade, String idPlano){
+        
+        List<Investimento> investimentosPorFiltro = investimentoService.findAllByFilterValores(nome, idUnidade, idPlano, exercicio, idFonte, null);
+
+        
+
+        ArrayList<Custo> valores = new ArrayList<>();
+        
+        for(Investimento investimento : investimentosPorFiltro){
+            for(Objeto objeto : investimento.getObjetos()) {
+                valores.addAll(objeto.getCustosEstimadores());
+            }
+        }
 
         Double totalPrevisto = 0d;
         Double totalContratado = 0d;
@@ -44,6 +60,13 @@ public class CustoService {
 
         return new ValoresCusto(totalPrevisto, totalContratado);
     }
+
+    @Autowired
+    public void setInvestimentoService(InvestimentoService investimentoService) {
+        this.investimentoService = investimentoService;
+    }
+
+    
 
 
 }

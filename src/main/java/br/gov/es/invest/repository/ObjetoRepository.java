@@ -12,15 +12,16 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
     
 
     @Query("MATCH (execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonte:FonteOrcamentaria),\r\n" + //
-                "     (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-                "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
-                "    AND ($execicio IS NULL OR execucao.anoExercicio = $execicio OR custo.anoExercicio = $execicio)\r\n" + //
-                "    AND ($unidadeId IS NULL OR elementId(unidade) = $unidadeId)\r\n" + //
-                "    AND ($planoId IS NULL OR elementId(plano) = $planoId)\r\n" + //
-                "RETURN obj, collect(re), collect(rd), collect(execucao), collect(custo), \r\n" + //
-                "    collect(ri), collect(unidade), collect(rc), collect(conta), collect(indicada), collect(fonte),\r\n" + //
-                "    collect(orienta), collect (plano)" + //
-                "SKIP $skip LIMIT $limit")
+                        "     (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                        "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                        "    AND ($execicio IS NULL OR execucao.anoExercicio = $execicio OR custo.anoExercicio = $execicio)\r\n" + //
+                        "    AND ($unidadeId IS NULL OR elementId(unidade) = $unidadeId)\r\n" + //
+                        "    AND ($planoId IS NULL OR elementId(plano) = $planoId)\r\n" + //
+                        "ORDER BY unidade.codigo, plano.codigo\r\n" + //
+                        "RETURN obj, collect(re), collect(rd), collect(execucao), collect(custo), \r\n" + //
+                        "    collect(ri), collect(unidade), collect(rc), collect(conta), collect(indicada), collect(fonte),\r\n" + //
+                        "    collect(orienta), collect (plano)\r\n" + //
+                        "SKIP $skip LIMIT $limit")
     public List<Objeto> getAllByFilter(Integer execicio, String nome, String unidadeId, String planoId, String status, Pageable pageable); 
 
 

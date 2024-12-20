@@ -62,6 +62,14 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, S
                 " collect(delimita), collect(custeado), collect(objeto), collect(estimado), collect(custo), collect(fonteCusto), collect(indicada), collect(emCusto), collect(anoCusto), collect(controla), collect(unidadePlano) LIMIT 1")
     public Investimento getBycodUoPo(String codUo, String codPo);
 
+    @Query("MATCH (plano:PlanoOrcamentario)-[:ORIENTA]->(conta:Investimento)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
+                "WHERE ($planoId IS NULL OR elementId(plano) = $planoId)\r\n" + //
+                "    AND ($unidadeId IS NULL OR elementId(unidade) = $unidadeId)\r\n" + //
+                "RETURN conta\r\n" + //
+                "ORDER BY unidade.codigo, plano.codigo\r\n" + //
+                "SKIP $skip LIMIT $limit")
+    public List<Investimento> findByUoPo(String unidadeId, String planoId, Pageable pageable);
+
     @Query("MATCH (investimento:Investimento)\r\n" + //
                 "WHERE elementId(investimento) = $investimentoId\r\n" + //
                 "WITH investimento\r\n" + //
