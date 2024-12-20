@@ -15,14 +15,15 @@ public interface CustoRepository extends Neo4jRepository<Custo, String> {
     public List<Custo> findByExercicio(String exercicio);
 
     @Query("MATCH\r\n" + //
-            "    (fonte:FonteOrcamentaria)<-[indicadaPor:INDICADA_POR]-(custo:Custo)-[:ESTIMADO]->(p:Objeto)-[:CUSTEADO]->(conta:Conta)\r\n" + //
-            "WHERE ( $idFonte IS NULL OR elementId(fonte) = $idFonte )\r\n" + //
-            "    AND custo.anoExercicio = $exercicio\r\n" + //
-            "OPTIONAL MATCH (conta)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
-            "WHERE ( $idUnidade IS NULL OR elementId(unidade) = $idUnidade )\r\n" + //
-            "OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-            "WHERE ( $idPlano IS NULL OR elementId(plano) = $idPlano )\r\n" + //
-            "RETURN custo, collect(indicadaPor), collect(fonte)")
+                "    (fonte:FonteOrcamentaria)<-[indicadaPor:INDICADA_POR]-(custo:Custo)-[:ESTIMADO]->(p:Objeto)-[:CUSTEADO]->(conta:Conta)\r\n" + //
+                "OPTIONAL MATCH (conta)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
+                "OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                "WITH custo, fonte, unidade, plano, indicadaPor\r\n" + //
+                "WHERE ( $idFonte IS NULL OR elementId(fonte) = $idFonte )\r\n" + //
+                "    AND custo.anoExercicio = $exercicio\r\n" + //
+                "    AND ( $idUnidade IS NULL OR elementId(unidade) = $idUnidade )\r\n" + //
+                "    AND ( $idPlano IS NULL OR elementId(plano) = $idPlano )" + //
+                "RETURN custo, collect(indicadaPor), collect(fonte)")
     public List<Custo> getTotais(String idFonte, Integer exercicio, String idUnidade, String idPlano);
 
     @Query("MATCH (custo:Custo)\r\n" + //
