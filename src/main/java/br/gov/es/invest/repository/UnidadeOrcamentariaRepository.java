@@ -12,7 +12,7 @@ import br.gov.es.invest.model.UnidadeOrcamentaria;
 public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOrcamentaria, String> {
     
 
-    @Query("MATCH (unidade:UnidadeOrcamentaria) RETURN unidade ORDER BY unidade.sigla")
+    @Query("MATCH (unidade:UnidadeOrcamentaria) RETURN unidade ORDER BY unidade.codigo")
     public List<UnidadeOrcamentariaDTOProjection> findAllUnidades();
 
     @Query("MATCH (unidade:UnidadeOrcamentaria) WHERE unidade.guid = $guid RETURN unidade")
