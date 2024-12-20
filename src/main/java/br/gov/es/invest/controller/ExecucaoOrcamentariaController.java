@@ -48,11 +48,13 @@ public class ExecucaoOrcamentariaController {
     @GetMapping("/importarPentaho")
     public String importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
+
         // return "rotina desativada temporariamente";
         // se não receber o ano de Referencia, considera o ano corrente
         if(anoRef == null) {
             anoRef = LocalDate.now().getYear();
         }
+
 
         // Carrega os dados do pentaho
         List<Map<String, JsonNode>> dadosPorMes = investimentosBIService.getDadosPorMes(anoRef-1, anoRef);
@@ -120,7 +122,7 @@ public class ExecucaoOrcamentariaController {
             
             valores.setOrcado(orcado);
             valores.setAutorizado(autorizado);
-            valores.setDispSemReserva(autorizado);
+            valores.setDispSemReserva(dispSemReserva);
 
             service.save(execucao);
         }
@@ -183,9 +185,20 @@ public class ExecucaoOrcamentariaController {
                 valores = valoresList.get(0);
             }
 
-            valores.getLiquidado().set(mes-1, (double) liquidado);
-            valores.getEmpenhado().set(mes-1, (double) empenhado);            
-            valores.getPago().set(mes-1, (double) pago);
+            // garantir que os campos tem os 12 espaços
+
+            if(valores.getLiquidado().length == 0)
+                valores.setLiquidado(new double[12]);
+
+            if(valores.getEmpenhado().length == 0)
+                valores.setEmpenhado(new double[12]);
+            
+            if(valores.getPago().length == 0)
+                valores.setPago(new double[12]);
+            
+            valores.getLiquidado()[mes-1] = (double) liquidado;
+            valores.getEmpenhado()[mes-1] = (double) empenhado;            
+            valores.getPago()[mes-1] = (double) pago;
 
             service.save(execucao);
 

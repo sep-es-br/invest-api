@@ -21,6 +21,6 @@ public class ExecucaoOrcamentaria extends Entidade implements Serializable {
     private Integer anoExercicio;
 
     @Relationship(type = "VINCULADA_POR", direction = Direction.OUTGOING)
-    private HashSet<VinculadaPor> vinculadaPor;
+    private HashSet<VinculadaPor> vinculadaPor = new HashSet<>();
 
 }

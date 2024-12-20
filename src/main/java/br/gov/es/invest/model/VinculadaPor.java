@@ -21,9 +21,9 @@ public class VinculadaPor extends Entidade {
 
     private Double autorizado;
     private Double dispSemReserva;
-    private ArrayList<Double> empenhado = new ArrayList<>(12);
-    private ArrayList<Double> liquidado = new ArrayList<>(12);
-    private ArrayList<Double> pago = new ArrayList<>(12);
+    private double[] empenhado = new double[12];
+    private double[] liquidado = new double[12];
+    private double[] pago = new double[12];
     private Double orcado;
 
 
