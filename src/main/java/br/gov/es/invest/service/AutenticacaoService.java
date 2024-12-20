@@ -38,7 +38,7 @@ public class AutenticacaoService {
         
         Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());
         
-        if(optUsuario.isEmpty()){
+        if(!userInfo.role().contains("GESTOR_MASTER") && optUsuario.isEmpty()){
             throw new UsuarioInexistenteException();
         }
 
