@@ -26,7 +26,10 @@ public class CustoDTO implements Serializable {
         this.anoExercicio = custo.getAnoExercicio();
         
 
-        this.indicadaPor = custo.getIndicadaPor().stream().map(indicadaPor -> new IndicadaPorDto(indicadaPor)).collect(Collectors.toSet());
+        this.indicadaPor = custo.getIndicadaPor().stream()
+                    .map(indicadaPor -> new IndicadaPorDto(indicadaPor))
+                    .sorted((ip1, ip2) -> ip1.fonteOrcamentaria().getCodigo().compareTo(ip2.fonteOrcamentaria().getCodigo()))
+                    .collect(Collectors.toSet());
 
     }
 

@@ -31,6 +31,7 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
     public UnidadeOrcamentaria(UnidadeOrcamentariaDTO dto) {
         this.setId(dto.id());
         this.guid = dto.guid();
+        this.codigo = dto.codigo();
         this.nome = dto.nome();
         this.sigla = dto.sigla();
     }

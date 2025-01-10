@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ObjetoTiraDTO {
     
+    private String id;
     private String unidadeResponsavel;
     private String codPlano;
     private String nome;
@@ -25,12 +26,13 @@ public class ObjetoTiraDTO {
 
     public ObjetoTiraDTO(Objeto objeto, Conta conta) {
 
+        this.id = objeto.getId();
         this.nome = objeto.getNome();
         this.tipo = objeto.getTipo();
 
         UnidadeOrcamentaria unidadeOrcamentaria = conta.getUnidadeOrcamentariaImplementadora();
         this.unidadeResponsavel = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
-        this.codPlano = conta.getPlanoOrcamentarioOrientador().getCodigo();
+        this.codPlano = conta.getPlanoOrcamentarioOrientador() == null ? "Sem P.O." : conta.getPlanoOrcamentarioOrientador().getCodigo();
 
         this.totalPrevisto = 0d;
         this.totalHomologado = 0d;

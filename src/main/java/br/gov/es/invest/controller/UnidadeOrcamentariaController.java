@@ -16,6 +16,7 @@ import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.TokenService;
+import br.gov.es.invest.service.UnidadeOrcamentariaBIService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,11 @@ public class UnidadeOrcamentariaController {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
 
+
     // private final Logger logger = Logger.getLogger("PlanoOrcamentarioController");
 
     private final UnidadeOrcamentariaService service;
+    private final UnidadeOrcamentariaBIService biService;
 
     @GetMapping("/all")
     public ResponseEntity<List<UnidadeOrcamentariaDTO>> getAllByFiltro() {
@@ -47,6 +50,18 @@ public class UnidadeOrcamentariaController {
         }
 
         return ResponseEntity.ok(unidadesDTO);
+        
+
+    }
+
+    @GetMapping("/doSigefes")
+    public ResponseEntity<List<UnidadeOrcamentariaDTO>> getAllDoSigefes() {
+
+        List<UnidadeOrcamentaria> unidades = biService.getTodasUnidades();
+        
+        return ResponseEntity.ok(unidades.stream().map(
+            unidade -> new UnidadeOrcamentariaDTO(unidade)
+        ).sorted((unidade1, unidade2) -> unidade1.codigo().compareTo(unidade2.codigo())).toList());
         
 
     }

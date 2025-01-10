@@ -42,28 +42,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final ModuloService moduloService;
-    
-    @Value("${papel.geral}")
-    private String papelGeral;
-    
-    @Value("${papel.capitacao}")
-    private String papelCapitacao;
-    
-    @Value("${papel.indicadores}")
-    private String papelIndicadores;
-    
-    @Value("${papel.indicadoresAdmin}")
-    private String papelIndicadoresAdmin;
-    
-    @Value("${papel.sigefes}")
-    private String papelSigefes;
-    
-    @Value("${papel.projEstrategico}")
-    private String papelProjEstrategico;
-    
-    @Value("${papel.gestaoFiscal}")
-    private String papelGestaoFiscal;
-    
+       
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -77,6 +56,9 @@ public class SecurityFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // enviarMensagemTokenInvalido(Arrays.asList(), response, HttpStatus.UNAUTHORIZED);
+        // return;
 
         String token = recuperarToken(request);
         if(token == null) {
