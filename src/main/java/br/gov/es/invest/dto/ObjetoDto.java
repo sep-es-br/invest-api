@@ -12,38 +12,33 @@ public record ObjetoDto(
     String tipo,
     String nome,
     String descricao,
-    UnidadeOrcamentariaDTO unidade,
-    PlanoOrcamentarioDTO planoOrcamentario,
     LocalidadeDto microregiaoAtendida,
     String infoComplementares,
-    Boolean objContratado,
-    Boolean audienciaPublica,
-    Boolean estrategica,
-    Boolean cti,
-    Boolean climatica,
-    Boolean pip,
-    List<CustoDTO> recursosFinanceiros
+    List<TipoPlanoDto> planos,
+    String contrato,
+    AreaTematicaDto areaTematica,
+    List<CustoDTO> recursosFinanceiros,
+    UsuarioDto responsavel,
+    ContaDto conta
 ) {
     
-    public ObjetoDto(Objeto model, Conta contaModel) {
+    public ObjetoDto(Objeto model, ContaDto conta) {
         this(
             model.getId(), 
-            contaModel instanceof Investimento ? "Investimento" : "Custeio", 
+            "Investimento", 
             model.getTipo(), 
             model.getNome(), 
             model.getDescricao(), 
-            new UnidadeOrcamentariaDTO(contaModel.getUnidadeOrcamentariaImplementadora()), 
-            new PlanoOrcamentarioDTO(contaModel.getPlanoOrcamentarioOrientador()), 
             model.getMicrorregiao() == null ? null : new LocalidadeDto(model.getMicrorregiao()), 
             model.getInfoComplementares(), 
-            model.getObjContratado(), 
-            model.getAudienciaPublica(), 
-            model.getEstrategica(), 
-            model.getCti(),
-            model.getClimatica(), 
-            model.getPip(), 
-            model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList()
+            model.getTiposPlano() == null ? null : model.getTiposPlano().stream().map(tipo -> new TipoPlanoDto(tipo)).toList(),
+            model.getContrato(),
+            model.getAreaTematica() == null ? null : new AreaTematicaDto(model.getAreaTematica()),
+            model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList(),
+            model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
+            conta
         );
     }
+
 
 }

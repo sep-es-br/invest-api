@@ -2,6 +2,7 @@ package br.gov.es.invest.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -24,12 +25,16 @@ public class Objeto extends Entidade implements Serializable {
     private int openPMOId;
     private String status;
     private String infoComplementares;
-    private Boolean objContratado;
-    private Boolean audienciaPublica; 
-    private Boolean estrategica;
-    private Boolean cti;
-    private Boolean climatica; 
-    private Boolean pip;
+    private String contrato;
+
+    @Relationship(type = "SOBRE")
+    private AreaTematica areaTematica;
+
+    @Relationship(type = "DO_TIPO")
+    private List<TipoPlano> tiposPlano;
+
+    @Relationship(type = "RESPONSAVEL_POR", direction = Direction.INCOMING)
+    private Usuario responsavel;
 
     @Relationship(type = "ESTIMADO", direction = Direction.INCOMING)
     private ArrayList<Custo> custosEstimadores = new ArrayList<>();
@@ -37,22 +42,24 @@ public class Objeto extends Entidade implements Serializable {
     @Relationship(type = "ATENDE", direction = Direction.OUTGOING)
     private Localidade microrregiao;
 
+    @Relationship(type = "CUSTEADO")
+    private Conta conta;
+
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
         this.nome = dto.nome();
         this.descricao = dto.descricao();
         this.tipo = dto.tipo();
-        this.status = (dto.planoOrcamentario() == null) ?  StatusObjetoEnum.EM_APROVACAO.getNome() : StatusObjetoEnum.CADASTRADO.getNome();
+        this.status = (dto.conta().planoOrcamentario() == null) ?  StatusObjetoEnum.EM_APROVACAO.getNome() : StatusObjetoEnum.CADASTRADO.getNome();
         this.infoComplementares = dto.infoComplementares();
-        this.objContratado = dto.objContratado();
-        this.audienciaPublica = dto.audienciaPublica();
-        this.estrategica = dto.estrategica();
-        this.cti = dto.cti();
-        this.climatica = dto.climatica();
-        this.pip = dto.pip();
+        this.contrato = dto.contrato();
 
+        this.areaTematica = dto.areaTematica() == null ? null : new AreaTematica(dto.areaTematica());
+        this.tiposPlano = dto.planos() == null ? null : dto.planos().stream().map(tipoDto -> new TipoPlano(tipoDto)).toList();
+        this.responsavel = dto.responsavel() == null ? null : new Usuario(dto.responsavel());
         this.custosEstimadores = new ArrayList<>(dto.recursosFinanceiros().stream().map(custoDto -> new Custo(custoDto)).toList());
-        this.microrregiao = new Localidade(dto.microregiaoAtendida());
+        this.microrregiao = dto.microregiaoAtendida() == null ? null : new Localidade(dto.microregiaoAtendida());
+        
     }
 
 }

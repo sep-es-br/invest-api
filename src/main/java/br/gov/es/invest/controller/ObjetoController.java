@@ -25,6 +25,7 @@ import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.dto.ContaDto;
 import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.service.ContaService;
@@ -92,7 +93,7 @@ public class ObjetoController {
             
             Conta conta = contaService.getByObjetoId(id);
             
-            return ResponseEntity.ok(new ObjetoDto(optObjeto.get(), conta));
+            return ResponseEntity.ok(new ObjetoDto(optObjeto.get(), new ContaDto(conta)));
 
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -105,23 +106,23 @@ public class ObjetoController {
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto) {
         
         Objeto objeto = new Objeto(objetoDto);
-        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(new UnidadeOrcamentaria(objetoDto.unidade()));
+        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(new UnidadeOrcamentaria(objetoDto.conta().unidadeOrcamentariaImplementadora()));
 
         // define o Investimento que vai ser associado
 
         // se não tiver PO usa o investimento generico
 
         Conta conta = null;
-        if(objetoDto.planoOrcamentario() == null) {
+        if(objetoDto.conta().planoOrcamentario() == null) {
             conta = contaService.getGenericoByCodUnidade(unidade);
         } else { // se não, busca o investimento
 
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(objetoDto.unidade().codigo(), objetoDto.planoOrcamentario().codigo());
+            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(objetoDto.conta().unidadeOrcamentariaImplementadora().codigo(), objetoDto.conta().planoOrcamentario().codigo());
             Investimento investimento;
 
             if(optInvestimento.isEmpty()){ // se não existir, cria um novo
 
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(new PlanoOrcamentario(objetoDto.planoOrcamentario()), unidade);
+                    PlanoOrcamentario plano = planoService.findOrCreateByCod(new PlanoOrcamentario(objetoDto.conta().planoOrcamentario()), unidade);
 
                     investimento = new Investimento();
                     investimento.setNome(objetoDto.nome());
@@ -135,14 +136,15 @@ public class ObjetoController {
 
         }
         
-        HashSet<Objeto> todosObjetosDoInv = new HashSet<>(conta.getObjetos());
-        todosObjetosDoInv.add(objeto);
-        conta.setObjetos(todosObjetosDoInv);
-
-        contaService.save(conta);
-
+        objeto.setConta(conta);
+        
+        service.save(objeto);
+        
         return ResponseEntity.ok().build();
     }
+
+
+
 
     @GetMapping("/statusCadastrado")
     public List<String> findStatusCadastrados() {
