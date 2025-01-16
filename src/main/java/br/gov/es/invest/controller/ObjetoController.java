@@ -10,8 +10,10 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,10 +34,13 @@ import br.gov.es.invest.service.ContaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
+import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -54,6 +59,8 @@ public class ObjetoController {
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
     private final ContaService contaService;
+    private final UsuarioService usuarioService;
+    private final TokenService tokenService;
 
     @GetMapping("/allTira")
     public ResponseEntity<List<ObjetoTiraDTO>> getAllByFiltro(
@@ -103,10 +110,19 @@ public class ObjetoController {
     }
 
     @PostMapping("")
-    public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto) {
+    public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = new Objeto(objetoDto);
         UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(new UnidadeOrcamentaria(objetoDto.conta().unidadeOrcamentariaImplementadora()));
+        
+        if(objeto.getId() == null) {
+            auth = auth.replace("Bearer ", "");
+
+            String sub = tokenService.validarToken(auth);
+
+            objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
+        }
+
 
         // define o Investimento que vai ser associado
 
@@ -143,7 +159,29 @@ public class ObjetoController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteObj(String objetoId){
+        
+        Optional<Objeto> optObjetoRemovido = service.getById(objetoId);
 
+        if(optObjetoRemovido.isEmpty())
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body("Objeto não encontrado");
+
+
+        if(optObjetoRemovido.get().getConta().getObjetos().size() == 1) {
+            return ResponseEntity
+                    .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body("Não foi possivel remover o objeto por ser o unico da despesa, uma despesa deve ter ao menos 1 objeto");
+
+        }
+        
+        service.removerObjeto(objetoId);
+
+        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get(), new ContaDto(optObjetoRemovido.get().getConta()) ));
+
+    }
 
 
     @GetMapping("/statusCadastrado")

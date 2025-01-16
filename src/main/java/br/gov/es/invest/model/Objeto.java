@@ -27,10 +27,10 @@ public class Objeto extends Entidade implements Serializable {
     private String infoComplementares;
     private String contrato;
 
-    @Relationship(type = "SOBRE")
+    @Relationship(type = "SOBRE", direction = Direction.OUTGOING)
     private AreaTematica areaTematica;
 
-    @Relationship(type = "DO_TIPO")
+    @Relationship(type = "DO_TIPO", direction = Direction.OUTGOING)
     private List<TipoPlano> tiposPlano;
 
     @Relationship(type = "RESPONSAVEL_POR", direction = Direction.INCOMING)

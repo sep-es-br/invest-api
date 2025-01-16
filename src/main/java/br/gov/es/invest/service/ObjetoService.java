@@ -13,6 +13,7 @@ import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
+import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 
@@ -27,6 +28,20 @@ public class ObjetoService {
     }
 
     public Objeto save(Objeto objeto) {
+
+        if(objeto.getId() != null) {
+            List<TipoPlano> filhoAtuais = repository.findById(objeto.getId()).get().getTiposPlano();
+
+            List<String> idsFilhoFinal = objeto.getTiposPlano().stream().map( filho -> filho.getId()).toList();
+
+            List<TipoPlano> orfaos = filhoAtuais.stream().filter(filho -> !idsFilhoFinal.contains(filho.getId())).toList();
+
+            if (!orfaos.isEmpty()) {
+                repository.removerTipos(orfaos.stream().map(orfao -> orfao.getId()).toList());
+            }
+
+        }
+
         return repository.save(objeto);
     }
 
@@ -59,6 +74,10 @@ public class ObjetoService {
 
     public List<String> findStatusCadastrados() {
         return repository.findStatusCadastrados();
+    }
+
+    public void removerObjeto(String objetoId) {
+        repository.removerObjeto(objetoId);
     }
 
 }

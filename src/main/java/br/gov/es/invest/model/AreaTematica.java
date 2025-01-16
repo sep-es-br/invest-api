@@ -14,6 +14,10 @@ public class AreaTematica extends Entidade {
 
     private String nome;
 
+    public AreaTematica(String nome) {
+        this.nome = nome;
+    }
+
     public AreaTematica(AreaTematicaDto dto) {
         this.setId(dto.id());
         this.nome = dto.nome();

@@ -79,4 +79,15 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                 "        )\r\n" + //
                 "RETURN count(distinct obj)")
     public int countByFilter(String nome, String unidadeId, String planoId, String status, Integer exercicio);
+
+    @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) \n" +
+                "WHERE elementId(obj) = $objetoId \n" + 
+                "DETACH DELETE obj, custo")
+        public void removerObjeto(String objetoId);
+
+
+        @Query("MATCH (n:TipoPlano)<-[do_tipo:DO_TIPO]-(:Objeto)\r\n" + //
+                        "WHERE elementId(n) IN $ids\r\n" + //
+                        "DELETE do_tipo")
+        public void removerTipos(List<String> ids);
 }
