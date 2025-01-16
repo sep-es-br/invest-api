@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import br.gov.es.invest.model.Conta;
+import br.gov.es.invest.model.Objeto;
 
 
 public record ContaDto(
@@ -14,7 +15,6 @@ public record ContaDto(
     String nome,
     PlanoOrcamentarioDTO planoOrcamentario,
     UnidadeOrcamentariaDTO unidadeOrcamentariaImplementadora,
-    HashSet<ObjetoDto> objetos,
     List<ExecucaoOrcamentariaDto> execucoesOrcamentaria
 ) {
     public ContaDto(Conta model) {
@@ -22,23 +22,11 @@ public record ContaDto(
             model.getId(), 
             model.getStatus(), 
             model.getNome(), 
-            model.getPlanoOrcamentarioOrientador() == null ? null : new PlanoOrcamentarioDTO(model.getPlanoOrcamentarioOrientador()), 
+            model.getPlanoOrcamentario() == null ? null : new PlanoOrcamentarioDTO(model.getPlanoOrcamentario()), 
             model.getUnidadeOrcamentariaImplementadora() == null ? null : new UnidadeOrcamentariaDTO(model.getUnidadeOrcamentariaImplementadora()), 
-            new HashSet<>(), 
             model.getExecucoesOrcamentaria() == null ? null : model.getExecucoesOrcamentaria().stream().map(ExecucaoOrcamentariaDto::parse).toList()
         );
     }
 
-    public static ContaDto parse(Conta model){
-        ContaDto contaDto = new ContaDto(model);
-
-        Set<ObjetoDto> objDtoList = model.getObjetos().stream()
-                .map(obj -> new ObjetoDto(obj, contaDto))
-                .collect(Collectors.toSet());
-
-        contaDto.objetos.addAll(objDtoList);
-
-        return contaDto;
-    }
 
 }

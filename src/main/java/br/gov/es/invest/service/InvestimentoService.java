@@ -35,6 +35,9 @@ public class InvestimentoService {
     @Autowired
     private InvestimentoRepository repository;
 
+    @Autowired
+    private ObjetoService objetoService;
+
 
     public void saveAll(List<Investimento> investimentos) {
         repository.saveAll(investimentos);
@@ -55,7 +58,7 @@ public class InvestimentoService {
         if(codPO != null) {
             PlanoOrcamentario planoProbe = new PlanoOrcamentario();
             planoProbe.setId(codPO);
-            investimentoProbe.setPlanoOrcamentarioOrientador(planoProbe);
+            investimentoProbe.setPlanoOrcamentario(planoProbe);
         }
 
         if(codUnidade != null) {
@@ -113,7 +116,7 @@ public class InvestimentoService {
             investimento.setExecucoesOrcamentaria(execsFiltrados);
             
             
-            for(Objeto objeto : investimento.getObjetos()) {
+            for(Objeto objeto : objetoService.findObjetoByConta(investimento)) {
                 List<Custo> custosFiltrados = objeto.getCustosEstimadores();
 
                 if( exercicio != null)
@@ -152,26 +155,6 @@ public class InvestimentoService {
         return this.findAllByFilterValores(nome, codUnidade, codPO, exercicio, idFonte, null).size();
     }
 
-    public Investimento getByObjetoId(String objetoId){
-        Investimento investimentoProbe = new Investimento();
-        Objeto objetoProbe = new Objeto();
-
-        objetoProbe.setId(objetoId);
-
-        investimentoProbe.setObjetos(Set.of(objetoProbe));
-
-        Example<Investimento> example = Example.of(
-            investimentoProbe, 
-            ExampleMatcher.matching()
-            .withMatcher("objetos", ExampleMatcher.GenericPropertyMatcher::contains));
-        
-        Investimento result = repository.findBy(example, query -> query.oneValue());
-
-        return result;
-
-
-    }
-
     public void addExecucao (String investimentoId, String execId) {
 
         this.repository.addExecucao(investimentoId, execId);
@@ -187,7 +170,7 @@ public class InvestimentoService {
         probeUnidade.setCodigo(codUo);
         
         Investimento probeInvestimento = new Investimento();
-        probeInvestimento.setPlanoOrcamentarioOrientador(probePlano);
+        probeInvestimento.setPlanoOrcamentario(probePlano);
         probeInvestimento.setUnidadeOrcamentariaImplementadora(probeUnidade);
 
 

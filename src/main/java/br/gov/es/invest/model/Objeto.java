@@ -62,4 +62,11 @@ public class Objeto extends Entidade implements Serializable {
         
     }
 
+    public void filtrar(Integer anoExercicio) {
+        List<Custo> custos = this.getCustosEstimadores();
+        custos = custos.stream().filter(custo -> custo.getAnoExercicio().equals(anoExercicio)).toList();
+        this.setCustosEstimadores(new ArrayList<>(custos));
+        conta.filtrarExecucoes(anoExercicio);
+    }
+
 }

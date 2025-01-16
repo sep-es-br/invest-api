@@ -21,15 +21,20 @@ public class Conta extends Entidade implements Serializable {
 
   
     @Relationship(type = "ORIENTA", direction = Direction.INCOMING)
-    private PlanoOrcamentario planoOrcamentarioOrientador;
+    private PlanoOrcamentario planoOrcamentario;
 
     @Relationship(type = "IMPLEMENTA", direction = Direction.INCOMING)
     private UnidadeOrcamentaria unidadeOrcamentariaImplementadora;
     
-    @Relationship(type = "CUSTEADO", direction = Direction.INCOMING)
-    private Set<Objeto> objetos;
-
     @Relationship(type = "DELIMITA", direction = Direction.INCOMING)
     private List<ExecucaoOrcamentaria> execucoesOrcamentaria;
+
+    public void filtrarExecucoes(Integer anoExecucao) {
+        this.setExecucoesOrcamentaria(
+            this.getExecucoesOrcamentaria().stream()
+            .filter(exec -> exec.getAnoExercicio().equals(anoExecucao))
+            .toList()
+        );
+    }
 
 }

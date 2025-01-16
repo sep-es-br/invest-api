@@ -22,7 +22,7 @@ public record ObjetoDto(
     ContaDto conta
 ) {
     
-    public ObjetoDto(Objeto model, ContaDto conta) {
+    public ObjetoDto(Objeto model) {
         this(
             model.getId(), 
             "Investimento", 
@@ -36,7 +36,7 @@ public record ObjetoDto(
             model.getAreaTematica() == null ? null : new AreaTematicaDto(model.getAreaTematica()),
             model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList(),
             model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
-            conta
+            new ContaDto(model.getConta())
         );
     }
 

@@ -73,10 +73,8 @@ public class ObjetoController {
 
             List<Objeto> objetos = service.getAllByFilter(exercicio, nome, idUnidade, idPo, status, PageRequest.of(pgAtual-1, tamPag));
 
-            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {
-                Conta inv = contaService.getByObjetoId(obj.getId());
-                
-                return new ObjetoTiraDTO(obj, inv);
+            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
+                return new ObjetoTiraDTO(obj);
             }).toList();
 
             return ResponseEntity.ok(objetosDTO);
@@ -98,9 +96,7 @@ public class ObjetoController {
                 return ResponseEntity.notFound().build();
             }
             
-            Conta conta = contaService.getByObjetoId(id);
-            
-            return ResponseEntity.ok(new ObjetoDto(optObjeto.get(), new ContaDto(conta)));
+            return ResponseEntity.ok(new ObjetoDto(optObjeto.get()));
 
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -143,7 +139,7 @@ public class ObjetoController {
                     investimento = new Investimento();
                     investimento.setNome(objetoDto.nome());
                     investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentarioOrientador(plano);
+                    investimento.setPlanoOrcamentario(plano);
             } else { // se existir usa o existente
                 investimento = optInvestimento.get();
             }
@@ -169,8 +165,9 @@ public class ObjetoController {
                     .status(HttpStatus.NO_CONTENT)
                     .body("Objeto não encontrado");
 
+        service.findObjetoByConta(optObjetoRemovido.get().getConta());
 
-        if(optObjetoRemovido.get().getConta().getObjetos().size() == 1) {
+        if(service.findObjetoByConta(optObjetoRemovido.get().getConta()).size() == 1) {
             return ResponseEntity
                     .status(HttpStatus.UNPROCESSABLE_ENTITY)
                     .body("Não foi possivel remover o objeto por ser o unico da despesa, uma despesa deve ter ao menos 1 objeto");
@@ -179,7 +176,7 @@ public class ObjetoController {
         
         service.removerObjeto(objetoId);
 
-        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get(), new ContaDto(optObjetoRemovido.get().getConta()) ));
+        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get()));
 
     }
 

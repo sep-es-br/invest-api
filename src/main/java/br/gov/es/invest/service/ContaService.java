@@ -1,16 +1,22 @@
 package br.gov.es.invest.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.ExampleMatcher.MatcherConfigurer;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ContaRepository;
 
@@ -28,7 +34,6 @@ public class ContaService {
             conta = new Conta();
             conta.setNome("Conta sem PO da Unidade " + unidadeOrcamentaria.getCodigo());
             conta.setUnidadeOrcamentariaImplementadora(unidadeOrcamentaria);
-            conta.setObjetos(new HashSet<>());
             return conta;
         } else {
             return repository.findById(conta.getId()).get();
@@ -40,24 +45,47 @@ public class ContaService {
         return repository.save(conta);
     }
 
-    public Conta getByObjetoId(String objetoId){
-        Conta investimentoProbe = new Conta();
-        Objeto objetoProbe = new Objeto();
-
-        objetoProbe.setId(objetoId);
-
-        investimentoProbe.setObjetos(Set.of(objetoProbe));
-
-        Example<Conta> example = Example.of(
-            investimentoProbe, 
-            ExampleMatcher.matching()
-            .withMatcher("objetos", ExampleMatcher.GenericPropertyMatcher::contains));
+    public List<Conta> findByFiltro(
+        String nome, String unidadeId, String planoId,
+        Integer anoExercicio, String fonteId, Pageable pageable
+    ){
         
-        Conta result = repository.findBy(example, query -> query.oneValue());
+        ExampleMatcher matcher = ExampleMatcher.matching();
+        Conta contaProbe = new Conta();
+        
+        if(nome != null){
+            contaProbe.setNome(nome);
+            matcher = matcher.withMatcher("nome", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        }
 
-        return result;
+        if(planoId != null){ 
+            PlanoOrcamentario plano = new PlanoOrcamentario();
+            plano.setId(planoId);
+            contaProbe.setPlanoOrcamentario(plano);
+        } 
+
+        if(unidadeId != null){
+            UnidadeOrcamentaria unidade = new UnidadeOrcamentaria();
+            unidade.setId(unidadeId);
+            contaProbe.setUnidadeOrcamentariaImplementadora(unidade);
+        }
+        
+        if(fonteId != null) {
+        
+        }
+
+        if(pageable == null) {
+            return repository.findAll(Example.of(contaProbe, matcher));
+        } else {
+            return repository.findAll(Example.of(contaProbe, matcher), pageable).getContent();
+        }
 
 
+
+    }
+
+    public Integer countByFilter(String nome, String codUnidade, String codPO, Integer exercicio, String idFonte){
+        return findByFiltro(nome, codUnidade, codPO, exercicio, idFonte, null).size();
     }
 
 }

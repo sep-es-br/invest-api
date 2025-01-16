@@ -3,6 +3,7 @@ package br.gov.es.invest.dto;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class InvestimentoTiraDTO {
+public class ContaTiraDTO {
 
     private String nome;
     private String codPO;
@@ -27,11 +28,11 @@ public class InvestimentoTiraDTO {
 
     private List<ObjetoTiraDTO> objetos;
     
-    public InvestimentoTiraDTO(Investimento investimento, List<Objeto> objetos){
+    public ContaTiraDTO(Conta conta, List<Objeto> objetos){
         
-        this.nome = investimento.getNome();
-        this.codPO = investimento.getPlanoOrcamentario().getCodigo();
-        UnidadeOrcamentaria unidadeOrcamentaria = investimento.getUnidadeOrcamentariaImplementadora();
+        this.nome = conta.getNome();
+        this.codPO = conta.getPlanoOrcamentario().getCodigo();
+        UnidadeOrcamentaria unidadeOrcamentaria = conta.getUnidadeOrcamentariaImplementadora();
         this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
         this.objetos = objetos.stream().map(objeto -> {

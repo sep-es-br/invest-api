@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -46,9 +47,19 @@ public class ObjetoService {
     }
 
     public List<Objeto> getAllByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String status, Pageable pageable) {
+        
+        
+        
+        
         List<Objeto> objsFiltrados = repository.getAllByFilter(exercicio, nome, idUnidade, idPo, status, pageable);
         
-        return repository.findAllById(objsFiltrados.stream().map(obj -> obj.getId()).toList());
+        List<Objeto> objsHidratados = repository.findAllById(objsFiltrados.stream().map(obj -> obj.getId()).toList());
+
+        for(Objeto objeto: objsHidratados) {
+            objeto.filtrar(exercicio);
+        }
+
+        return objsHidratados;
     }
 
     public Objeto getByCusto(Custo custo){
@@ -78,6 +89,15 @@ public class ObjetoService {
 
     public void removerObjeto(String objetoId) {
         repository.removerObjeto(objetoId);
+    }
+
+    public List<Objeto> findObjetoByConta(Conta conta) {
+        Objeto objetoProbe = new Objeto();
+        Conta contaProbe = new Conta();
+        contaProbe.setId(conta.getId());
+        objetoProbe.setConta(contaProbe);
+
+        return repository.findAll(Example.of(objetoProbe));
     }
 
 }

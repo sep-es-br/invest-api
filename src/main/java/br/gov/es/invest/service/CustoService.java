@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import br.gov.es.invest.dto.IValoresCusto;
 import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.dto.projection.IValoresIndicadaPor;
+import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
 import br.gov.es.invest.model.Investimento;
@@ -23,6 +24,10 @@ public class CustoService {
 
     private InvestimentoService investimentoService;
 
+    private ContaService contaService;
+
+    private ObjetoService objetoService;
+
 
     public void saveAll(List<Custo> custos) {
         repository.saveAll(custos);
@@ -34,26 +39,25 @@ public class CustoService {
 
     public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, String idUnidade, String idPlano){
         
-        List<Investimento> investimentosPorFiltro = investimentoService.findAllByFilterValores(nome, idUnidade, idPlano, exercicio, idFonte, null);
-
+        List<Conta> contaPorFiltro = contaService.findByFiltro(nome, idUnidade, idPlano, exercicio, idFonte, null);
         
-
-        ArrayList<Custo> valores = new ArrayList<>();
-        
-        for(Investimento investimento : investimentosPorFiltro){
-            for(Objeto objeto : investimento.getObjetos()) {
-                valores.addAll(objeto.getCustosEstimadores());
-            }
-        }
-
         Double totalPrevisto = 0d;
         Double totalContratado = 0d;
 
-        for(Custo valor : valores) {
-            for(IndicadaPor valorIndicadaPor : valor.getIndicadaPor()){
-                
-                totalPrevisto += valorIndicadaPor.getPrevisto();
-                totalContratado += valorIndicadaPor.getContratado();                
+        for(Conta conta : contaPorFiltro){
+
+            for(Objeto objeto : objetoService.findObjetoByConta(conta)){
+
+                for(Custo custo : objeto.getCustosEstimadores()){
+
+                    for(IndicadaPor indicadaPor: custo.getIndicadaPor()){
+
+                        totalPrevisto += indicadaPor.getPrevisto();
+                        totalContratado += indicadaPor.getContratado();  
+                    }
+
+                }
+
             }
 
         }
@@ -64,6 +68,16 @@ public class CustoService {
     @Autowired
     public void setInvestimentoService(InvestimentoService investimentoService) {
         this.investimentoService = investimentoService;
+    }
+
+    @Autowired
+    public void setContaService(ContaService contaService) {
+        this.contaService = contaService;
+    }
+
+    @Autowired
+    public void setObjetoService(ObjetoService objetoService) {
+        this.objetoService = objetoService;
     }
 
     

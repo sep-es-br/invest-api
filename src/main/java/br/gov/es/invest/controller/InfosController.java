@@ -83,15 +83,16 @@ public class InfosController {
         @RequestParam(required=false) String idPo, @RequestParam Integer ano
         ) {
 
-            // ValoresCusto totaisCusto = custoService.getValoresTotais(
-            //         nome,
-            //         idFonte,
-            //         ano,
-            //         idUo, 
-            //         idPo
-            //     );
+            ValoresCusto totaisCusto = custoService.getValoresTotais(
+                    nome,
+                    idFonte,
+                    ano,
+                    idUo, 
+                    idPo
+                );
+
                 
-            ValoresCusto totaisCusto = new ValoresCusto(0d, 0d);
+            // ValoresCusto totaisCusto = new ValoresCusto(0d, 0d);
 
             String codUo = unidadeService.getCodById(idUo);
             String codPo = planoService.getCodById(idPo);
