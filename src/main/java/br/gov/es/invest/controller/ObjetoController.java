@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.dto.ObjetoTiraDTO;
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
@@ -111,7 +112,7 @@ public class ObjetoController {
         Objeto objeto = new Objeto(objetoDto);
         UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(new UnidadeOrcamentaria(objetoDto.conta().unidadeOrcamentariaImplementadora()));
         
-        if(objeto.getId() == null) {
+        if(objeto.getResponsavel() == null) {
             auth = auth.replace("Bearer ", "");
 
             String sub = tokenService.validarToken(auth);
@@ -134,7 +135,7 @@ public class ObjetoController {
 
             if(optInvestimento.isEmpty()){ // se não existir, cria um novo
 
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(new PlanoOrcamentario(objetoDto.conta().planoOrcamentario()), unidade);
+                    PlanoOrcamentario plano = planoService.findOrCreateByCod(new PlanoOrcamentario(objetoDto.conta().planoOrcamentario()));
 
                     investimento = new Investimento();
                     investimento.setNome(objetoDto.nome());
@@ -161,17 +162,21 @@ public class ObjetoController {
         Optional<Objeto> optObjetoRemovido = service.getById(objetoId);
 
         if(optObjetoRemovido.isEmpty())
-            return ResponseEntity
-                    .status(HttpStatus.NO_CONTENT)
-                    .body("Objeto não encontrado");
+            return MensagemErroRest.asResponseEntity(
+                HttpStatus.NO_CONTENT, 
+                "Objeto não encontrado", 
+                null
+                );
 
         service.findObjetoByConta(optObjetoRemovido.get().getConta());
 
         if(service.findObjetoByConta(optObjetoRemovido.get().getConta()).size() == 1) {
-            return ResponseEntity
-                    .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                    .body("Não foi possivel remover o objeto por ser o unico da despesa, uma despesa deve ter ao menos 1 objeto");
-
+            return MensagemErroRest.asResponseEntity(
+                HttpStatus.UNPROCESSABLE_ENTITY, 
+                "Não foi possivel remover o objeto por ser o unico da despesa, uma despesa deve ter ao menos 1 objeto",
+                null
+                );
+            
         }
         
         service.removerObjeto(objetoId);

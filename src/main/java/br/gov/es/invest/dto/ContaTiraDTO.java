@@ -47,7 +47,7 @@ public class ContaTiraDTO {
 
         this.objetos.forEach(obj -> {
             this.totalPrevisto += obj.getTotalPrevisto();
-            this.totalHomologado += obj.getTotalOrcado();
+            this.totalHomologado += obj.getTotalHomologado();
             this.totalOrcado += obj.getTotalOrcado();
             this.totalAutorizado += obj.getTotalAutorizado();
             this.totalDisponivel += obj.getTotalDisponivel();

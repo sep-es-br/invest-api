@@ -24,10 +24,7 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
     private String guid;
     private String sigla;
     private String nome;
-
-    @Relationship(type = "CONTROLA", direction = Direction.OUTGOING)
-    private Set<PlanoOrcamentario> planosOrcamentarios;
-
+    
     public UnidadeOrcamentaria(UnidadeOrcamentariaDTO dto) {
         this.setId(dto.id());
         this.guid = dto.guid();

@@ -69,15 +69,17 @@ public class ContaService {
             unidade.setId(unidadeId);
             contaProbe.setUnidadeOrcamentariaImplementadora(unidade);
         }
-        
-        if(fonteId != null) {
-        
-        }
 
-        if(pageable == null) {
-            return repository.findAll(Example.of(contaProbe, matcher));
+        List<Conta> result = repository.findAll(Example.of(contaProbe, matcher));
+
+        if(pageable != null){
+
+            long indexTo = Long.min(pageable.getOffset()+pageable.getPageSize(), result.size()-pageable.getOffset());
+
+            return result
+            .subList(Integer.parseInt(String.valueOf(pageable.getOffset())) , Integer.parseInt( String.valueOf(indexTo)));
         } else {
-            return repository.findAll(Example.of(contaProbe, matcher), pageable).getContent();
+            return result;
         }
 
 

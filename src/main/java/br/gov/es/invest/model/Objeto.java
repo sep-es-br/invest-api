@@ -3,6 +3,7 @@ package br.gov.es.invest.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -62,11 +63,29 @@ public class Objeto extends Entidade implements Serializable {
         
     }
 
-    public void filtrar(Integer anoExercicio) {
-        List<Custo> custos = this.getCustosEstimadores();
-        custos = custos.stream().filter(custo -> custo.getAnoExercicio().equals(anoExercicio)).toList();
-        this.setCustosEstimadores(new ArrayList<>(custos));
-        conta.filtrarExecucoes(anoExercicio);
+    public void filtrar(Integer anoExercicio, String fonteId) {
+        
+
+        if(anoExercicio != null){
+            List<Custo> custos = this.getCustosEstimadores();
+            custos = custos.stream().filter(custo -> custo.getAnoExercicio().equals(anoExercicio)).toList();
+            this.setCustosEstimadores(new ArrayList<>(custos));
+        }
+
+        if(fonteId != null){
+            for(Custo custo : this.getCustosEstimadores()) {
+
+                custo.setIndicadaPor(
+                    custo.getIndicadaPor().stream()
+                    .filter(ip -> ip.getFonteOrcamentaria().getId().equals(fonteId) )
+                    .collect(Collectors.toSet())
+                );
+
+            }
+
+        }
+        
+        conta.filtrarExecucoes(anoExercicio, fonteId);
     }
 
 }

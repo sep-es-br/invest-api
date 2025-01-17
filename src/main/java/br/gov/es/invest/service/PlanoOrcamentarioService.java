@@ -30,23 +30,14 @@ public class PlanoOrcamentarioService {
         return repository.getCodById(idPlano);
     }
 
-    public PlanoOrcamentario findOrCreateByCod(PlanoOrcamentario plano, UnidadeOrcamentaria unidade){
+    public PlanoOrcamentario findOrCreateByCod(PlanoOrcamentario plano){
         
         PlanoOrcamentario probe = new PlanoOrcamentario();
         probe.setCodigo(plano.getCodigo());
         
         Optional<PlanoOrcamentario> optPlano = repository.findBy( Example.of(probe), query -> query.first());
 
-        if(optPlano.isPresent()) {
-            return optPlano.get();
-        } else {
-            HashSet<PlanoOrcamentario> todosPlanosDaUnidade = new HashSet<>(unidade.getPlanosOrcamentarios());
-            todosPlanosDaUnidade.add(plano);
-            unidade.setPlanosOrcamentarios(todosPlanosDaUnidade);
-
-            return plano;
-        }
-        
+        return optPlano.orElse(plano);        
 
 
     }

@@ -58,7 +58,7 @@ public class ContaController {
 
                 List<ContaTiraDTO> investimentosDTO = investimentos.stream()
                     .map(inv -> {
-                        List<Objeto> objetos = objetoService.findObjetoByConta(inv);
+                        List<Objeto> objetos = objetoService.findObjetoByContaFiltrado(inv, exercicio, idFonte);
                         
                         return new ContaTiraDTO(inv, objetos);
                     }).toList();

@@ -24,43 +24,61 @@ public class RestExceptionHandler {
     @ExceptionHandler(InfoplanServiceException.class)
     private ResponseEntity<MensagemErroRest> infoplanServiceHandler(InfoplanServiceException e) {
         logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-        MensagemErroRest mensagem = new MensagemErroRest(HttpStatus.UNAUTHORIZED, e.getMessage(), e.getErrors());
-        return montarRetorno(mensagem);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.UNAUTHORIZED, 
+            e.getMessage(), 
+            e.getErrors()
+        );
     }
 
     @ExceptionHandler(UsuarioSemPermissaoException.class)
     private ResponseEntity<MensagemErroRest> usuarioSemPermissaoHandler(UsuarioSemPermissaoException e){
         logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-        MensagemErroRest mensagem = new MensagemErroRest(HttpStatus.FORBIDDEN, e.getLocalizedMessage(), Arrays.asList(e.getLocalizedMessage()));
-        return montarRetorno(mensagem);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.FORBIDDEN, 
+            e.getLocalizedMessage(), 
+            Arrays.asList(e.getLocalizedMessage())
+        );
     }
 
     @ExceptionHandler(UsuarioInexistenteException.class)
     private ResponseEntity<MensagemErroRest> usuarioInexistenteHandler(UsuarioInexistenteException e) {
         logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-        MensagemErroRest mensagem = new MensagemErroRest(HttpStatus.UNAUTHORIZED, e.getLocalizedMessage(), Collections.singletonList(e.getLocalizedMessage()));
-        return montarRetorno(mensagem);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.UNAUTHORIZED, 
+            e.getLocalizedMessage(), 
+            Collections.singletonList(e.getLocalizedMessage())
+        );
     }
 
     @ExceptionHandler(UsuarioNaoAutenticadoException.class)
     private ResponseEntity<MensagemErroRest> usuarioNaoAutenticadoHandler(UsuarioNaoAutenticadoException e) {
         logger.log(Level.WARNING, e.getLocalizedMessage(), e);
-        MensagemErroRest mensagem = new MensagemErroRest(HttpStatus.UNAUTHORIZED, e.getLocalizedMessage(), Collections.singletonList(e.getLocalizedMessage()));
-        return montarRetorno(mensagem);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.UNAUTHORIZED, 
+            e.getLocalizedMessage(), 
+            Collections.singletonList(e.getLocalizedMessage())
+        );
     }
 
     @ExceptionHandler(GrupoNaoEncotradoException.class)
     private ResponseEntity<MensagemErroRest> grupoNaoEncontradoHandler(GrupoNaoEncotradoException e){
         logger.log(Level.WARNING, e.getLocalizedMessage(), e);
-        MensagemErroRest mensagem = new MensagemErroRest(HttpStatus.NOT_FOUND, e.getLocalizedMessage(), Collections.singletonList(e.getLocalizedMessage()));
-        return montarRetorno(mensagem);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.NOT_FOUND, 
+            e.getLocalizedMessage(), 
+            Collections.singletonList(e.getLocalizedMessage())
+        );
     }
 
-
-    private ResponseEntity<MensagemErroRest> montarRetorno(MensagemErroRest mensagem) {
-        
-        return ResponseEntity.status(mensagem.status()).body(mensagem);
-
+    @ExceptionHandler(Exception.class)
+    private ResponseEntity<MensagemErroRest> excecaoGenericaHandler(Exception e) {
+        logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            "Ocorreu um erro desconhecido", 
+            Collections.singletonList(e.getLocalizedMessage())
+        );
     }
 
 }

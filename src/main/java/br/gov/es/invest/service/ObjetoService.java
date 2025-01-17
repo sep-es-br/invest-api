@@ -1,11 +1,13 @@
 package br.gov.es.invest.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -56,10 +58,51 @@ public class ObjetoService {
         List<Objeto> objsHidratados = repository.findAllById(objsFiltrados.stream().map(obj -> obj.getId()).toList());
 
         for(Objeto objeto: objsHidratados) {
-            objeto.filtrar(exercicio);
+            objeto.filtrar(exercicio, null);
         }
 
         return objsHidratados;
+    }
+
+    public List<Objeto> findByFilter(
+        String nome, String unidadeId, String planoId,
+        Integer anoExercicio, String fonteId
+    ) {
+
+        ExampleMatcher matcher = ExampleMatcher.matching();
+        Objeto objetoProbe = new Objeto();
+
+        Conta contaProbe = new Conta();
+        objetoProbe.setConta(contaProbe);
+
+        if(nome != null) {
+            contaProbe.setNome(nome);
+            matcher = matcher.withMatcher("conta.nome", ExampleMatcher.GenericPropertyMatchers.ignoreCase().contains());
+        }
+
+        if(unidadeId != null) {
+            UnidadeOrcamentaria unidadeProbe = new UnidadeOrcamentaria();
+            unidadeProbe.setId(unidadeId);
+            contaProbe.setUnidadeOrcamentariaImplementadora(unidadeProbe);
+        }
+
+        if(planoId != null) {
+            if(planoId.equals("S.PO")) {
+                matcher = matcher.withMatcher("conta.planoOrcamentario", ExampleMatcher.GenericPropertyMatchers.exact()).withIncludeNullValues();
+            } else {
+                PlanoOrcamentario planoProbe = new PlanoOrcamentario();
+                planoProbe.setId(planoId);
+                contaProbe.setPlanoOrcamentario(planoProbe);
+            }
+        }
+
+        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe));
+
+        for(Objeto objeto : objetoFiltrado) {
+            objeto.filtrar(anoExercicio, fonteId);
+        }
+
+        return objetoFiltrado;
     }
 
     public Objeto getByCusto(Custo custo){
@@ -98,6 +141,16 @@ public class ObjetoService {
         objetoProbe.setConta(contaProbe);
 
         return repository.findAll(Example.of(objetoProbe));
+    }
+
+    public List<Objeto> findObjetoByContaFiltrado(Conta conta, Integer exercicio, String fonteId) {
+        List<Objeto> todosObjetos = findObjetoByConta(conta);
+
+        for(Objeto objeto : todosObjetos) {
+            objeto.filtrar(exercicio, fonteId);
+        }
+
+        return todosObjetos;
     }
 
 }

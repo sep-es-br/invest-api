@@ -15,7 +15,7 @@ public record MensagemErroRest (
         this(status, status.value(), mensagem, erros);
     }
 
-    public static ResponseEntity asResponseEntity(HttpStatus status, String mensagem, List<String> erros){
+    public static ResponseEntity<MensagemErroRest> asResponseEntity(HttpStatus status, String mensagem, List<String> erros){
 
         MensagemErroRest msg = new MensagemErroRest(status, mensagem, erros);
 

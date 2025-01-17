@@ -22,10 +22,6 @@ public class CustoService {
     @Autowired
     private CustoRepository repository;
 
-    private InvestimentoService investimentoService;
-
-    private ContaService contaService;
-
     private ObjetoService objetoService;
 
 
@@ -38,24 +34,20 @@ public class CustoService {
     }
 
     public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, String idUnidade, String idPlano){
-        
-        List<Conta> contaPorFiltro = contaService.findByFiltro(nome, idUnidade, idPlano, exercicio, idFonte, null);
+               
+        List<Objeto> objetosPorFiltro = objetoService.findByFilter(nome, idUnidade, idPlano, exercicio, idFonte);
         
         Double totalPrevisto = 0d;
         Double totalContratado = 0d;
 
-        for(Conta conta : contaPorFiltro){
+        for(Objeto objeto : objetosPorFiltro){
 
-            for(Objeto objeto : objetoService.findObjetoByConta(conta)){
+            for(Custo custo : objeto.getCustosEstimadores()){
 
-                for(Custo custo : objeto.getCustosEstimadores()){
+                for(IndicadaPor indicadaPor: custo.getIndicadaPor()){
 
-                    for(IndicadaPor indicadaPor: custo.getIndicadaPor()){
-
-                        totalPrevisto += indicadaPor.getPrevisto();
-                        totalContratado += indicadaPor.getContratado();  
-                    }
-
+                    totalPrevisto += indicadaPor.getPrevisto();
+                    totalContratado += indicadaPor.getContratado();  
                 }
 
             }
@@ -63,16 +55,6 @@ public class CustoService {
         }
 
         return new ValoresCusto(totalPrevisto, totalContratado);
-    }
-
-    @Autowired
-    public void setInvestimentoService(InvestimentoService investimentoService) {
-        this.investimentoService = investimentoService;
-    }
-
-    @Autowired
-    public void setContaService(ContaService contaService) {
-        this.contaService = contaService;
     }
 
     @Autowired
