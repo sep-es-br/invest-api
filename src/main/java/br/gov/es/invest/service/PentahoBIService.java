@@ -1,5 +1,9 @@
 package br.gov.es.invest.service;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -7,10 +11,11 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -24,7 +29,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Service
 public abstract class PentahoBIService {
-    private final Logger LOGGER = LogManager.getLogger(PentahoBIService.class);
+    private final Logger LOGGER = Logger.getLogger(PentahoBIService.class.getSimpleName());
     
     private static final String CHARSET = "UTF-8";
 
@@ -37,6 +42,39 @@ public abstract class PentahoBIService {
     @Value("${pentahoBI.password}")
     private String password;
 
+
+    private String getFileContent(String path){
+        StringBuilder sb = new StringBuilder();
+
+        ClassPathResource res = new ClassPathResource(path);
+
+        File file = new File(res.getPath());
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+            String line = br.readLine();
+            while(line != null){
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+       
+
+        } catch(IOException ioException) {
+            Logger.getGlobal().info(file.getAbsolutePath());
+            Logger.getGlobal().log(Level.SEVERE, ioException.getLocalizedMessage(), ioException);
+            return "";
+        }
+
+
+        return sb.toString();
+    }
+
+    protected List<Map<String, JsonNode>> extrairDados(String path) {
+        
+        return extractDataFromResponse(getFileContent(path));
+
+
+    }
 
     protected String buildEndpointUri(String path, String target, Map<String, String> params) {
         StringBuilder strBuilder = new StringBuilder();
@@ -98,7 +136,7 @@ public abstract class PentahoBIService {
             });
 
         } catch(Exception e) {
-            LOGGER.error(e);
+            LOGGER.getGlobal().severe(e.getMessage());
         }
         return lista;
     }

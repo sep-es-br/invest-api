@@ -26,6 +26,8 @@ public class VinculadaPor extends Entidade {
     private double[] pago = new double[12];
     private double orcado;
 
+    
+
 
 
 }

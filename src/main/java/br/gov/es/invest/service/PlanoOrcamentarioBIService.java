@@ -24,15 +24,21 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
     @Value("${pentahoBI.spo.planoOrcamentario}")
     private String planosTarget;
 
+    
+    private final String arquivosPath = "src/main/resources/ArquivosMock/";
+
+    private final String planosOrcamentarios = arquivosPath + "planosOrcamentarios.result.txt";
+
     public List<PlanoOrcamentario> getPlanosPorUnidade(String codUnidade){
        
         try {
-            HashMap<String, String> params = new HashMap<>();
-            params.put("parampCodUo", codUnidade);
+            // HashMap<String, String> params = new HashMap<>();
+            // params.put("parampCodUo", codUnidade);
 
 
-            String url = buildEndpointUri(spoPath, planosTarget, params);
-            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+            // String url = buildEndpointUri(spoPath, planosTarget, params);
+            // List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+            List<Map<String, JsonNode>> dados = extrairDados(planosOrcamentarios);
 
             List<PlanoOrcamentario> planos = dados.stream().map(
                 dado -> {
