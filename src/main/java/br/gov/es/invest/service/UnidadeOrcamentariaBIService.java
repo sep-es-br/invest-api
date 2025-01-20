@@ -22,16 +22,11 @@ public class UnidadeOrcamentariaBIService extends PentahoBIService {
     @Value("${pentahoBI.spo.unidadesOrcamentarias}")
     private String unidadesTarget;
 
-    private final String arquivosPath = "src/main/resources/ArquivosMock/";
-
-    private final String unidadesOrcamentarias = arquivosPath + "unidadesOrcamentarias.result.txt";
-
     public List<UnidadeOrcamentaria> getTodasUnidades(){
        
         try {
-            // String url = buildEndpointUri(spoPath, unidadesTarget, null);
-            // List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
-            List<Map<String, JsonNode>> dados = extrairDados(unidadesOrcamentarias);
+            String url = buildEndpointUri(spoPath, unidadesTarget, null);
+            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
             List<UnidadeOrcamentaria> unidades = dados.stream().map(
                 dado -> {

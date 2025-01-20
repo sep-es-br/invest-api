@@ -24,20 +24,11 @@ public class FonteOrcamentariaBIService extends PentahoBIService {
     @Value("${pentahoBI.spo.fontesOrcamentarias}")
     private String targetFonteOrcamentaria;
 
-    
-    private final String arquivosPath = "src/main/resources/ArquivosMock/";
-
-    
-    private final String fontesOrcamentarias = arquivosPath + "fontesOrcamentarias.result.txt";
-
     public List<FonteOrcamentaria> getFontes(){
        
         try {
-            // String url = buildEndpointUri(spoPath, targetFonteOrcamentaria, null);
-            // List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
-
-            
-            List<Map<String, JsonNode>> dados = extrairDados(fontesOrcamentarias);
+            String url = buildEndpointUri(spoPath, targetFonteOrcamentaria, null);
+            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
             List<FonteOrcamentaria> fontes = dados.stream().map(
                 dado -> {
