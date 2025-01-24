@@ -91,6 +91,9 @@ public class InfosController {
                     idPo
                 );
 
+                
+            // ValoresCusto totaisCusto = new ValoresCusto(0d, 0d);
+
             String codUo = unidadeService.getCodById(idUo);
             String codPo = planoService.getCodById(idPo);
             

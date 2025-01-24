@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ObjetoTiraDTO {
     
+    private String id;
     private String unidadeResponsavel;
     private String codPlano;
     private String nome;
@@ -23,14 +24,15 @@ public class ObjetoTiraDTO {
     private Double totalDisponivel;
     private String status;
 
-    public ObjetoTiraDTO(Objeto objeto, Conta conta) {
+    public ObjetoTiraDTO(Objeto objeto) {
 
+        this.id = objeto.getId();
         this.nome = objeto.getNome();
         this.tipo = objeto.getTipo();
 
-        UnidadeOrcamentaria unidadeOrcamentaria = conta.getUnidadeOrcamentariaImplementadora();
+        UnidadeOrcamentaria unidadeOrcamentaria = objeto.getConta().getUnidadeOrcamentariaImplementadora();
         this.unidadeResponsavel = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
-        this.codPlano = conta.getPlanoOrcamentarioOrientador().getCodigo();
+        this.codPlano = objeto.getConta().getPlanoOrcamentario() == null ? "Sem P.O." : objeto.getConta().getPlanoOrcamentario().getCodigo();
 
         this.totalPrevisto = 0d;
         this.totalHomologado = 0d;
@@ -49,7 +51,7 @@ public class ObjetoTiraDTO {
 
         });
 
-        conta.getExecucoesOrcamentaria().forEach(exec -> {
+        objeto.getConta().getExecucoesOrcamentaria().forEach(exec -> {
 
             exec.getVinculadaPor().forEach(vinculadaPor -> {
                 this.totalOrcado += vinculadaPor.getOrcado();

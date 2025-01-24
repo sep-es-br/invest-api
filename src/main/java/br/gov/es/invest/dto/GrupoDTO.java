@@ -40,4 +40,9 @@ public class GrupoDTO {
             this.permissoes = grupo.getPermissoes().stream().map(permissao -> new PodeDto(permissao)).collect(Collectors.toSet());
     }
 
+    public static GrupoDTO parse (Grupo model) {
+        return model == null ? null
+        : new GrupoDTO(model);
+    }
+
 }

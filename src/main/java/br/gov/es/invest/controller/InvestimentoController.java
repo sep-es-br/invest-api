@@ -18,11 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import br.gov.es.invest.dto.ContaTiraDTO;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
+import br.gov.es.invest.service.ObjetoService;
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -33,6 +35,8 @@ public class InvestimentoController {
 
 
     private final InvestimentoService service;
+
+    private final ObjetoService objetoService;
 
     private final Logger logger = Logger.getLogger("InvestimentoController");
 
@@ -67,7 +71,10 @@ public class InvestimentoController {
                 );
 
                 List<InvestimentoTiraDTO> investimentosDTO = investimentos.stream()
-                    .map(inv -> new InvestimentoTiraDTO(inv)).toList();
+                    .map(inv -> {
+                        
+                        return new InvestimentoTiraDTO(inv, objetoService.findObjetoByConta(inv));
+                    }).toList();
 
                 return ResponseEntity.ok(investimentosDTO);
             } catch (Exception e){

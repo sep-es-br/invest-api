@@ -45,4 +45,11 @@ public class Grupo extends Entidade {
         if(dto.getPermissoes() != null)
             this.permissoes = dto.getPermissoes().stream().map(permissao -> new Pode(permissao)).collect(Collectors.toSet());
     }
+
+    public static Grupo parse(GrupoDTO dto) {
+        if(dto == null)
+            return null;
+
+        return new Grupo(dto);
+    }
 }

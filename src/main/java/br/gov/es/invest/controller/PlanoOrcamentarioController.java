@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
+import br.gov.es.invest.model.PlanoOrcamentario;
+import br.gov.es.invest.service.PlanoOrcamentarioBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @CrossOrigin(origins = "${frontend.host}")
 @RestController
-@RequestMapping("/plano")
+@RequestMapping("/planoOrcamentario")
 @RequiredArgsConstructor
 public class PlanoOrcamentarioController {
 
@@ -26,6 +30,21 @@ public class PlanoOrcamentarioController {
     // private final Logger logger = Logger.getLogger("PlanoOrcamentarioController");
 
     private final PlanoOrcamentarioService service;
+    private final PlanoOrcamentarioBIService biService;
+
+    @GetMapping("/doSigefes")
+    public List<PlanoOrcamentarioDTO> getDoSigefes(@RequestParam(required = false) String codigo) {
+        if(codigo == null)
+            codigo = "todas";
+
+        List<PlanoOrcamentario> planos = biService.getPlanosPorUnidade(codigo);
+
+        return planos.stream()
+            .map(plano -> new PlanoOrcamentarioDTO(plano))
+            .sorted((plano1, plano2) -> plano1.codigo().compareTo(plano2.codigo()))
+            .toList();
+    }
+    
 
     @GetMapping("/all")
     public ResponseEntity<List<PlanoOrcamentarioDTO>> getAllByFiltro() {

@@ -1,6 +1,7 @@
 package br.gov.es.invest.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -32,6 +33,16 @@ public class UnidadeOrcamentariaService {
 
     public String getCodById(String idUnidade) {
         return repository.getCodById(idUnidade);
+    }
+
+    public UnidadeOrcamentaria findOrCreateByCod(UnidadeOrcamentaria unidade){
+        
+        UnidadeOrcamentaria probe = new UnidadeOrcamentaria();
+        probe.setCodigo(unidade.getCodigo());
+
+        Optional<UnidadeOrcamentaria> optUnidade = repository.findBy(Example.of(probe), query -> query.first());
+
+        return optUnidade.orElse(unidade);
     }
 
     public UnidadeOrcamentaria findBySigla(String sigla) {
