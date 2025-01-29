@@ -39,7 +39,7 @@ public class ObjetoTiraDTO {
         this.totalOrcado = 0d;
         this.totalAutorizado = 0d;
         this.totalDisponivel = 0d;
-        this.status = objeto.getStatus();
+        this.status = objeto.getEmStatus() == null ? "null" : objeto.getEmStatus().getStatus().getNome();
 
         objeto.getCustosEstimadores().forEach(custo -> {
 

@@ -3,21 +3,25 @@ package br.gov.es.invest.model;
 import java.util.List;
 
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
 import br.gov.es.invest.dto.EtapaDTO;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Node
 public class Etapa extends Entidade {
 
     private Integer ordem;
     private String nome;
-    private String status;
     private Grupo grupoResponsavel;
 
+    @Relationship("EXECUTA")
     private List<Acao> acoes;
 
     public static Etapa parse(EtapaDTO dto) {
@@ -28,10 +32,8 @@ public class Etapa extends Entidade {
         etapa.setId(dto.id());
         etapa.setOrdem(dto.ordem());
         etapa.setNome(dto.nome());
-        etapa.setStatus(dto.status());
         etapa.setGrupoResponsavel(dto.grupoResponsavel() == null ? null : Grupo.parse(dto.grupoResponsavel()));
 
-        etapa.setAcoes(dto.acoes() == null ? null : dto.acoes().stream().map(Acao::parse).toList());
 
         return etapa;
 

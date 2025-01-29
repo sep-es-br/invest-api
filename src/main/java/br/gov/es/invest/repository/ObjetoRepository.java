@@ -6,36 +6,70 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 
+import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.Status;
 
 public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
     
 
     @Query("CALL () {\r\n" + //
-                "        MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonte:FonteOrcamentaria),\r\n" + //
-                "        (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta)\r\n" + //
-                "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-                "    OPTIONAL MATCH (execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
-                "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
-                "    RETURN obj, plano, unidade, execucao, custo, conta\r\n" + //
-                "} WITH  obj, plano, unidade, execucao, custo, conta\r\n" + //
-                "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
-                "    AND ($execicio IS NULL OR custo.anoExercicio = $execicio OR execucao.anoExercicio = $execicio)\r\n" + //
-                "    AND ($unidadeId IS NULL OR elementId(unidade) = $unidadeId)\r\n" + //
-                "    AND ($status IS NULL OR obj.status = $status)\r\n" + //
-                "    AND (\r\n" + //
-                "        $planoId IS NULL\r\n" + //
-                "        OR ($planoId = \"S.PO\" AND plano IS NULL)\r\n" + //
-                "        OR ($planoId <> \"S.PO\" AND $planoId = elementId(plano))\r\n" + //
-                "        )\r\n" + //
-                "RETURN distinct obj " + //
+                        "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
+                        "    (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)\r\n" + //
+                        "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                        "    OPTIONAL MATCH (fonteExec:FonteOrcamentaria)<-[vinculada:VINCULADA_POR]-(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
+                        "    OPTIONAL MATCH (obj)-[emEtapa:EM]->(etapa:Etapa)\r\n" + //
+                        "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
+                        "    RETURN obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa,\r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "} WITH  obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa, \r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                        "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
+                        "    AND (\r\n" + //
+                        "        $idPo IS NULL\r\n" + //
+                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
+                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        )\r\n" + //
+                        "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
+                        "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
+                        "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
+                        "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)" + //
                 "SKIP $skip LIMIT $limit")
-    public List<Objeto> getAllByFilter(Integer execicio, String nome, String unidadeId, String planoId, String status, Pageable pageable); 
+    public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable);
 
-    @Query("MATCH (n:Objeto) \r\n" + //
-                "RETURN distinct n.status \r\n" + //
-                "ORDER BY n.status")
-    public List<String> findStatusCadastrados();
+    @Query("CALL () {\r\n" + //
+                        "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
+                        "    (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)\r\n" + //
+                        "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                        "    OPTIONAL MATCH (fonteExec:FonteOrcamentaria)<-[vinculada:VINCULADA_POR]-(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
+                        "    OPTIONAL MATCH (obj)-[emEtapa:EM]->(etapa:Etapa)\r\n" + //
+                        "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
+                        "    RETURN obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa,\r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "} WITH  obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa, \r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + // //
+                        "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                        "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
+                        "    AND (\r\n" + //
+                        "        $idPo IS NULL\r\n" + //
+                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
+                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        )\r\n" + //
+                        "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
+                        "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
+                        "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
+                        "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)")
+        public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId);
+
+        @Query("MATCH (n:Objeto)-[:EM]->(status:Status) \r\n" + //
+                "RETURN distinct status \r\n" + //
+                "ORDER BY status.nome")
+    public List<Status> findStatusCadastrados();
 
 
     @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) WHERE elementId(custo) = $custoId RETURN obj")

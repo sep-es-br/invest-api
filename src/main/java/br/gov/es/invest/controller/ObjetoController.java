@@ -1,6 +1,9 @@
 package br.gov.es.invest.controller;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -22,11 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.dto.ObjetoTiraDTO;
+import br.gov.es.invest.dto.StatusDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Conta;
+import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
+import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.dto.ContaDto;
 import br.gov.es.invest.dto.ObjetoDto;
@@ -35,6 +41,7 @@ import br.gov.es.invest.service.ContaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
+import br.gov.es.invest.service.StatusService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
@@ -56,23 +63,17 @@ public class ObjetoController {
     private final Logger logger = Logger.getLogger("ObjetoController");
 
     private final ObjetoService service;
-    private final InvestimentoService investimentoService;
-    private final UnidadeOrcamentariaService unidadeService;
-    private final PlanoOrcamentarioService planoService;
-    private final ContaService contaService;
-    private final UsuarioService usuarioService;
-    private final TokenService tokenService;
 
     @GetMapping("/allTira")
-    public ResponseEntity<List<ObjetoTiraDTO>> getAllByFiltro(
-        @RequestParam Integer exercicio,@RequestParam(required = false) String nome,
-        @RequestParam(required = false) String idUnidade, @RequestParam(required = false) String idPo,@RequestParam(required = false) String status,
-        @RequestParam int pgAtual, @RequestParam int tamPag 
+    public ResponseEntity<?> getAllByFiltro(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
+        @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
+        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag 
     ) {
 
         try{
 
-            List<Objeto> objetos = service.getAllByFilter(exercicio, nome, idUnidade, idPo, status, PageRequest.of(pgAtual-1, tamPag));
+            List<Objeto> objetos = service.getAllListByFilter(ano, nome, unidadeId, idPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
 
             List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
                 return new ObjetoTiraDTO(obj);
@@ -81,20 +82,65 @@ public class ObjetoController {
             return ResponseEntity.ok(objetosDTO);
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-            return ResponseEntity.internalServerError().build();
+            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro desconhecido ao buscar objetos", 
+                Collections.singletonList(e.getLocalizedMessage())
+            );
+        }
+
+    }
+
+    
+    @GetMapping("/allTiraEmProcessamento")
+    public ResponseEntity<?> getAllByFiltroEmProcessamento(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
+        @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
+        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag 
+    ) {
+
+        try{
+
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
+
+            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
+                return new ObjetoTiraDTO(obj);
+            }).toList();
+
+            return ResponseEntity.ok(objetosDTO);
+        } catch(Exception e){
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro desconhecido ao buscar objetos", 
+                Collections.singletonList(e.getLocalizedMessage())
+            );
         }
 
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<ObjetoDto> getById(@RequestParam String id) {
+    public ResponseEntity<?> getById(@RequestParam String id) {
 
         try{
 
             Optional<Objeto> optObjeto = service.getById(id);
 
             if(optObjeto.isEmpty()) {
-                return ResponseEntity.notFound().build();
+                return MensagemErroRest.asResponseEntity(
+                    HttpStatus.NOT_FOUND, 
+                    "Objeto não encontrado", 
+                    Arrays.asList("Objeto com id " + id + " não encontrado")
+                );
+            }
+
+            Objeto objeto = optObjeto.get();
+            
+            if(objeto.getEmEtapa() != null){
+                objeto.getEmEtapa().getEtapa().setAcoes(
+                    objeto.getEmEtapa().getEtapa().getAcoes().stream().sorted((acao1, acao2) -> 
+                        getAsNumberValue(acao1.getPositivo()) - getAsNumberValue(acao2.getPositivo())
+                    
+                    ).toList()
+                );
             }
             
             return ResponseEntity.ok(new ObjetoDto(optObjeto.get()));
@@ -106,50 +152,30 @@ public class ObjetoController {
 
     }
 
+    private int getAsNumberValue(Boolean b){
+        return b == null ? 0 : (b.equals(Boolean.TRUE) ? 1 : -1);
+    }
+
+    @GetMapping("/byFiltro")
+    public ResponseEntity<?> findByFiltro(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
+        @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
+        @RequestParam(required = false) String planoId
+    ){
+        List<Objeto> objList = service.findByFilter(nome, unidadeId, planoId, ano, null);
+
+        List<ObjetoTiraDTO> objDto = objList.stream().map(obj -> new ObjetoTiraDTO(obj)).toList();
+
+        return ResponseEntity
+                .ok()
+                .body(objDto);
+    }
+
     @PostMapping("")
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = new Objeto(objetoDto);
-        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(new UnidadeOrcamentaria(objetoDto.conta().unidadeOrcamentariaImplementadora()));
         
-        if(objeto.getResponsavel() == null) {
-            auth = auth.replace("Bearer ", "");
-
-            String sub = tokenService.validarToken(auth);
-
-            objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
-        }
-
-
-        // define o Investimento que vai ser associado
-
-        // se não tiver PO usa o investimento generico
-
-        Conta conta = null;
-        if(objetoDto.conta().planoOrcamentario() == null) {
-            conta = contaService.getGenericoByCodUnidade(unidade);
-        } else { // se não, busca o investimento
-
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(objetoDto.conta().unidadeOrcamentariaImplementadora().codigo(), objetoDto.conta().planoOrcamentario().codigo());
-            Investimento investimento;
-
-            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
-
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(new PlanoOrcamentario(objetoDto.conta().planoOrcamentario()));
-
-                    investimento = new Investimento();
-                    investimento.setNome(objetoDto.nome());
-                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentario(plano);
-            } else { // se existir usa o existente
-                investimento = optInvestimento.get();
-            }
-            
-            conta = investimento;
-
-        }
-        
-        objeto.setConta(conta);
         
         service.save(objeto);
         
@@ -187,8 +213,8 @@ public class ObjetoController {
 
 
     @GetMapping("/statusCadastrado")
-    public List<String> findStatusCadastrados() {
-        return service.findStatusCadastrados();
+    public List<StatusDTO> findStatusCadastrados() {
+        return service.findStatusCadastrados().stream().map(StatusDTO::parse).toList();
     }
     
     
@@ -202,11 +228,47 @@ public class ObjetoController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> getAmmoutByFilter(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String idUnidade,
-        @RequestParam Integer exercicio, @RequestParam(required = false) String idPo, @RequestParam(required = false) String status
+    public ResponseEntity<?> getAmmoutByFilter(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId,
+        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
     ) {
-        return ResponseEntity.ok(service.countByFilter(nome, idUnidade, idPo, status, exercicio));
+        try{
+
+            List<Objeto> objetos = service.getAllListByFilter(ano, nome, unidadeId, idPo, statusId, null, null);
+
+            return ResponseEntity.ok(objetos.size());
+        } catch(Exception e){
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro desconhecido ao buscar objetos", 
+                Collections.singletonList(e.getLocalizedMessage())
+            );
+        }
+        
+
+    }
+
+    
+
+    @GetMapping("/countEmProcessameto")
+    public ResponseEntity<?> getAmmoutByFilterEmProcessamento(
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId,
+        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
+    ) {
+        try{
+
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, null, null);
+
+            return ResponseEntity.ok(objetos.size());
+        } catch(Exception e){
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro desconhecido ao contar objetos", 
+                Collections.singletonList(e.getLocalizedMessage())
+            );
+        }
+        
+
     }
     
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.gov.es.invest.dto.EtapaDTO;
 import br.gov.es.invest.dto.FluxoDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Fluxo;
@@ -37,6 +38,23 @@ public class FluxoController {
         }
 
         return MensagemErroRest.asResponseEntity(HttpStatus.NOT_IMPLEMENTED, "Recurso não implementado ainda", null);
+    }
+
+    @GetMapping("/withEtapa")
+    public ResponseEntity<?> findWithEtapa(@RequestParam String etapaId){
+        Fluxo fluxo = fluxoService.findWithEtapa(etapaId);
+
+        if(fluxo == null) {
+            return MensagemErroRest.asResponseEntity(
+                HttpStatus.NOT_FOUND, 
+                "Não foi possivel localizar fluxo que possui essa etapa definida", 
+                List.of("Id buscado: " + etapaId)
+            );
+        }
+
+        return ResponseEntity.ok(FluxoDTO.parse(fluxo));
+
+
     }
     
 

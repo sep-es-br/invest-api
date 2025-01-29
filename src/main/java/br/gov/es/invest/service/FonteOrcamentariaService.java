@@ -44,4 +44,8 @@ public class FonteOrcamentariaService {
         }
     }
 
+    public List<FonteOrcamentaria> findFontesExtras(){
+        return repository.findFontesExtra();
+    }
+
 }
