@@ -63,6 +63,8 @@ public class ObjetoController {
     private final Logger logger = Logger.getLogger("ObjetoController");
 
     private final ObjetoService service;
+    private final UsuarioService usuarioService;
+    private final TokenService tokenService;
 
     @GetMapping("/allTira")
     public ResponseEntity<?> getAllByFiltro(
@@ -143,7 +145,7 @@ public class ObjetoController {
                 );
             }
             
-            return ResponseEntity.ok(new ObjetoDto(optObjeto.get()));
+            return ResponseEntity.ok(new ObjetoDto(objeto));
 
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -176,6 +178,14 @@ public class ObjetoController {
         
         Objeto objeto = new Objeto(objetoDto);
         
+        
+        if(objeto.getResponsavel() == null) {
+            auth = auth.replace("Bearer ", "");
+
+            String sub = tokenService.validarToken(auth);
+
+            objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
+        }
         
         service.save(objeto);
         

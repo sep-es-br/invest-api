@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
@@ -33,49 +34,42 @@ public class ObjetoService {
     private ObjetoRepository repository;
 
     
-    private  InvestimentoService investimentoService;
+    private InvestimentoService investimentoService;
     private  UnidadeOrcamentariaService unidadeService;
     private  PlanoOrcamentarioService planoService;
     private  ContaService contaService;
-    private  UsuarioService usuarioService;
-    private  TokenService tokenService;
     
     private  StatusService statusService;
+
 
     public void saveAll(List<Objeto> objetos) {
         repository.saveAll(objetos);
     }
 
     public Objeto save(Objeto objeto) {
-        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(new UnidadeOrcamentaria(objetoDto.conta().unidadeOrcamentariaImplementadora()));
+        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(objeto.getConta().getUnidadeOrcamentariaImplementadora());
         
-        if(objeto.getResponsavel() == null) {
-            auth = auth.replace("Bearer ", "");
-
-            String sub = tokenService.validarToken(auth);
-
-            objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
-        }
-
-
         // define o Investimento que vai ser associado
 
         // se não tiver PO usa o investimento generico
 
         Conta conta = null;
-        if(objetoDto.conta().planoOrcamentario() == null) {
+        if(objeto.getConta().getPlanoOrcamentario() == null) {
             conta = contaService.getGenericoByCodUnidade(unidade);
         } else { // se não, busca o investimento
 
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(objetoDto.conta().unidadeOrcamentariaImplementadora().codigo(), objetoDto.conta().planoOrcamentario().codigo());
+            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(
+                objeto.getConta().getUnidadeOrcamentariaImplementadora().getCodigo(), 
+                objeto.getConta().getPlanoOrcamentario().getCodigo()
+            );
             Investimento investimento;
 
             if(optInvestimento.isEmpty()){ // se não existir, cria um novo
 
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(new PlanoOrcamentario(objetoDto.conta().planoOrcamentario()));
+                    PlanoOrcamentario plano = planoService.findOrCreateByCod(objeto.getConta().getPlanoOrcamentario());
 
                     investimento = new Investimento();
-                    investimento.setNome(objetoDto.nome());
+                    investimento.setNome(objeto.getNome());
                     investimento.setUnidadeOrcamentariaImplementadora(unidade);
                     investimento.setPlanoOrcamentario(plano);
             } else { // se existir usa o existente
@@ -352,16 +346,6 @@ public class ObjetoService {
     @Autowired
     public void setContaService(ContaService contaService) {
         this.contaService = contaService;
-    }
-
-    @Autowired
-    public void setUsuarioService(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
-    }
-
-    @Autowired
-    public void setTokenService(TokenService tokenService) {
-        this.tokenService = tokenService;
     }
 
     @Autowired

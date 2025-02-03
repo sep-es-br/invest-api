@@ -1,6 +1,7 @@
 package br.gov.es.invest.model;
 
 import java.io.Serializable;
+import java.security.cert.CertPath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,6 +63,7 @@ public class Objeto extends Entidade implements Serializable {
         this.tipo = dto.tipo();
         this.emStatus = EmStatus.parse(dto.emStatus());
         this.emEtapa = EmEtapa.parse(dto.emEtapa());
+        this.conta = Conta.parse(dto.conta());
         
         this.infoComplementares = dto.infoComplementares();
         this.contrato = dto.contrato();
