@@ -305,8 +305,14 @@ public class ObjetoService {
         return repository.findStatusCadastrados();
     }
 
-    public void removerObjeto(String objetoId) {
+    public Objeto removerObjeto(String objetoId) {
+        Optional<Objeto> optObjeto = repository.findById(objetoId);
+
+        if(optObjeto.isEmpty())
+            return null;
+
         repository.removerObjeto(objetoId);
+        return optObjeto.get();
     }
 
     public List<Objeto> findObjetoByConta(Conta conta) {

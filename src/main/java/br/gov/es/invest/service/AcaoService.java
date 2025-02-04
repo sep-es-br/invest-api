@@ -23,7 +23,7 @@ public class AcaoService {
     private ObjetoService objetoService;
 
     @Transactional
-    public void executarAcao(Objeto objeto, List<Apontamento> apontamentos, Acao acao, Usuario usuario) throws SemApontamentosException{
+    public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Acao acao, Usuario usuario) throws SemApontamentosException{
         
         if(acao.getPositivo() != null && !acao.getPositivo() && apontamentos.isEmpty())
             throw new SemApontamentosException();
@@ -38,9 +38,9 @@ public class AcaoService {
 
                 objeto.setEmStatus(emStatusTarget); // aplica status final
                 objeto.setEmEtapa(null); // remove objeto do fluxo
-                objetoService.save(objeto);
+                return objetoService.save(objeto);
             } else { // se não significa que o fluxo foi cancelado
-                objetoService.removerObjeto(objeto.getId());
+                return objetoService.removerObjeto(objeto.getId());
             }
 
         } else { // meio do fluxo
@@ -68,7 +68,7 @@ public class AcaoService {
 
             objeto.setEmEtapa(emEtapaTarget);
             objeto.setEmStatus(emStatusTarget);
-            objetoService.save(objeto);
+            return objetoService.save(objeto);
         }
         
     }

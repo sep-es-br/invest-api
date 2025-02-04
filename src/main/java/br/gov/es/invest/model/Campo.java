@@ -14,6 +14,11 @@ public class Campo extends Entidade {
     public String campoId;
     public String nome;
 
+    public Campo(String campoId, String nome){
+        this.campoId = campoId;
+        this.nome = nome;
+    }
+
     public static Campo parse(CampoDTO dto) {
         if(dto == null)
             return null;

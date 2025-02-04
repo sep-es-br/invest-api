@@ -14,6 +14,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import br.gov.es.invest.dto.AcaoDTO;
 import br.gov.es.invest.dto.ExecutarAcaoDTO;
+import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.exception.SemApontamentosException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Acao;
@@ -58,7 +59,7 @@ public class AcaoController {
         Usuario usuario = usuarioService.getUserBySub(sub).get();
 
         try {
-            acaoService.executarAcao(objeto, apontamentos, acao, usuario);        
+            return ResponseEntity.ok(new ObjetoDto(acaoService.executarAcao(objeto, apontamentos, acao, usuario)));        
         } catch(SemApontamentosException ex){
             return MensagemErroRest.asResponseEntity(
                 HttpStatus.UNPROCESSABLE_ENTITY, 
@@ -67,7 +68,6 @@ public class AcaoController {
             );
         }
 
-        return ResponseEntity.ok().build();
     }
     
 
