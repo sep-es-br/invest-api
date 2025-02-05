@@ -40,11 +40,19 @@ public class FluxoService {
 
     }
 
+    public Fluxo findById(String id) {
+        return repository.findById(id).orElse(null);
+    }
+
     public Fluxo findByFluxoId(String fluxoId) {
         Fluxo fluxoProbe = new Fluxo();
         fluxoProbe.setFluxoId(fluxoId);
 
         return repository.findBy(Example.of(fluxoProbe), q -> q.firstValue());
+    }
+
+    public Fluxo salvarFluxo(Fluxo fluxo) {
+        return repository.save(fluxo);
     }
 
 
