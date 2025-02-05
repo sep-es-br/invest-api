@@ -23,9 +23,6 @@ public class FluxoService {
     @Autowired
     private FluxoRepository repository;
 
-    private GrupoService grupoService;
-    private StatusService statusService;
-
     public List<Fluxo> findAll() {
         return repository.findAll(Sort.by("codigo", "nome"));
     }
@@ -43,15 +40,13 @@ public class FluxoService {
 
     }
 
-    @Autowired
-    public void setGrupoService(GrupoService grupoService) {
-        this.grupoService = grupoService;
+    public Fluxo findByFluxoId(String fluxoId) {
+        Fluxo fluxoProbe = new Fluxo();
+        fluxoProbe.setFluxoId(fluxoId);
+
+        return repository.findBy(Example.of(fluxoProbe), q -> q.firstValue());
     }
 
-    @Autowired
-    public void setStatusService(StatusService statusService) {
-        this.statusService = statusService;
-    }
 
 
 }

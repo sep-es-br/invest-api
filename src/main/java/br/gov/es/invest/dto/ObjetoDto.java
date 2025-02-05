@@ -43,7 +43,7 @@ public record ObjetoDto(
             model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList(),
             model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
             new ContaDto(model.getConta()),
-            model.getApontamentos().stream().map(ApontamentoDTO::parse).toList()
+            model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList()
         );
     }
 

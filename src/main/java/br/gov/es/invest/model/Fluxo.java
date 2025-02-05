@@ -9,20 +9,27 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 
 import br.gov.es.invest.dto.FluxoDTO;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Node
 public class Fluxo extends Entidade {
     
     private String nome;
+    private String fluxoId;
 
     @Relationship("POSSUI")
     private List<Etapa> etapas;
 
+    @Relationship("COMECA_EM")
+    private Etapa etapaInicial;
+
     public List<Etapa> getEtapas() {
-        return this.etapas.stream().sorted((etapa1, etapa2) -> etapa1.getOrdem() - etapa2.getOrdem()).toList();
+        return this.etapas == null ? null : this.etapas.stream().sorted((etapa1, etapa2) -> etapa1.getOrdem() - etapa2.getOrdem()).toList();
     }
 
     public static Fluxo parse(FluxoDTO dto) {

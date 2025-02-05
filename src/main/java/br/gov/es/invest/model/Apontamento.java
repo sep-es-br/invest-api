@@ -36,7 +36,7 @@ public class Apontamento extends Entidade{
         
         Apontamento apontamento = new Apontamento();
         apontamento.setId(dto.id());
-        apontamento.setTimestamp(DateTimeUtils.getZonedDateTime(dto.timestamp()));
+        apontamento.setTimestamp(dto.timestamp() == null ? null : DateTimeUtils.getZonedDateTime(dto.timestamp()));
         apontamento.setTexto(dto.texto());
         apontamento.setEtapa(Etapa.parse(dto.etapa()));
         apontamento.setCampo(Campo.parse(dto.campo()));

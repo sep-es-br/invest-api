@@ -206,12 +206,13 @@ public class ObjetoController {
 
         service.findObjetoByConta(optObjetoRemovido.get().getConta());
 
-        if(service.findObjetoByConta(optObjetoRemovido.get().getConta()).size() == 1) {
+        if( optObjetoRemovido.get().getConta().getPlanoOrcamentario() != null
+         && service.findObjetoByConta(optObjetoRemovido.get().getConta()).size() == 1) {
             return MensagemErroRest.asResponseEntity(
                 HttpStatus.UNPROCESSABLE_ENTITY, 
                 "Não foi possivel remover o objeto por ser o unico da despesa, uma despesa deve ter ao menos 1 objeto",
                 null
-                );
+            );
             
         }
         

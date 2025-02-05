@@ -18,8 +18,8 @@ public class CampoService {
     private CampoRepository campoRepository;
 
     public List<Campo> findAll(){
-
-        return campoRepository.findAll(Sort.by("nome"));
+ 
+        return campoRepository.findAll(Sort.by("campoId"));
     }
 
 

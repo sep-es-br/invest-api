@@ -1,6 +1,8 @@
 package br.gov.es.invest.service;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +55,14 @@ public class AcaoService {
                     apontamento.setTimestamp(agora);
                     apontamento.setUsuario(usuario);
                     
-                    apontamentoService.adicionarApontamento(objeto, apontamento);
+                    apontamento = apontamentoService.adicionarApontamento(apontamento);
                 }
+
+                ArrayList<Apontamento> todosApontamentos = new ArrayList<>(
+                    objeto.getApontamentos() == null ? Arrays.asList() : objeto.getApontamentos()
+                    );
+                todosApontamentos.addAll(apontamentos);
+                objeto.setApontamentos(todosApontamentos);
             }
     
             EmEtapa emEtapaTarget = new EmEtapa();

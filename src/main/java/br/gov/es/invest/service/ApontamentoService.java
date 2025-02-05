@@ -1,5 +1,6 @@
 package br.gov.es.invest.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,14 +11,13 @@ import br.gov.es.invest.repository.ApontamentoRepository;
 @Service
 public class ApontamentoService {
     
+    @Autowired
     private ApontamentoRepository apontamentoRepository;
 
-    @Transactional
-    public void adicionarApontamento(Objeto objeto, Apontamento apontamento){
+    public Apontamento adicionarApontamento(Apontamento apontamento){
 
-        apontamento = apontamentoRepository.save(apontamento);
+        return apontamentoRepository.save(apontamento);
 
-        apontamentoRepository.mergeObjetoApontamento(objeto, apontamento);
 
     }   
 

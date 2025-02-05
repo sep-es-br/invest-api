@@ -18,7 +18,10 @@ import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
+import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
+import br.gov.es.invest.model.Etapa;
+import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
@@ -40,6 +43,9 @@ public class ObjetoService {
     private  ContaService contaService;
     
     private  StatusService statusService;
+
+    private FluxoService fluxoService;
+
 
 
     public void saveAll(List<Objeto> objetos) {
@@ -94,6 +100,16 @@ public class ObjetoService {
             emStatus.setTimestamp(ZonedDateTime.now());
 
             objeto.setEmStatus(emStatus);
+
+            Fluxo fluxo = fluxoService.findByFluxoId("avaliacaoPip");
+
+            EmEtapa emEtapa = new EmEtapa();
+            emEtapa.setAtividade("Avaliar Solicitação");
+            emEtapa.setDevolvido(false);
+            emEtapa.setEtapa(fluxo.getEtapaInicial());
+            
+            objeto.setEmEtapa(emEtapa);
+            
         }
         
         if(objeto.getId() != null) {
@@ -359,6 +375,10 @@ public class ObjetoService {
         this.statusService = statusService;
     }
 
+    @Autowired
+    public void setEtapaService(FluxoService fluxoService) {
+        this.fluxoService = fluxoService;
+    }
     
 
 }

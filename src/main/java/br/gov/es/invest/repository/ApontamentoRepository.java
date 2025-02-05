@@ -10,8 +10,8 @@ public interface ApontamentoRepository extends Neo4jRepository<Apontamento, Stri
     
     @Query("MATCH (a:Apontamento)\r\n" + //
                 "MATCH (o:Objeto)\r\n" + //
-                "WHERE elementId(a) = $apontamento.id AND elementId(o) = $objeto.id\r\n" + //
+                "WHERE elementId(a) = $apontamentoId AND elementId(o) = $objetoId\r\n" + //
                 "MERGE (o)-[:POSSUI]->(a)")
-    public void mergeObjetoApontamento(Objeto obj, Apontamento apontamento);
+    public void mergeObjetoApontamento(String objetoId, String apontamentoId);
 
 }
