@@ -104,17 +104,17 @@ public class PermissaoController {
         String sub = tokenService.validarToken(authToken);
         
         Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-        // if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) {
-        //     return new PodeDto(
-        //         null, 
-        //         modulo == null ? null : new ModuloDto(modulo), 
-        //         true, 
-        //         true, 
-        //         true, 
-        //         true, 
-        //         true
-        //     );
-        // }
+        if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) {
+            return new PodeDto(
+                null, 
+                modulo == null ? null : new ModuloDto(modulo), 
+                true, 
+                true, 
+                true, 
+                true, 
+                true
+            );
+        }
 
         if(modulo == null) return null;
 
