@@ -78,10 +78,6 @@ public class AutenticacaoService {
 
             userInfoDto = new ObjectMapper().readValue(response.body(), ACUserInfoDto.class);
 
-            if(userInfoDto.role().size() == 0) {
-                throw new UsuarioSemPermissaoException();
-            }
-
             return userInfoDto;
         } catch (InterruptedException | IOException e) {
             logger.error(e.getMessage());
