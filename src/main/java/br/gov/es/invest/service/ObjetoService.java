@@ -128,6 +128,10 @@ public class ObjetoService {
         return repository.save(objeto);
     }
 
+    public Objeto findById(String id){
+        return repository.findById(id).orElse(null);
+    }
+
     public List<Objeto> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, String fonteId, Pageable pageable){
         List<ObjetoTiraProjection> listTira = Arrays.asList();
 
@@ -156,7 +160,7 @@ public class ObjetoService {
 
     }
 
-    public List<Objeto> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, String fonteId, Pageable pageable){
+    public List<Objeto> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
         List<ObjetoTiraProjection> listTira = Arrays.asList();
 
         if(pageable != null) {
@@ -170,6 +174,12 @@ public class ObjetoService {
         if(statusId != null) {
             objetoFiltrado = objetoFiltrado.stream()
                             .filter( obj -> obj.getEmStatus().getStatus().getId().equals(statusId) )
+                            .toList();      
+        }
+
+        if(etapaId != null) {
+            objetoFiltrado = objetoFiltrado.stream()
+                            .filter( obj -> obj.getEmEtapa() != null && obj.getEmEtapa().getEtapa().getId().equals(etapaId) )
                             .toList();      
         }
 

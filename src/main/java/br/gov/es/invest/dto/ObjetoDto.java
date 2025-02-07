@@ -6,6 +6,7 @@ import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.Parecer;
 
 public record ObjetoDto(
     String id,
@@ -23,7 +24,8 @@ public record ObjetoDto(
     List<CustoDTO> recursosFinanceiros,
     UsuarioDto responsavel,
     ContaDto conta,
-    List<ApontamentoDTO> apontamentos
+    List<ApontamentoDTO> apontamentos,
+    List<ParecerDTO> pareceres
 ) {
     
     public ObjetoDto(Objeto model) {
@@ -43,7 +45,8 @@ public record ObjetoDto(
             model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList(),
             model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
             new ContaDto(model.getConta()),
-            model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList()
+            model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList(),
+            model.getPareceres() == null ? null : model.getPareceres().stream().map(ParecerDTO::parse).toList()
         );
     }
 

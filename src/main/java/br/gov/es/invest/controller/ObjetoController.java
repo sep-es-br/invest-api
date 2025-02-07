@@ -97,12 +97,13 @@ public class ObjetoController {
     public ResponseEntity<?> getAllByFiltroEmProcessamento(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
         @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
-        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag 
+        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
+        @RequestParam(required = false) String etapaId
     ) {
 
         try{
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, etapaId, null, PageRequest.of(pgAtual-1, tamPag));
 
             List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
                 return new ObjetoTiraDTO(obj);
@@ -263,12 +264,12 @@ public class ObjetoController {
 
     @GetMapping("/countEmProcessameto")
     public ResponseEntity<?> getAmmoutByFilterEmProcessamento(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId,
+        @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId, @RequestParam(required = false) String etapaId,
         @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
     ) {
         try{
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, null, null);
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, etapaId, null, null);
 
             return ResponseEntity.ok(objetos.size());
         } catch(Exception e){

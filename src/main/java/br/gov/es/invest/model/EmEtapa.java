@@ -39,6 +39,7 @@ public class EmEtapa extends Entidade {
 
         EmEtapa emEtapa = new EmEtapa();
         emEtapa.setId(projection.getId());
+        emEtapa.setEtapa(projection.getEtapa());
 
         return emEtapa;
     }

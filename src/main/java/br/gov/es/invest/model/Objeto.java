@@ -56,6 +56,9 @@ public class Objeto extends Entidade implements Serializable {
     @Relationship("POSSUI")
     private List<Apontamento> apontamentos;
 
+    @Relationship("POSSUI")
+    private List<Parecer> pareceres;
+
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
         this.nome = dto.nome();
@@ -74,6 +77,7 @@ public class Objeto extends Entidade implements Serializable {
         this.custosEstimadores = new ArrayList<>(dto.recursosFinanceiros().stream().map(custoDto -> new Custo(custoDto)).toList());
         this.microrregiao = dto.microregiaoAtendida() == null ? null : new Localidade(dto.microregiaoAtendida());
         this.apontamentos = dto.apontamentos() == null ? null : dto.apontamentos().stream().map(Apontamento::parse).toList();
+        this.pareceres = dto.pareceres() == null ? null : dto.pareceres().stream().map(Parecer::parse).toList();
         
     }
 

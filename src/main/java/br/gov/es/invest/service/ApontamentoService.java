@@ -14,11 +14,16 @@ public class ApontamentoService {
     @Autowired
     private ApontamentoRepository apontamentoRepository;
 
-    public Apontamento adicionarApontamento(Apontamento apontamento){
+    public Apontamento save(Apontamento apontamento){
 
         return apontamentoRepository.save(apontamento);
 
+    }  
 
-    }   
+    public void mergeObjetoApontamento(Apontamento apontamento, Objeto objeto){
+        apontamento = apontamentoRepository.save(apontamento);
+
+        apontamentoRepository.mergeObjetoApontamento(objeto.getId(), apontamento.getId());
+    }
 
 }

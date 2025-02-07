@@ -22,6 +22,7 @@ import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.Parecer;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.AcaoService;
 import br.gov.es.invest.service.ApontamentoService;
@@ -49,9 +50,15 @@ public class AcaoController {
     @PostMapping("/executarAcao")
     public ResponseEntity<?> executarAcao(@RequestBody ExecutarAcaoDTO executarAcaoDTO, @RequestHeader("Authorization") String authToken) {
         
+        List<Apontamento> apontamentos = null;
+        Parecer parecer = null;
 
         Objeto objeto = Objeto.parse(executarAcaoDTO.objeto());
-        List<Apontamento> apontamentos = executarAcaoDTO.apontamentos().stream().map(Apontamento::parse).toList();
+        if(executarAcaoDTO.parecer() != null){
+            parecer = Parecer.parse(executarAcaoDTO.parecer());
+        } else {
+            apontamentos = executarAcaoDTO.apontamentos().stream().map(Apontamento::parse).toList();
+        }
         Acao acao = Acao.parse(executarAcaoDTO.acao(), etapaService.findById(executarAcaoDTO.acao().proxEtapaId()).orElse(null)); 
 
         String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
@@ -59,7 +66,9 @@ public class AcaoController {
         Usuario usuario = usuarioService.getUserBySub(sub).get();
 
         try {
-            return ResponseEntity.ok(new ObjetoDto(acaoService.executarAcao(objeto, apontamentos, acao, usuario)));        
+            
+
+            return ResponseEntity.ok(new ObjetoDto(acaoService.executarAcao(objeto, apontamentos, parecer, acao, usuario)));        
         } catch(SemApontamentosException ex){
             return MensagemErroRest.asResponseEntity(
                 HttpStatus.UNPROCESSABLE_ENTITY, 
