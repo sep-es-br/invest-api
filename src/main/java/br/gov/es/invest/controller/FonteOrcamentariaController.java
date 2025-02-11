@@ -30,6 +30,14 @@ public class FonteOrcamentariaController {
         return service.findAll().stream().map(fonte -> new FonteOrcamentariaDTO(fonte)).sorted((f1, f2) -> f1.getCodigo().compareTo(f2.getCodigo())).toList();
     }
 
+    @GetMapping("/extras")
+    public List<FonteOrcamentariaDTO> getFontesExtras() {
+        return service.findFontesExtras().stream()
+                .map(FonteOrcamentariaDTO::parse)
+                .toList();
+    }
+    
+
     @GetMapping("/doSigefes")
     public List<FonteOrcamentariaDTO> getDoSigefes () {
 

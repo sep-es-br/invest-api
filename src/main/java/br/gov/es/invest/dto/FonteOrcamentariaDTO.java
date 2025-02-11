@@ -25,4 +25,8 @@ public class FonteOrcamentariaDTO implements Serializable {
         this.codigo = fonte.getCodigo();
         this.descricao = fonte.getDescricao();
     }
+
+    public static FonteOrcamentariaDTO parse(FonteOrcamentaria fonte) {
+        return fonte == null ? null : new FonteOrcamentariaDTO(fonte);
+    }
 }

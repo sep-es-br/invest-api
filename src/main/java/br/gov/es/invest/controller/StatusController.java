@@ -1,17 +1,24 @@
 package br.gov.es.invest.controller;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.gov.es.invest.dto.AplicarStatusDTO;
 import br.gov.es.invest.dto.StatusDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.service.StatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -35,6 +42,15 @@ public class StatusController {
             null
         );
     }
+
+    @PutMapping("/aplicarStatus")
+    public ResponseEntity<?> aplicarStatus(@RequestBody AplicarStatusDTO aplicarStatusDto) {
+        
+
+        
+        return ResponseEntity.ok().build();
+    }
+    
     
 
 }

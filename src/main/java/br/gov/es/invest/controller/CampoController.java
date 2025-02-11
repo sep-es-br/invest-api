@@ -37,4 +37,12 @@ public class CampoController {
 
     }
 
+    // @GetMapping("/gerarCampos")
+    // public String getMethodName() {
+    //     campoService.gerarCampos();
+        
+    //     return "Sucesso";
+    // }
+    
+
 }
