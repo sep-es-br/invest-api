@@ -5,5 +5,6 @@ public enum StatusEnum {
     SOLICITADO,
     EM_APROVACAO,
     DEVOLVIDO,
-    EM_ANALISE
+    EM_ANALISE,
+    FINALIZANDO
 }
