@@ -112,6 +112,7 @@ public class PermissaoController {
                 true, 
                 true, 
                 true, 
+                true,
                 true
             );
         }
@@ -134,29 +135,6 @@ public class PermissaoController {
         return new PodeDto(podeMax);
         
     }
-
-    @GetMapping("/podeVerUnidades")
-    public boolean userPodeVerUnidades(@RequestHeader("Authorization") String authToken) {
-        authToken = authToken.replace("Bearer ", "");
-        
-        String sub = tokenService.validarToken(authToken);
-        
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-
-        List<Grupo> gruposDoUsuario = grupoService.getGruposDoUsuario(usuario.getId());
-
-        return testarFuncao(usuario.getRole(), "GESTOR_MASTER");
-
-        // for(Grupo grupo : gruposDoUsuario) {
-        //     if(grupo.isPodeVerTodasUnidades()){
-        //         return true;
-        //     }
-        // }
-        
-        
-        // return false;
-    }
-    
 
     @GetMapping("/buildMenu")
     public List<ItemMenu> buildMenu(@RequestHeader("Authorization") String authToken){
@@ -223,6 +201,7 @@ public class PermissaoController {
             out.setCriar(out.isCriar() || pode.isCriar());
             out.setEditar(out.isEditar() || pode.isEditar());
             out.setExcluir(out.isExcluir() || pode.isExcluir());
+            out.setVerTodasUnidades(out.isVerTodasUnidades() || pode.isVerTodasUnidades());
         }
         return out;
     }

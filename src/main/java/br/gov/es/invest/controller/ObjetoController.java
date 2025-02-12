@@ -121,11 +121,11 @@ public class ObjetoController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<?> getById(@RequestParam String id) {
+    public ResponseEntity<?> getById(@RequestParam String id, @RequestParam(required = false) boolean updateStatus) {
 
         try{
 
-            Optional<Objeto> optObjeto = service.getById(id);
+            Optional<Objeto> optObjeto = service.getById(id, true);
 
             if(optObjeto.isEmpty()) {
                 return MensagemErroRest.asResponseEntity(

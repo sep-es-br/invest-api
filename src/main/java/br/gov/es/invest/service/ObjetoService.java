@@ -26,6 +26,7 @@ import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.Status;
+import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
@@ -89,10 +90,8 @@ public class ObjetoService {
         objeto.setConta(conta);
 
         if(objeto.getEmStatus() == null) {
-            Status novoStatus = new Status();
-            novoStatus.setNome("Solicitado");
             
-            novoStatus = statusService.findOrCreate(novoStatus);
+            Status novoStatus = statusService.getByStatusId(StatusEnum.SOLICITADO.name()).get();
 
             EmStatus emStatus = new EmStatus();
 
@@ -310,8 +309,23 @@ public class ObjetoService {
         return repository.getByCusto(custo.getId());
     }
 
+    public Optional<Objeto> getById(String id, boolean updateStatus) {
+        Optional<Objeto> optObjeto = repository.findById(id);
+        
+        if(optObjeto.isPresent() 
+            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO) 
+            && updateStatus){
+            Status novoStatus = statusService.getByStatusId(StatusEnum.EM_ANALISE.name()).get();
+
+            statusService.aplicarStatus(optObjeto.get(), novoStatus);
+            optObjeto = repository.findById(id);
+        }
+
+        return optObjeto;
+    }
+
     public Optional<Objeto> getById(String id) {
-        return repository.findById(id);
+        return this.getById(id, false);
     }
 
     public List<Objeto> getAllByIds(List<String> ids) {

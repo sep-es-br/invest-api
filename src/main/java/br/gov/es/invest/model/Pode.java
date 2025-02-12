@@ -20,6 +20,7 @@ public class Pode extends Entidade {
     private boolean criar;
     private boolean editar;
     private boolean excluir;
+    private boolean verTodasUnidades;
     
     public Pode(PodeDto dto) {
         this.setId(dto.id());
@@ -29,5 +30,6 @@ public class Pode extends Entidade {
         this.criar = dto.criar();
         this.editar = dto.editar();
         this.excluir = dto.excluir();
+        this.verTodasUnidades = dto.verTodasUnidades();
     }
 }
