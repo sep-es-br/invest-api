@@ -18,7 +18,7 @@ public class OrgaoService {
     public Orgao findOrCreate(Orgao orgao){
 
         Orgao probe = new Orgao();
-        orgao.setGuid(orgao.getGuid());
+        probe.setGuid(orgao.getGuid());
 
         Optional<Orgao> optOrgao = repository.findBy(Example.of(probe), query -> query.first());
 

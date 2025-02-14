@@ -16,6 +16,12 @@ public interface ContaRepository extends Neo4jRepository<Conta, String> {
             "RETURN conta ")
     public Conta getGenericoByCodUnidade(String codUnidade);
 
+        @Query("MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
+                "WHERE elementId(conta) IN $ids \r\n" + //
+                "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
+                "RETURN conta")
+        public List<Conta> filtrarContasForaProcessamento(List<String> ids);
+
     @Query("MATCH (unidadeOrcamentaria:UnidadeOrcamentaria)-[implemanta:IMPLEMENTA]->(conta:Conta)<-[orienta:ORIENTA]-(planoOrcamentario:PlanoOrcamentario),\r\n" + //
                 "    (conta)<-[custeado:CUSTEADO]-(obj:Objeto)\r\n" + //
                 "WHERE ( $unidadeId IS NULL OR elementId(unidadeOrcamentaria) = $unidadeId)\r\n" + //

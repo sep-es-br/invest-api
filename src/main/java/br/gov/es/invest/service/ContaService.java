@@ -26,6 +26,13 @@ public class ContaService {
     @Autowired
     private ContaRepository repository;
 
+    public ObjetoService objetoService;
+
+    @Autowired
+    public void setObjetoService(ObjetoService objetoService) {
+        this.objetoService = objetoService;
+    }
+
     public Conta getGenericoByCodUnidade(UnidadeOrcamentaria unidadeOrcamentaria) {
 
         Conta conta = repository.getGenericoByCodUnidade(unidadeOrcamentaria.getCodigo());
@@ -76,11 +83,13 @@ public class ContaService {
 
             long indexTo = Long.min(pageable.getOffset()+pageable.getPageSize(), result.size()-pageable.getOffset());
 
-            return result
+            result = result
             .subList(Integer.parseInt(String.valueOf(pageable.getOffset())) , Integer.parseInt( String.valueOf(indexTo)));
-        } else {
-            return result;
         }
+
+        result = repository.filtrarContasForaProcessamento(result.stream().map(c -> c.getId()).toList());
+
+        return repository.findAllById(result.stream().map(c -> c.getId()).toList()) ;
 
 
 
