@@ -29,7 +29,7 @@ public class AcaoService {
     public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Usuario usuario) throws SemApontamentosException{
         
 
-        if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && apontamentos.isEmpty())
+        if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())
             throw new SemApontamentosException();
 
         ZonedDateTime agora = ZonedDateTime.now();
