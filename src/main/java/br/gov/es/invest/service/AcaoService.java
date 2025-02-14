@@ -65,21 +65,30 @@ public class AcaoService {
 
 
                 } else if(apontamentos != null) {
-                    for(Apontamento apontamento : apontamentos) {
+
+                    Objeto objetoOriginal = objetoService.findById(objeto.getId());
+
+                    List<Apontamento> apontamentosAtuais = objetoOriginal.getApontamentos();
+                    List<Apontamento> apontamentosRemovidos = apontamentosAtuais.stream()
+                    .filter( apontamento -> {
+                            return !apontamentos.stream().map(a -> a.getId()).toList().contains(apontamento.getId());
+                        } ).toList();
+
+                    for(Apontamento removido : apontamentosRemovidos){
+                        apontamentoService.remover(removido);
+                    }
+
+                    for(Apontamento apontamento : apontamentos.stream().filter(a -> a.getId() == null).toList()) {
     
                         apontamento.setEtapa(acao.getProxEtapa());
                         apontamento.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
                         apontamento.setTimestamp(agora);
                         apontamento.setUsuario(usuario);
+                        apontamento.setActive(true);
                         
-                        apontamento = apontamentoService.save(apontamento);
                     }
     
-                    ArrayList<Apontamento> todosApontamentos = new ArrayList<>(
-                        objeto.getApontamentos() == null ? Arrays.asList() : objeto.getApontamentos()
-                        );
-                    todosApontamentos.addAll(apontamentos);
-                    objeto.setApontamentos(todosApontamentos);
+                    objeto.setApontamentos(apontamentos);
                 }
 
                 

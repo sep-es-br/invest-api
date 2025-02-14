@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.EmStatus;
@@ -35,6 +36,10 @@ public class StatusService {
 
     public List<Status> findAllStatusObjeto(){
         return repository.findAllStatusObjeto();
+    }
+
+    public List<Status> findAll(){
+        return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
 
     public Optional<Status> getByStatusId(String statusId){

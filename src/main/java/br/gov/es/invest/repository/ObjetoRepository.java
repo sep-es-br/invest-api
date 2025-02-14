@@ -40,6 +40,62 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                 "SKIP $skip LIMIT $limit")
     public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable);
 
+    
+    @Query("CALL () {\r\n" + //
+                        "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
+                        "    (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)\r\n" + //
+                        "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                        "    OPTIONAL MATCH (fonteExec:FonteOrcamentaria)<-[vinculada:VINCULADA_POR]-(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
+                        "    OPTIONAL MATCH (obj)-[emEtapa:EM]->(etapa:Etapa)\r\n" + //
+                        "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
+                        "    RETURN obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa,\r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "} WITH  obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa, \r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                        "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
+                        "    AND (\r\n" + //
+                        "        $idPo IS NULL\r\n" + //
+                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
+                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        )\r\n" + //
+                        "    AND etapa IS NOT NULL\r\n" + //=
+                        "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
+                        "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
+                        "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
+                        "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)" + //
+                "SKIP $skip LIMIT $limit")
+    public List<ObjetoTiraProjection> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable);
+    
+    @Query("CALL () {\r\n" + //
+                        "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
+                        "    (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)\r\n" + //
+                        "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+                        "    OPTIONAL MATCH (fonteExec:FonteOrcamentaria)<-[vinculada:VINCULADA_POR]-(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
+                        "    OPTIONAL MATCH (obj)-[emEtapa:EM]->(etapa:Etapa)\r\n" + //
+                        "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
+                        "    RETURN obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa,\r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "} WITH  obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa, \r\n" + //
+                        "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
+                        "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                        "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
+                        "    AND (\r\n" + //
+                        "        $idPo IS NULL\r\n" + //
+                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
+                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        )\r\n" + //
+                        "    AND etapa IS NOT NULL\r\n" + //=
+                        "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
+                        "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
+                        "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
+                        "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)")
+    public List<ObjetoTiraProjection> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId);
+
     @Query("CALL () {\r\n" + //
                         "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
                         "    (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)\r\n" + //

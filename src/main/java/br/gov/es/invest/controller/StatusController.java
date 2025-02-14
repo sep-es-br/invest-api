@@ -38,7 +38,7 @@ public class StatusController {
     public ResponseEntity<?> getStatus(@RequestParam(required = false) String id) {
         
         if(id == null) {
-            return ResponseEntity.ok().body(statusService.findAllStatusObjeto().stream().map(StatusDTO::parse).toList());
+            return ResponseEntity.ok().body(statusService.findAll().stream().map(StatusDTO::parse).toList());
         }
 
         return MensagemErroRest.asResponseEntity(

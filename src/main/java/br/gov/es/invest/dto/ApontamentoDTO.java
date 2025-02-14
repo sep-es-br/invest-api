@@ -10,7 +10,8 @@ public record ApontamentoDTO(
     EtapaDTO etapa,
     CampoDTO campo,
     UsuarioDto usuario,
-    GrupoDTO grupo
+    GrupoDTO grupo,
+    boolean active
 ) {
 
     public static ApontamentoDTO parse(Apontamento model) {
@@ -22,7 +23,8 @@ public record ApontamentoDTO(
             EtapaDTO.parse(model.getEtapa()), 
             CampoDTO.parse(model.getCampo()), 
             UsuarioDto.parse(model.getUsuario()), 
-            GrupoDTO.parse(model.getGrupo())
+            GrupoDTO.parse(model.getGrupo()),
+            model.isActive()
         );
 
     }

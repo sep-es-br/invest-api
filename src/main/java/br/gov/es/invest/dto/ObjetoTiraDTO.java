@@ -1,5 +1,7 @@
 package br.gov.es.invest.dto;
 
+import java.util.Arrays;
+
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -21,6 +23,7 @@ public class ObjetoTiraDTO {
     private Double totalHomologado;
     private Double totalOrcado;
     private Double totalAutorizado;
+    private Double totalEmpenhado;
     private Double totalDisponivel;
     private String status;
 
@@ -36,9 +39,6 @@ public class ObjetoTiraDTO {
 
         this.totalPrevisto = 0d;
         this.totalHomologado = 0d;
-        this.totalOrcado = 0d;
-        this.totalAutorizado = 0d;
-        this.totalDisponivel = 0d;
         this.status = objeto.getEmStatus() == null ? "null" : objeto.getEmStatus().getStatus().getNome();
 
         objeto.getCustosEstimadores().forEach(custo -> {
@@ -50,6 +50,11 @@ public class ObjetoTiraDTO {
             });
 
         });
+        
+        this.totalOrcado = 0d;
+        this.totalAutorizado = 0d;
+        this.totalDisponivel = 0d;
+        this.totalEmpenhado = 0d;
 
         objeto.getConta().getExecucoesOrcamentaria().forEach(exec -> {
 
@@ -57,6 +62,7 @@ public class ObjetoTiraDTO {
                 this.totalOrcado += vinculadaPor.getOrcado();
                 this.totalAutorizado += vinculadaPor.getAutorizado();
                 this.totalDisponivel += vinculadaPor.getDispSemReserva();
+                this.totalEmpenhado += Arrays.stream(vinculadaPor.getEmpenhado()).reduce(0, Double::sum); 
             });
 
             

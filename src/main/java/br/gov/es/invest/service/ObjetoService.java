@@ -163,30 +163,31 @@ public class ObjetoService {
         List<ObjetoTiraProjection> listTira = Arrays.asList();
 
         if(pageable != null) {
-            listTira = repository.getAllListByFilter(exercicio, nome, idUnidade, idPo, statusId, pageable);
+            listTira = repository.getAllListByFilterEmProcessamento(exercicio, nome, idUnidade, idPo, statusId, pageable);
         } else {
-            listTira = repository.getAllListByFilter(exercicio, nome, idUnidade, idPo, statusId);
+            listTira = repository.getAllListByFilterEmProcessamento(exercicio, nome, idUnidade, idPo, statusId);
         }
 
-        List<Objeto> objetoFiltrado = listTira.stream().map(Objeto::parse).filter(obj -> obj.getEmEtapa() != null).toList();
+        // List<Objeto> objetoFiltrado = listTira.stream().map(Objeto::parse).filter(obj -> obj.getEmEtapa() != null).toList();
 
-        if(statusId != null) {
-            objetoFiltrado = objetoFiltrado.stream()
-                            .filter( obj -> obj.getEmStatus().getStatus().getId().equals(statusId) )
-                            .toList();      
-        }
+        // if(statusId != null) {
+        //     objetoFiltrado = objetoFiltrado.stream()
+        //                     .filter( obj -> obj.getEmStatus().getStatus().getId().equals(statusId) )
+        //                     .toList();      
+        // }
 
-        if(etapaId != null) {
-            objetoFiltrado = objetoFiltrado.stream()
-                            .filter( obj -> obj.getEmEtapa() != null && obj.getEmEtapa().getEtapa().getId().equals(etapaId) )
-                            .toList();      
-        }
+        // if(etapaId != null) {
+        //     objetoFiltrado = objetoFiltrado.stream()
+        //                     .filter( obj -> obj.getEmEtapa() != null && obj.getEmEtapa().getEtapa().getId().equals(etapaId) )
+        //                     .toList();      
+        // }
 
-        for(Objeto objeto : objetoFiltrado) {
-            objeto.filtrar(exercicio, fonteId);
-        }
+        // for(Objeto objeto : objetoFiltrado) {
+        //     objeto.filtrar(exercicio, fonteId);
+        // }
 
-        return objetoFiltrado;
+        return listTira.stream().map(Objeto::parse).toList();
+        // return objetoFiltrado;
 
     }
 

@@ -1,5 +1,7 @@
 package br.gov.es.invest.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +20,17 @@ public class ApontamentoService {
 
         return apontamentoRepository.save(apontamento);
 
-    }  
+    } 
+    
+    public void remover(Apontamento apontamento) {
+        // apontamentoRepository.delete(apontamento);
+        Optional<Apontamento> optApontamento = apontamentoRepository.findById(apontamento.getId());
+        if(optApontamento.isPresent()) {
+            apontamento = optApontamento.get();
+            apontamento.setActive(false);
+            apontamentoRepository.save(apontamento);
+        }
+    }
 
     public void mergeObjetoApontamento(Apontamento apontamento, Objeto objeto){
         apontamento = apontamentoRepository.save(apontamento);

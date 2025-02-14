@@ -17,6 +17,7 @@ public class Apontamento extends Entidade{
     
     private ZonedDateTime timestamp;
     private String texto;
+    private boolean active;
 
     @Relationship("EM")
     private Etapa etapa;
@@ -42,6 +43,7 @@ public class Apontamento extends Entidade{
         apontamento.setCampo(Campo.parse(dto.campo()));
         apontamento.setUsuario(Usuario.parse(dto.usuario()));
         apontamento.setGrupo(Grupo.parse(dto.grupo()));
+        apontamento.setActive(dto.active());
 
         return apontamento;
 
