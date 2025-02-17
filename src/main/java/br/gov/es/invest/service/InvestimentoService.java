@@ -2,8 +2,11 @@ package br.gov.es.invest.service;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -15,9 +18,12 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.dto.InvestimentoTiraDTO;
+import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.FonteOrcamentaria;
@@ -28,12 +34,16 @@ import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.VinculadaPor;
 import br.gov.es.invest.repository.InvestimentoRepository;
+import br.gov.es.invest.utils.DataListResult;
 
 @Service
 public class InvestimentoService {
     
     @Autowired
     private InvestimentoRepository repository;
+
+    @Autowired
+    private Neo4jOperations neo4jOperations;
 
     @Autowired
     private ObjetoService objetoService;
@@ -45,6 +55,77 @@ public class InvestimentoService {
 
     public Investimento save(Investimento investimento) {
         return repository.save(investimento);
+    }
+
+    public DataListResult<TiraInvestimentoProjection> findAllTiraBy(
+            String nome, String codUnidade, String codPO,
+            Integer exercicio, String idFonte, Pageable pageable
+        ) {
+
+        String cypherBase = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto),\r\n" + //
+                            "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
+                            "WHERE ($idPo IS NULL OR elementId(po) = $idPo)\r\n" + //
+                            "    AND ( $idUnidade IS NULL OR elementId(unidade) = $idUnidade )\r\n" + //
+                            "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
+                            "    AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                            "CALL (obj) {\r\n" + //
+                            "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
+                            "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
+                            "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
+                            "    RETURN \r\n" + //
+                            "        sum(indicada_por.previsto) AS totalPrevisto, \r\n" + //
+                            "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
+                            "} \r\n" + //
+                            "CALL (inv) {\r\n" + //
+                            "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
+                            "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
+                            "        AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r\n" + //
+                            "    RETURN\r\n" + //
+                            "        sum(vinculada_por.orcado) AS totalOrcado,\r\n" + //
+                            "        sum(vinculada_por.autorizado) AS totalAutorizado, \r\n" + //
+                            "        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado, \r\n" + //
+                            "        sum(vinculada_por.dispSemReserva) AS totalDisponivel\r\n" + //
+                            "}\r\n";
+
+        String cypherQuery = cypherBase + 
+                "RETURN\r\n" + //
+                "    elementId(inv) AS id,\r\n" + //
+                "    po.nome AS nome, \r\n" + //
+                "    po.codigo AS codPO,\r\n" + //
+                "    unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria, \r\n" + //
+                "    totalPrevisto,\r\n" + //
+                "    totalContratado,\r\n" + //
+                "    totalOrcado,\r\n" + //
+                "    totalAutorizado, \r\n" + //
+                "    totalEmpenhado, \r\n" + //
+                "    totalDisponivel \r\n";
+
+        String cypherCount = cypherBase + 
+                "RETURN\r\n" + //
+                "    COUNT(inv)\r\n";
+
+
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("idPo", codPO);
+        params.put("idUnidade", codUnidade);
+        params.put("nome", nome);
+        params.put("idFonte", idFonte);
+        params.put("exercicio", exercicio);
+        params.put("idPo", codPO);
+
+        if(pageable != null) {
+            cypherQuery += "SKIP $skip LIMIT $limit";
+            params.put("skip", pageable.getOffset());
+            params.put("limit", pageable.getPageSize());
+        }
+
+        List<TiraInvestimentoProjection> data = this.neo4jOperations.findAll(cypherQuery, params, TiraInvestimentoProjection.class);
+
+        int count = (int) this.neo4jOperations.count(cypherCount, params);
+
+        return new DataListResult<TiraInvestimentoProjection>(data, count);
+
     }
 
     public List<Investimento> findAllByFilterValores(

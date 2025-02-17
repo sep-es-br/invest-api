@@ -3,6 +3,7 @@ package br.gov.es.invest.dto;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -15,13 +16,15 @@ import lombok.Setter;
 @NoArgsConstructor
 public class InvestimentoTiraDTO {
 
+    private String id;
     private String nome;
     private String codPO;
     private String unidadeOrcamentaria;
     private Double totalPrevisto;
-    private Double totalHomologado;
+    private Double totalContratado;
     private Double totalOrcado;
     private Double totalAutorizado;
+    private Double totalEmpenhado;
     private Double totalDisponivel;
     
 
@@ -39,19 +42,44 @@ public class InvestimentoTiraDTO {
         }).collect(Collectors.toList());
 
         this.totalPrevisto = 0d;
-        this.totalHomologado = 0d;
+        this.totalContratado = 0d;
         this.totalOrcado = 0d;
         this.totalAutorizado = 0d;
         this.totalDisponivel = 0d;
 
         this.objetos.forEach(obj -> {
             this.totalPrevisto += obj.getTotalPrevisto();
-            this.totalHomologado += obj.getTotalOrcado();
+            this.totalContratado += obj.getTotalOrcado();
             this.totalOrcado += obj.getTotalOrcado();
             this.totalAutorizado += obj.getTotalAutorizado();
             this.totalDisponivel += obj.getTotalDisponivel();
         });
 
+    }
+
+    public static InvestimentoTiraDTO parse(TiraInvestimentoProjection projection, List<Objeto> objetos) {
+        if(projection == null) {
+            return null;
+        }
+
+        InvestimentoTiraDTO investimentoTiraDTO = new InvestimentoTiraDTO();
+        investimentoTiraDTO.setId(projection.id());
+        investimentoTiraDTO.setCodPO(projection.codPO());
+        investimentoTiraDTO.setNome(projection.nome());
+        investimentoTiraDTO.setUnidadeOrcamentaria(projection.unidadeOrcamentaria());
+        investimentoTiraDTO.setTotalPrevisto(projection.totalPrevisto());
+        investimentoTiraDTO.setTotalContratado(projection.totalContratado());
+        investimentoTiraDTO.setTotalDisponivel(projection.totalDisponivel());
+        investimentoTiraDTO.setTotalEmpenhado(projection.totalEmpenhado());
+        investimentoTiraDTO.setTotalOrcado(projection.totalOrcado());
+        investimentoTiraDTO.setTotalAutorizado(projection.totalAutorizado());
+        
+        investimentoTiraDTO.setObjetos(objetos.stream().map(objeto -> {
+            return new ObjetoTiraDTO(objeto);
+        }).collect(Collectors.toList()));
+
+        return investimentoTiraDTO;
+        
     }
 
     

@@ -357,9 +357,13 @@ public class ObjetoService {
     }
 
     public List<Objeto> findObjetoByConta(Conta conta) {
+        return this.findObjetoByConta(conta.getId());
+    }
+
+    public List<Objeto> findObjetoByConta(String contaId) {
         Objeto objetoProbe = new Objeto();
         Conta contaProbe = new Conta();
-        contaProbe.setId(conta.getId());
+        contaProbe.setId(contaId);
         objetoProbe.setConta(contaProbe);
 
         return repository.findAll(Example.of(objetoProbe));

@@ -20,11 +20,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import br.gov.es.invest.dto.ContaTiraDTO;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
+import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.service.ContaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.ObjetoService;
+import br.gov.es.invest.utils.DataListResult;
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -37,6 +40,7 @@ public class InvestimentoController {
     private final InvestimentoService service;
 
     private final ObjetoService objetoService;
+    private final ContaService contaService;
 
     private final Logger logger = Logger.getLogger("InvestimentoController");
 
@@ -60,27 +64,22 @@ public class InvestimentoController {
     // }
     
     @GetMapping("/filtrarValores")
-    public ResponseEntity<List<InvestimentoTiraDTO>> getAllTiraByFilter(
+    public ResponseEntity<DataListResult<InvestimentoTiraDTO>> getAllTiraByFilter(
             @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
             @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
         ) {
-            try {
 
-                List<Investimento> investimentos = service.findAllByFilterValores(
-                    nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag)
-                );
+        DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(nome, codUnidade, codPO, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag));
+        
+        
+        DataListResult<InvestimentoTiraDTO> dataListDto = new DataListResult<>(
+            dataList.data().stream().map(investimento -> {
+                return InvestimentoTiraDTO.parse(investimento, objetoService.findObjetoByConta(investimento.id()));
+            }).toList(), 
+            dataList.ammount()
+        );
 
-                List<InvestimentoTiraDTO> investimentosDTO = investimentos.stream()
-                    .map(inv -> {
-                        
-                        return new InvestimentoTiraDTO(inv, objetoService.findObjetoByConta(inv));
-                    }).toList();
-
-                return ResponseEntity.ok(investimentosDTO);
-            } catch (Exception e){
-                logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-                return ResponseEntity.internalServerError().build();
-            }
+        return ResponseEntity.ok(dataListDto);
         
     }
 
