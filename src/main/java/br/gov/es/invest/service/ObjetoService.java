@@ -3,6 +3,7 @@ package br.gov.es.invest.service;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -12,10 +13,12 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.EmEtapa;
@@ -30,12 +33,16 @@ import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
+import br.gov.es.invest.utils.DataListResult;
 
 @Service
 public class ObjetoService {
     
     @Autowired
     private ObjetoRepository repository;
+
+    @Autowired
+    private Neo4jOperations neo4jOperations;
 
     
     private InvestimentoService investimentoService;
@@ -368,6 +375,67 @@ public class ObjetoService {
 
         return repository.findAll(Example.of(objetoProbe));
     }
+
+    public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
+            String idConta, Integer exercicio, String idFonte, Pageable pageable
+    ) {
+        String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
+                        "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
+                        "WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
+                        "    AND (elementId(inv) = $idConta)\r\n" + //
+                        "CALL (obj) {\r\n" + //
+                        "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
+                        "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
+                        "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
+                        "    RETURN \r\n" + //
+                        "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
+                        "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
+                        "} \r\n" + //
+                        "CALL (inv) {\r\n" + //
+                        "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
+                        "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
+                        "        AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r\n" + //
+                        "    RETURN\r\n" + //
+                        "        sum(vinculada_por.orcado) AS totalOrcado,\r\n" + //
+                        "        sum(vinculada_por.autorizado) AS totalAutorizado, \r\n" + //
+                        "        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado, \r\n" + //
+                        "        sum(vinculada_por.dispSemReserva) AS totalDisponivel\r\n" + //
+                        "}\r\n";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("idConta", idConta);
+        params.put("exercicio", exercicio);
+        params.put("idFonte", idFonte);
+
+        String cypherCount = cypher + "RETURN COUNT(*)";
+
+        int count = (int) this.neo4jOperations.count(cypherCount, params);
+        
+        String cypherQuery = cypher + "RETURN\r\n" + //
+                        "        elementId(obj) AS id,\r\n" + //
+                        "        obj.nome AS nome,\r\n" + //
+                        "        po.codigo AS codPO,\r\n" + //
+                        "        unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria,\r\n" + //
+                        "        status.nome AS status,\r\n" + //
+                        "        obj.tipo AS tipo,\r\n" + //
+                        "        totalPrevisto,\r\n" + //
+                        "        totalContratado,\r\n" + //
+                        "        totalOrcado,\r\n" + //
+                        "        totalAutorizado,\r\n" + //
+                        "        totalEmpenhado,\r\n" + //
+                        "        totalDisponivel\r\n";
+                        
+        if(pageable != null) {
+            cypherQuery += "SKIP $skip LIMIT $limit";
+            params.put("skip", pageable.getOffset());
+            params.put("limit", pageable.getPageSize());
+        }
+
+        List<TiraObjetoProjection> tiraObjs = this.neo4jOperations.findAll(cypherQuery, params, TiraObjetoProjection.class);
+
+        return new DataListResult<>(tiraObjs, count);
+    }
+
 
     public List<Objeto> findObjetoByContaFiltrado(Conta conta, Integer exercicio, String fonteId) {
         List<Objeto> todosObjetos = findObjetoByConta(conta);

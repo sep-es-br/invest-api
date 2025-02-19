@@ -28,6 +28,7 @@ public class Objeto extends Entidade implements Serializable {
     private int openPMOId;
     private String infoComplementares;
     private String contrato;
+    private String possuiOrcamento;
 
     @Relationship(type = "EM")
     private EmStatus emStatus;
@@ -70,6 +71,8 @@ public class Objeto extends Entidade implements Serializable {
         
         this.infoComplementares = dto.infoComplementares();
         this.contrato = dto.contrato();
+
+        this.possuiOrcamento = dto.possuiOrcamento();
 
         this.areaTematica = dto.areaTematica() == null ? null : new AreaTematica(dto.areaTematica());
         this.tiposPlano = dto.planos() == null ? null : dto.planos().stream().map(tipoDto -> new TipoPlano(tipoDto)).toList();

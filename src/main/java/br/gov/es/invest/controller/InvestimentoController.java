@@ -74,7 +74,7 @@ public class InvestimentoController {
         
         DataListResult<InvestimentoTiraDTO> dataListDto = new DataListResult<>(
             dataList.data().stream().map(investimento -> {
-                return InvestimentoTiraDTO.parse(investimento, objetoService.findObjetoByConta(investimento.id()));
+                return InvestimentoTiraDTO.parse(investimento, objetoService.findObjetoCadastradoByContaBy(investimento.id(), exercicio, idFonte, null));
             }).toList(), 
             dataList.ammount()
         );

@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
+import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.utils.DataListResult;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -57,7 +59,7 @@ public class InvestimentoTiraDTO {
 
     }
 
-    public static InvestimentoTiraDTO parse(TiraInvestimentoProjection projection, List<Objeto> objetos) {
+    public static InvestimentoTiraDTO parse(TiraInvestimentoProjection projection, DataListResult<TiraObjetoProjection> objetos) {
         if(projection == null) {
             return null;
         }
@@ -74,9 +76,7 @@ public class InvestimentoTiraDTO {
         investimentoTiraDTO.setTotalOrcado(projection.totalOrcado());
         investimentoTiraDTO.setTotalAutorizado(projection.totalAutorizado());
         
-        investimentoTiraDTO.setObjetos(objetos.stream().map(objeto -> {
-            return new ObjetoTiraDTO(objeto);
-        }).collect(Collectors.toList()));
+        investimentoTiraDTO.setObjetos(objetos.data().stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList()));
 
         return investimentoTiraDTO;
         

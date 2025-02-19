@@ -93,8 +93,8 @@ public class InvestimentoService {
                 "    po.nome AS nome, \r\n" + //
                 "    po.codigo AS codPO,\r\n" + //
                 "    unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria, \r\n" + //
-                "    totalPrevisto,\r\n" + //
-                "    totalContratado,\r\n" + //
+                "    sum(totalPrevisto) AS totalPrevisto,\r\n" + //
+                "    sum(totalContratado) AS totalContratado,\r\n" + //
                 "    totalOrcado,\r\n" + //
                 "    totalAutorizado, \r\n" + //
                 "    totalEmpenhado, \r\n" + //

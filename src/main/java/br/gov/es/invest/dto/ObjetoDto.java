@@ -25,7 +25,9 @@ public record ObjetoDto(
     UsuarioDto responsavel,
     ContaDto conta,
     List<ApontamentoDTO> apontamentos,
-    List<ParecerDTO> pareceres
+    List<ParecerDTO> pareceres,
+    String possuiOrcamento
+
 ) {
     
     public ObjetoDto(Objeto model) {
@@ -46,7 +48,8 @@ public record ObjetoDto(
             model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
             new ContaDto(model.getConta()),
             model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList(),
-            model.getPareceres() == null ? null : model.getPareceres().stream().map(ParecerDTO::parse).toList()
+            model.getPareceres() == null ? null : model.getPareceres().stream().map(ParecerDTO::parse).toList(),
+            model.getPossuiOrcamento()
         );
     }
 

@@ -2,6 +2,7 @@ package br.gov.es.invest.dto;
 
 import java.util.Arrays;
 
+import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -67,5 +68,25 @@ public class ObjetoTiraDTO {
 
             
         });
+    }
+
+    public static ObjetoTiraDTO parse(TiraObjetoProjection projection) {
+        if(projection == null) return null;
+
+        ObjetoTiraDTO dto = new ObjetoTiraDTO();
+        dto.setId(projection.id());
+        dto.setUnidadeResponsavel(projection.unidadeOrcamentaria());
+        dto.setCodPlano(projection.codPo());
+        dto.setNome(projection.nome());
+        dto.setTipo(projection.tipo());
+        dto.setTotalPrevisto(projection.totalPrevisto());
+        dto.setTotalHomologado(projection.totalContratado());
+        dto.setTotalOrcado(projection.totalOrcado());
+        dto.setTotalAutorizado(projection.totalAutorizado());
+        dto.setTotalEmpenhado(projection.totalEmpenhado());
+        dto.setTotalDisponivel(projection.totalDisponivel());
+        dto.setStatus(projection.status());
+
+        return dto;
     }
 }
