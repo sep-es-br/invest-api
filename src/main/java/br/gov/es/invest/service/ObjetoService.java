@@ -138,7 +138,7 @@ public class ObjetoService {
         return repository.findById(id).orElse(null);
     }
 
-    public List<Objeto> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, String fonteId, Pageable pageable){
+    public List<Objeto> getAllListByFilter(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String fonteId, Pageable pageable){
         List<ObjetoTiraProjection> listTira = Arrays.asList();
 
         if(pageable != null) {
@@ -166,7 +166,7 @@ public class ObjetoService {
 
     }
 
-    public List<Objeto> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
+    public List<Objeto> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
         List<ObjetoTiraProjection> listTira = Arrays.asList();
 
         if(pageable != null) {
@@ -345,7 +345,7 @@ public class ObjetoService {
         return repository.countByFilter(nome, codUnidade, codPO, status, exercicio);
     }
 
-    public int countByInvestimentoFilter(String nome, String codUnidade, String codPO, Integer exercicio) {
+    public int countByInvestimentoFilter(String nome, List<String> codUnidade, List<String> codPO, Integer exercicio) {
         return repository.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio);
     }
 

@@ -26,19 +26,19 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                         "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
                         "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
                         "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
-                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)\r\n" + //
                         "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
                         "    AND (\r\n" + //
                         "        $idPo IS NULL\r\n" + //
-                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
-                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        OR (\"S.PO\" IN $idPo AND plano IS NULL)\r\n" + //
+                        "        OR ( NOT \"S.PO\" IN $idPo AND elementId(plano) IN $idPo)\r\n" + //
                         "        )\r\n" + //
                         "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
                         "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
                         "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
                         "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)" + //
                 "SKIP $skip LIMIT $limit")
-    public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable);
+    public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, Pageable pageable);
 
     
     @Query("CALL () {\r\n" + //
@@ -54,12 +54,12 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                         "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
                         "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
                         "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
-                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)\r\n" + //
                         "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
                         "    AND (\r\n" + //
                         "        $idPo IS NULL\r\n" + //
-                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
-                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        OR (\"S.PO\" IN $idPo AND plano IS NULL)\r\n" + //
+                        "        OR (NOT \"S.PO\" IN $idPo AND elementId(plano) IN $idPo)\r\n" + //
                         "        )\r\n" + //
                         "    AND etapa IS NOT NULL\r\n" + //=
                         "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
@@ -67,7 +67,7 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                         "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
                         "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)" + //
                 "SKIP $skip LIMIT $limit")
-    public List<ObjetoTiraProjection> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable);
+    public List<ObjetoTiraProjection> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, Pageable pageable);
     
     @Query("CALL () {\r\n" + //
                         "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
@@ -82,19 +82,19 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                         "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
                         "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
                         "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
-                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)\r\n" + //
                         "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
                         "    AND (\r\n" + //
                         "        $idPo IS NULL\r\n" + //
-                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
-                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        OR (\"S.PO\" IN $idPo AND plano IS NULL)\r\n" + //
+                        "        OR (NOT \"S.PO\" IN $idPo  AND elementId(plano) IN $idPo)\r\n" + //
                         "        )\r\n" + //
                         "    AND etapa IS NOT NULL\r\n" + //=
                         "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
                         "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
                         "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
                         "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)")
-    public List<ObjetoTiraProjection> getAllListByFilterEmProcessamento(Integer exercicio, String nome, String idUnidade, String idPo, String statusId);
+    public List<ObjetoTiraProjection> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId);
 
     @Query("CALL () {\r\n" + //
                         "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
@@ -113,14 +113,14 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
                         "    AND ($statusId IS NULL OR elementId(status) = $statusId)\r\n" + //
                         "    AND (\r\n" + //
                         "        $idPo IS NULL\r\n" + //
-                        "        OR ($idPo = \"S.PO\" AND plano IS NULL)\r\n" + //
-                        "        OR ($idPo <> \"S.PO\" AND $idPo = elementId(plano))\r\n" + //
+                        "        OR (\"S.PO\" IN $idPo AND plano IS NULL)\r\n" + //
+                        "        OR (NOT \"S.PO\" IN $idPo AND elementId(plano) IN $idPo)\r\n" + //
                         "        )\r\n" + //
                         "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
                         "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
                         "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
                         "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa)")
-        public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId);
+        public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId);
 
         @Query("MATCH (n:Objeto)-[:EM]->(status:Status) \r\n" + //
                 "RETURN distinct status \r\n" + //
@@ -144,10 +144,10 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
             "    (unidade)-[ri:IMPLEMENTA]->(conta)<-[ro:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
             "WHERE ($exercicio IS null OR ano.ano = $exercicio OR anoCusto.ano = $exercicio)   " + 
             "   AND ($nome IS NULL OR apoc.text.clean(conta.nome) contains apoc.text.clean($nome) OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))" + 
-            "AND ($codPO IS NULL OR elementId(plano) = $codPO) " +
-            "AND ($codUnidade IS NULL OR elementId(unidade) = $codUnidade)" +  
+            "AND ($codPO IS NULL OR elementId(plano) IN $codPO) " +
+            "AND ($codUnidade IS NULL OR elementId(unidade) IN $codUnidade)" +  
             "RETURN count(distinct obj)")
-    public int countByInvestimentoFilter(String nome, String codUnidade, String codPO, Integer exercicio);
+    public int countByInvestimentoFilter(String nome, List<String> codUnidade, List<String> codPO, Integer exercicio);
 
     
     @Query("CALL () {\r\n" + //

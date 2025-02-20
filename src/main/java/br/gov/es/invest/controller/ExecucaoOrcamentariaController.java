@@ -70,9 +70,12 @@ public class ExecucaoOrcamentariaController {
             int ano = dado.get("ano").asInt();
             String codFonte = dado.get("cod_fonte").asText();
             String nomeFonte = dado.get("nome_fonte").asText();
+            Integer codTipoFonte = dado.get("tipo_fonte").asInt();
             double orcado = dado.get("orcado").asDouble();
             double autorizado = dado.get("autorizado").asDouble();
             double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
+
+            FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
             // retorna o investimento no banco
             Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(codUo, codPo);
@@ -103,17 +106,16 @@ public class ExecucaoOrcamentariaController {
             }
 
             
-            FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(codFonte, nomeFonte);
 
             List<VinculadaPor> valoresList = execucao.getVinculadaPor().stream().filter(vinculada -> {
-                return vinculada.getFonteOrcamentaria().getCodigo().equals(fonte.getCodigo());
+                return vinculada.getFonteOrcamentaria().getCodigo().equals(fonteOrcamentaria.getCodigo());
             }).toList();
 
             VinculadaPor valores;
             if(valoresList.isEmpty()) {
                 valores = new VinculadaPor();
 
-                valores.setFonteOrcamentaria(fonte);
+                valores.setFonteOrcamentaria(fonteOrcamentaria);
 
                 execucao.getVinculadaPor().add(valores);
             } else {

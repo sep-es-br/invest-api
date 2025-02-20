@@ -22,7 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.nimbusds.jose.shaded.gson.JsonObject;
 
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.StatusDTO;
@@ -74,8 +77,11 @@ public class ObjetoController {
     ) {
 
         try{
+            
+            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilter(ano, nome, unidadeId, idPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
+            List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
 
             List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
                 return new ObjetoTiraDTO(obj);
@@ -102,8 +108,11 @@ public class ObjetoController {
     ) {
 
         try{
+            
+            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, etapaId, null, PageRequest.of(pgAtual-1, tamPag));
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, PageRequest.of(pgAtual-1, tamPag));
 
             List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
                 return new ObjetoTiraDTO(obj);
@@ -232,11 +241,24 @@ public class ObjetoController {
     
 
     @GetMapping("/countInvestimentoFiltro")
-    public ResponseEntity<Integer> getAmmoutByInvestimentoFilter(
+    public ResponseEntity<?> getAmmoutByInvestimentoFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
         @RequestParam Integer exercicio
     ) {
-        return ResponseEntity.ok(service.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio));
+        try{
+
+            List<String> idsUo = codUnidade == null ? null : new JsonMapper().readValue(codUnidade, new TypeReference<List<String>>() {});
+            List<String> idsPo = codPO == null ? null : new JsonMapper().readValue(codPO, new TypeReference<List<String>>() {});
+
+            return ResponseEntity.ok(service.countByInvestimentoFilter(nome, idsUo, idsPo, exercicio));
+        } catch(Exception e){
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro desconhecido ao contar objetos", 
+                Collections.singletonList(e.getLocalizedMessage())
+            );
+        }
+
     }
 
     @GetMapping("/count")
@@ -245,14 +267,17 @@ public class ObjetoController {
         @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
     ) {
         try{
+            
+            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilter(ano, nome, unidadeId, idPo, statusId, null, null);
+            List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, null);
 
             return ResponseEntity.ok(objetos.size());
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Erro desconhecido ao buscar objetos", 
+                "Erro desconhecido ao contar objetos", 
                 Collections.singletonList(e.getLocalizedMessage())
             );
         }
@@ -268,8 +293,12 @@ public class ObjetoController {
         @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
     ) {
         try{
+            
+            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, unidadeId, idPo, statusId, etapaId, null, null);
+
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, null);
 
             return ResponseEntity.ok(objetos.size());
         } catch(Exception e){

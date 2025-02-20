@@ -33,7 +33,7 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, String idUnidade, String idPlano){
+    public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, List<String> idUnidade, List<String> idPlano){
        
         List<Objeto> objetosPorFiltro = objetoService.getAllListByFilter(exercicio, nome, idUnidade, idPlano, null, null, null);
 

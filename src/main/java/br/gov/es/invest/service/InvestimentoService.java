@@ -58,14 +58,14 @@ public class InvestimentoService {
     }
 
     public DataListResult<TiraInvestimentoProjection> findAllTiraBy(
-            String nome, String codUnidade, String codPO,
+            String nome, List<String> codUnidade, List<String> codPO,
             Integer exercicio, String idFonte, Pageable pageable
         ) {
 
         String cypherBase = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto),\r\n" + //
                             "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
-                            "WHERE ($idPo IS NULL OR elementId(po) = $idPo)\r\n" + //
-                            "    AND ( $idUnidade IS NULL OR elementId(unidade) = $idUnidade )\r\n" + //
+                            "WHERE ($idPo IS NULL OR elementId(po) IN $idPo)\r\n" + //
+                            "    AND ( $idUnidade IS NULL OR elementId(unidade) IN $idUnidade )\r\n" + //
                             "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
                             "    AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
                             "CALL (obj) {\r\n" + //
@@ -112,7 +112,6 @@ public class InvestimentoService {
         params.put("nome", nome);
         params.put("idFonte", idFonte);
         params.put("exercicio", exercicio);
-        params.put("idPo", codPO);
 
         if(pageable != null) {
             cypherQuery += "SKIP $skip LIMIT $limit";

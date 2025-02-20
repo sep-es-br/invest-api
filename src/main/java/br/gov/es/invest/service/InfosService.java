@@ -68,13 +68,13 @@ public class InfosService {
         return Arrays.asList();
     }
 
-    public ValoresCusto getTotaisInvestimento(String nome, String idFonte, Integer exercicio, String idUnidade, String idPlano){
+    public ValoresCusto getTotaisInvestimento(String nome, String idFonte, Integer exercicio, List<String> idUnidade, List<String> idPlano){
 
         String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
                         "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
                         "WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                        "    AND ($idUnidade IS NULL OR elementId(unidade) = $idUnidade)\r\n" + //
-                        "    AND ($idPlano IS NULL OR elementId(po) = $idPlano)\r\n" + //
+                        "    AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)\r\n" + //
+                        "    AND ($idPlano IS NULL OR elementId(po) IN $idPlano)\r\n" + //
                         "    AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
                         "CALL (obj) {\r\n" + //
                         "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
