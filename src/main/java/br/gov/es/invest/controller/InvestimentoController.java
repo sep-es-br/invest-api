@@ -76,7 +76,9 @@ public class InvestimentoController {
             try{
             List<String> idsUo = codUnidade == null ? null : new JsonMapper().readValue(codUnidade, new TypeReference<List<String>>() {});
             List<String> idsPo = codPO == null ? null : new JsonMapper().readValue(codPO, new TypeReference<List<String>>() {});
-
+        
+        Logger.getGlobal().info(nome);
+        
         DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(nome, idsUo, idsPo, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag));
         
         

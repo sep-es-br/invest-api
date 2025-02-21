@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -75,6 +76,8 @@ public class ExecucaoOrcamentariaController {
             double autorizado = dado.get("autorizado").asDouble();
             double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
 
+            Logger.getGlobal().info("consumindo: unidade: " + codUo + " - " + codPo + " em " + ano);
+
             FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
             // retorna o investimento no banco
@@ -140,6 +143,11 @@ public class ExecucaoOrcamentariaController {
             String codPo = dado.get("cod_po").asText();
             int pago = dado.get("pago").asInt();
             String nomeFonte = dado.get("nome_fonte").asText();
+            Integer codTipoFonte = dado.get("tipo_fonte").asInt();
+
+            Logger.getGlobal().info("consumindo: unidade: " + codUo + " - " + codPo + " em " + String.format("%02d", mes) + "/" + ano);
+            
+            FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
             
             // retorna o investimento no banco
@@ -170,17 +178,15 @@ public class ExecucaoOrcamentariaController {
             }
 
             
-            FonteOrcamentaria fonte = fonteOrcamentariaService.findOrCreate(codFonte, nomeFonte);
-
             List<VinculadaPor> valoresList = execucao.getVinculadaPor().stream().filter(vinculada -> {
-                return vinculada.getFonteOrcamentaria().getCodigo().equals(fonte.getCodigo());
+                return vinculada.getFonteOrcamentaria().getCodigo().equals(fonteOrcamentaria.getCodigo());
             }).toList();
 
             VinculadaPor valores;
             if(valoresList.isEmpty()) {
                 valores = new VinculadaPor();
 
-                valores.setFonteOrcamentaria(fonte);
+                valores.setFonteOrcamentaria(fonteOrcamentaria);
 
                 execucao.getVinculadaPor().add(valores);
             } else {

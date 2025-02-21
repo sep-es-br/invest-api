@@ -67,7 +67,7 @@ public class InvestimentoService {
                             "WHERE ($idPo IS NULL OR elementId(po) IN $idPo)\r\n" + //
                             "    AND ( $idUnidade IS NULL OR elementId(unidade) IN $idUnidade )\r\n" + //
                             "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                            "    AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+                            "    AND ($nome IS NULL OR apoc.text.clean(po.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
                             "CALL (obj) {\r\n" + //
                             "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
                             "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
