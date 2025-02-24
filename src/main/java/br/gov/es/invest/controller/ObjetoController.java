@@ -301,11 +301,29 @@ public class ObjetoController {
     @GetMapping("/count")
     public ResponseEntity<?> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId,
-        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
+        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId, 
+        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
     ) {
         try{
             
-            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsUo = null;
+            if(unidadeId == null && !podeVerUnidades) {
+
+                authToken = authToken.replace("Bearer ", "");
+        
+                String sub = tokenService.validarToken(authToken);
+                        
+                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                
+                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+
+                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
+                uos.addAll(uoUser.getFilhas());
+
+                idsUo = uos.stream().map(u -> u.getId()).toList();
+            } else if(unidadeId != null) {
+                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
             List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, null);
