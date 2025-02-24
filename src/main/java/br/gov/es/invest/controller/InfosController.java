@@ -89,7 +89,7 @@ public class InfosController {
     public ResponseEntity<?> getCardsTotais(
         @RequestParam(required=false) String nome,
         @RequestParam(required=false) String idUo, @RequestParam(required=false) String idFonte,
-        @RequestParam(required=false) String idPo, @RequestParam Integer ano
+        @RequestParam(required=false) String idPo, @RequestParam Integer ano, @RequestParam(required = false) Integer gnd
         ) {
             try {
                 List<String> idsUo = idUo == null ? null : new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
@@ -108,7 +108,8 @@ public class InfosController {
                         codFonte, 
                         ano, 
                         codUo, 
-                        codPo
+                        codPo,
+                        gnd
                     );
                 Map<String, JsonNode> linhaResultado = resultList.get(0);
     

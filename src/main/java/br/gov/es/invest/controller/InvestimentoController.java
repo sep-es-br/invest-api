@@ -71,20 +71,20 @@ public class InvestimentoController {
     @GetMapping("/filtrarValores")
     public ResponseEntity<?> getAllTiraByFilter(
             @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
+            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag,
+            @RequestParam(required = false) Integer gnd
         ) {
             try{
             List<String> idsUo = codUnidade == null ? null : new JsonMapper().readValue(codUnidade, new TypeReference<List<String>>() {});
             List<String> idsPo = codPO == null ? null : new JsonMapper().readValue(codPO, new TypeReference<List<String>>() {});
         
-        Logger.getGlobal().info(nome);
         
-        DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(nome, idsUo, idsPo, exercicio, idFonte, PageRequest.of(numPag-1, qtPorPag));
+        DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(nome, idsUo, idsPo, exercicio, idFonte, gnd, PageRequest.of(numPag-1, qtPorPag));
         
         
         DataListResult<InvestimentoTiraDTO> dataListDto = new DataListResult<>(
             dataList.data().stream().map(investimento -> {
-                return InvestimentoTiraDTO.parse(investimento, objetoService.findObjetoCadastradoByContaBy(investimento.id(), exercicio, idFonte, null));
+                return InvestimentoTiraDTO.parse(investimento, objetoService.findObjetoCadastradoByContaBy(investimento.id(), exercicio, idFonte, gnd, null));
             }).toList(), 
             dataList.ammount()
         );

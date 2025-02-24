@@ -377,7 +377,7 @@ public class ObjetoService {
     }
 
     public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
-            String idConta, Integer exercicio, String idFonte, Pageable pageable
+            String idConta, Integer exercicio, String idFonte, Integer gnd, Pageable pageable
     ) {
         String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
                         "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
@@ -387,18 +387,21 @@ public class ObjetoService {
                         "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
                         "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
                         "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
+                        "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
                         "    RETURN \r\n" + //
+                        "        ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r\n" + //
                         "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
                         "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
-                        "} \r\n" + //
+                        "}\r\n" + //
                         "CALL (inv) {\r\n" + //
                         "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
                         "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
                         "        AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r\n" + //
+                        "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
                         "    RETURN\r\n" + //
                         "        sum(vinculada_por.orcado) AS totalOrcado,\r\n" + //
-                        "        sum(vinculada_por.autorizado) AS totalAutorizado, \r\n" + //
-                        "        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado, \r\n" + //
+                        "        sum(vinculada_por.autorizado) AS totalAutorizado,\r\n" + //
+                        "        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r\n" + //
                         "        sum(vinculada_por.dispSemReserva) AS totalDisponivel\r\n" + //
                         "}\r\n";
 
@@ -406,6 +409,7 @@ public class ObjetoService {
         params.put("idConta", idConta);
         params.put("exercicio", exercicio);
         params.put("idFonte", idFonte);
+        params.put("gnd", gnd);
 
         String cypherCount = cypher + "RETURN COUNT(*)";
 

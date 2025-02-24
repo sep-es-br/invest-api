@@ -75,8 +75,9 @@ public class ExecucaoOrcamentariaController {
             double orcado = dado.get("orcado").asDouble();
             double autorizado = dado.get("autorizado").asDouble();
             double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
+            String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
-            Logger.getGlobal().info("consumindo: unidade: " + codUo + " - " + codPo + " em " + ano);
+            Logger.getGlobal().info("consumindo: " + codUo + " - " + codPo + " em " + ano);
 
             FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
@@ -128,6 +129,7 @@ public class ExecucaoOrcamentariaController {
             valores.setOrcado(orcado);
             valores.setAutorizado(autorizado);
             valores.setDispSemReserva(dispSemReserva);
+            valores.setGnd(Integer.parseInt(codGnd));
 
             service.save(execucao);
         }
@@ -144,6 +146,7 @@ public class ExecucaoOrcamentariaController {
             int pago = dado.get("pago").asInt();
             String nomeFonte = dado.get("nome_fonte").asText();
             Integer codTipoFonte = dado.get("tipo_fonte").asInt();
+            String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
             Logger.getGlobal().info("consumindo: unidade: " + codUo + " - " + codPo + " em " + String.format("%02d", mes) + "/" + ano);
             
@@ -207,11 +210,13 @@ public class ExecucaoOrcamentariaController {
             valores.getLiquidado()[mes-1] = (double) liquidado;
             valores.getEmpenhado()[mes-1] = (double) empenhado;            
             valores.getPago()[mes-1] = (double) pago;
+            valores.setGnd(Integer.parseInt(codGnd));
 
             service.save(execucao);
 
         }
 
+        Logger.getGlobal().info("Migração do Sigefes concluida");
         return "Sucesso";
 
     }

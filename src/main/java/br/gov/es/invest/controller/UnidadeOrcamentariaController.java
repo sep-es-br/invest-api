@@ -67,7 +67,7 @@ public class UnidadeOrcamentariaController {
     }
 
     @GetMapping("/doUsuario")
-    public UnidadeOrcamentariaDTO findBySigla(@RequestHeader("Authorization") String authToken) {
+    public List<UnidadeOrcamentariaDTO> findBySigla(@RequestHeader("Authorization") String authToken) {
         authToken = authToken.replace("Bearer ", "");
         
         String sub = tokenService.validarToken(authToken);
@@ -80,7 +80,11 @@ public class UnidadeOrcamentariaController {
 
             UnidadeOrcamentaria unidade = this.service.findBySigla(usuario.getSetor().getOrgao().getSigla());
 
-            return unidade == null ? null : new UnidadeOrcamentariaDTO(unidade);
+            ArrayList<UnidadeOrcamentaria> unidades = new ArrayList<UnidadeOrcamentaria>();
+            unidades.add(unidade);
+            unidades.addAll(unidade.getFilhas());
+
+            return unidade == null ? null : unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
 
         }
 

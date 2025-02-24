@@ -19,12 +19,14 @@ public class IndicadaPor extends Entidade {
 
     private double previsto;
     private double contratado;
+    private int gnd;
 
     public IndicadaPor(IndicadaPorDto dto) {
         this.setId(dto.id());
         this.fonteOrcamentaria = new FonteOrcamentaria(dto.fonteOrcamentaria());
         this.previsto = dto.previsto() != null ? dto.previsto() : 0d;
         this.contratado = dto.contratado() != null ? dto.contratado() : 0d;
+        this.gnd = dto.gnd();
     }
 
 }
