@@ -2,6 +2,7 @@ package br.gov.es.invest.controller;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.dto.ContaDto;
 import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
@@ -68,17 +70,36 @@ public class ObjetoController {
     private final ObjetoService service;
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
+    private final UnidadeOrcamentariaService unidadeOrcamentariaService;
 
     @GetMapping("/allTira")
     public ResponseEntity<?> getAllByFiltro(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
         @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
-        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag 
+        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
+        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
     ) {
 
         try{
-            
-            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsUo = null;
+            if(unidadeId == null && !podeVerUnidades) {
+
+                authToken = authToken.replace("Bearer ", "");
+        
+                String sub = tokenService.validarToken(authToken);
+                        
+                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                
+                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+
+                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
+                uos.addAll(uoUser.getFilhas());
+
+                idsUo = uos.stream().map(u -> u.getId()).toList();
+            } else if(unidadeId != null) {
+                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            }
+
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
             List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
@@ -104,12 +125,28 @@ public class ObjetoController {
         @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
         @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
         @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
-        @RequestParam(required = false) String etapaId
+        @RequestParam(required = false) String etapaId, @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
     ) {
 
         try{
-            
-            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsUo = null;
+            if(unidadeId == null && !podeVerUnidades) {
+
+                authToken = authToken.replace("Bearer ", "");
+        
+                String sub = tokenService.validarToken(authToken);
+                        
+                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                
+                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+
+                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
+                uos.addAll(uoUser.getFilhas());
+
+                idsUo = uos.stream().map(u -> u.getId()).toList();
+            } else if(unidadeId != null) {
+                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
             List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, PageRequest.of(pgAtual-1, tamPag));
@@ -290,11 +327,29 @@ public class ObjetoController {
     @GetMapping("/countEmProcessameto")
     public ResponseEntity<?> getAmmoutByFilterEmProcessamento(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId, @RequestParam(required = false) String etapaId,
-        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId
+        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId,
+        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
     ) {
         try{
             
-            List<String> idsUo = unidadeId == null ? null : new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            List<String> idsUo = null;
+            if(unidadeId == null && !podeVerUnidades) {
+
+                authToken = authToken.replace("Bearer ", "");
+        
+                String sub = tokenService.validarToken(authToken);
+                        
+                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                
+                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+
+                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
+                uos.addAll(uoUser.getFilhas());
+
+                idsUo = uos.stream().map(u -> u.getId()).toList();
+            } else if(unidadeId != null) {
+                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+            }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
 
