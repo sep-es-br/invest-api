@@ -101,7 +101,10 @@ public class AcaoService {
                 emEtapaTarget.setAtividade(acao.getAtividadeFinal());
                 
                 objeto.setEmEtapa(emEtapaTarget);
+            } else {
+                objeto.setEmEtapa(null);
             }
+             
             EmStatus emStatusTarget = new EmStatus();
             emStatusTarget.setStatus(acao.getStatusFinal());
             emStatusTarget.setTimestamp(agora);
