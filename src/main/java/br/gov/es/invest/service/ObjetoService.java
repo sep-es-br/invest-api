@@ -155,9 +155,6 @@ public class ObjetoService {
                             .toList();      
         }
 
-        if(pageable != null)
-            objetoFiltrado = objetoFiltrado.subList(Math.toIntExact(pageable.getOffset()) , Math.toIntExact(pageable.getOffset()+Long.min(objetoFiltrado.size(), pageable.getPageSize()) ) );
-
         for(Objeto objeto : objetoFiltrado) {
             objeto.filtrar(exercicio, fonteId);
         }
