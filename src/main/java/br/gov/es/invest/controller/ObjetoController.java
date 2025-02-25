@@ -92,10 +92,14 @@ public class ObjetoController {
                 
                 UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
 
-                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                uos.addAll(uoUser.getFilhas());
+                if(uoUser == null) {
+                    Logger.getGlobal().log(Level.SEVERE, "Erro ao buscar unidade com sigla" + usuario.getSetor().getOrgao().getSigla());
+                } else {
+                    ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
+                    uos.addAll(uoUser.getFilhas());
 
-                idsUo = uos.stream().map(u -> u.getId()).toList();
+                    idsUo = uos.stream().map(u -> u.getId()).toList();
+                }
             } else if(unidadeId != null) {
                 idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
             }
