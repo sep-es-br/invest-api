@@ -93,17 +93,19 @@ public class AcaoService {
 
                 
             }
-    
-            EmEtapa emEtapaTarget = new EmEtapa();
-            emEtapaTarget.setDevolvido(!acao.getPositivo());
-            emEtapaTarget.setEtapa(acao.getProxEtapa());
-            emEtapaTarget.setAtividade(acao.getAtividadeFinal());
-    
+            
+            if(acao.getProxEtapa() != null) {
+                EmEtapa emEtapaTarget = new EmEtapa();
+                emEtapaTarget.setDevolvido(!acao.getPositivo());
+                emEtapaTarget.setEtapa(acao.getProxEtapa());
+                emEtapaTarget.setAtividade(acao.getAtividadeFinal());
+                
+                objeto.setEmEtapa(emEtapaTarget);
+            }
             EmStatus emStatusTarget = new EmStatus();
             emStatusTarget.setStatus(acao.getStatusFinal());
             emStatusTarget.setTimestamp(agora);
 
-            objeto.setEmEtapa(emEtapaTarget);
             objeto.setEmStatus(emStatusTarget);
             objetoService.save(objeto);
             return objetoService.findById(objeto.getId());
