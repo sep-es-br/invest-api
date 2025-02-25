@@ -67,8 +67,9 @@ public class AcaoController {
 
         try {
             
-
-            return ResponseEntity.ok(new ObjetoDto(acaoService.executarAcao(objeto, apontamentos, parecer, acao, usuario)));        
+            Objeto objetoFinal = acaoService.executarAcao(objeto, apontamentos, parecer, acao, usuario);
+            
+            return ResponseEntity.ok(new ObjetoDto(objetoFinal));        
         } catch(SemApontamentosException ex){
             return MensagemErroRest.asResponseEntity(
                 HttpStatus.UNPROCESSABLE_ENTITY, 
