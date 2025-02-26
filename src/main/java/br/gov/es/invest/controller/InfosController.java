@@ -1,10 +1,14 @@
 package br.gov.es.invest.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,17 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import br.gov.es.invest.dto.CardsTotaisDto;
 import br.gov.es.invest.dto.OrgaoDto;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.ValoresCusto;
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.AnoService;
 import br.gov.es.invest.service.CustoService;
+import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InfosService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
@@ -47,6 +55,7 @@ public class InfosController {
     private final CustoService custoService;
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
+    private final FonteOrcamentariaService fonteService;
 
     @GetMapping("/allAnos")
     public ResponseEntity<Set<Integer>> getTodosAnos() {
@@ -77,46 +86,54 @@ public class InfosController {
     }
 
     @GetMapping("/cardsTotais")
-    public CardsTotaisDto getCardsTotais(
+    public ResponseEntity<?> getCardsTotais(
         @RequestParam(required=false) String nome,
         @RequestParam(required=false) String idUo, @RequestParam(required=false) String idFonte,
-        @RequestParam(required=false) String idPo, @RequestParam Integer ano
+        @RequestParam(required=false) String idPo, @RequestParam Integer ano, @RequestParam(required = false) Integer gnd
         ) {
+            try {
+                List<String> idsUo = idUo == null ? null : new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
+                List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
-            ValoresCusto totaisCusto = custoService.getValoresTotais(
-                    nome,
-                    idFonte,
-                    ano,
-                    idUo, 
-                    idPo
-                );
-
+                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);              
+    
+                String codUo = unidadeService.getCodById(idsUo == null ? null : idsUo.get(0));
+                String codPo = planoService.getCodById(idsPo == null ? null : idsPo.get(0));
+                String codFonte = fonteService.getCodById(idFonte);
+    
+                codFonte = codFonte == null ? null : String.valueOf(Integer.parseInt(codFonte)); 
+    
                 
-            // ValoresCusto totaisCusto = new ValoresCusto(0d, 0d);
-
-            String codUo = unidadeService.getCodById(idUo);
-            String codPo = planoService.getCodById(idPo);
-            
-            List<Map<String, JsonNode>> resultList = investimentosBIService.getCardsTotais(
-                    null, 
-                    ano, 
-                    codUo, 
-                    codPo
+                List<Map<String, JsonNode>> resultList = investimentosBIService.getCardsTotais(
+                        codFonte, 
+                        ano, 
+                        codUo, 
+                        codPo,
+                        gnd
+                    );
+                Map<String, JsonNode> linhaResultado = resultList.get(0);
+    
+                
+                
+                 return ResponseEntity.ok(new CardsTotaisDto(
+                    totaisCusto.previsto(), 
+                    totaisCusto.contratado(), 
+                    linhaResultado.get("orcado").asDouble(), 
+                    linhaResultado.get("autorizado").asDouble(), 
+                    linhaResultado.get("empenhado").asDouble(), 
+                    linhaResultado.get("liquidado").asDouble(), 
+                    linhaResultado.get("disponivel_sem_reserva").asDouble(), 
+                    linhaResultado.get("pago").asDouble()
+                    ));
+            } catch (Exception ex) {
+                Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+                return MensagemErroRest.asResponseEntity(
+                    HttpStatus.INTERNAL_SERVER_ERROR, 
+                    "Erro ao calcular cards", 
+                    Arrays.asList(ex.getLocalizedMessage())
                 );
-            Map<String, JsonNode> linhaResultado = resultList.get(0);
-
+            }
             
-            
-             return new CardsTotaisDto(
-                totaisCusto.previsto(), 
-                totaisCusto.contratado(), 
-                linhaResultado.get("orcado").asDouble(), 
-                linhaResultado.get("autorizado").asDouble(), 
-                linhaResultado.get("empenhado").asDouble(), 
-                linhaResultado.get("liquidado").asDouble(), 
-                linhaResultado.get("disponivel_sem_reserva").asDouble(), 
-                linhaResultado.get("pago").asDouble()
-                );
 
         }
     

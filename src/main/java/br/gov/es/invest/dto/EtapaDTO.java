@@ -2,13 +2,16 @@ package br.gov.es.invest.dto;
 
 import java.util.List;
 
+import br.gov.es.invest.model.Acao;
+import br.gov.es.invest.model.AcaoEnum;
 import br.gov.es.invest.model.Etapa;
+import br.gov.es.invest.model.EtapaEnum;
 
 public record EtapaDTO(
     String id,
     Integer ordem,
     String nome,
-    String status,
+    EtapaEnum etapaId,
     GrupoDTO grupoResponsavel,
     List<AcaoDTO> acoes
 ) {
@@ -19,9 +22,9 @@ public record EtapaDTO(
             model.getId(), 
             model.getOrdem(), 
             model.getNome(), 
-            model.getStatus(), 
+            model.getEtapaId(),
             GrupoDTO.parse(model.getGrupoResponsavel()), 
-            model.getAcoes() == null ? null : model.getAcoes().stream().map(AcaoDTO::parse).toList()
+            model.getAcoes().stream().map(AcaoDTO::parse).toList()
         );
 
 

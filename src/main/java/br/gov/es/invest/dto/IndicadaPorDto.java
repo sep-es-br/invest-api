@@ -6,7 +6,8 @@ public record IndicadaPorDto(
     String id,
     FonteOrcamentariaDTO fonteOrcamentaria,
     Double previsto,
-    Double contratado
+    Double contratado,
+    Integer gnd
 ) {
 
     public IndicadaPorDto(IndicadaPor model) {
@@ -14,7 +15,8 @@ public record IndicadaPorDto(
             model.getId(),
             new FonteOrcamentariaDTO(model.getFonteOrcamentaria()), 
             model.getPrevisto(), 
-            model.getContratado()
+            model.getContratado(),
+            model.getGnd()
         );
         
     }

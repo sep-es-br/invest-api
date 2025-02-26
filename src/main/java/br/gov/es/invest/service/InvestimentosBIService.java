@@ -72,18 +72,20 @@ public class InvestimentosBIService extends PentahoBIService {
     }
 
     public List<Map<String, JsonNode>> getCardsTotais(
-        String codFonte, Integer exercicio, String codUnidade, String codPlano
+        String codFonte, Integer exercicio, String codUnidade, String codPlano, Integer gnd
     ){
 
         codUnidade = codUnidade == null ? "todas" : codUnidade;
         codPlano = codPlano == null ? "todos" : codPlano;
         codFonte = codFonte == null ? "todas" : codFonte;
+        String codGnd = gnd == null ? "todas" : String.valueOf(gnd);
 
         HashMap<String, String> paramsMap = new HashMap<>();
         paramsMap.put("parampCodUo", codUnidade);
         paramsMap.put("parampCodPO", codPlano);
         paramsMap.put("parampCodFonte", codFonte);
         paramsMap.put("parampAno", String.valueOf(exercicio) );
+        paramsMap.put("parampCodGnd", codGnd);
 
         String url = buildEndpointUri(spoPath, targetCardsTotais, paramsMap);
 

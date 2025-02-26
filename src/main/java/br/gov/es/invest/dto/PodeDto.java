@@ -10,7 +10,8 @@ public record PodeDto(
     boolean visualizar,
     boolean criar,
     boolean editar, 
-    boolean excluir
+    boolean excluir,
+    boolean verTodasUnidades
 ) {
     
     public PodeDto (Pode model) {
@@ -21,7 +22,8 @@ public record PodeDto(
             model.isVisualizar(), 
             model.isCriar(), 
             model.isEditar(), 
-            model.isExcluir()
+            model.isExcluir(),
+            model.isVerTodasUnidades()
         );
     }
 

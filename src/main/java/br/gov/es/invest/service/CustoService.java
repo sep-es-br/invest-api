@@ -33,9 +33,11 @@ public class CustoService {
         return repository.findByExercicio(exercicio);
     }
 
-    public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, String idUnidade, String idPlano){
-               
-        List<Objeto> objetosPorFiltro = objetoService.findByFilter(nome, idUnidade, idPlano, exercicio, idFonte);
+    public ValoresCusto getValoresTotais(String nome, String idFonte, Integer exercicio, List<String> idUnidade, List<String> idPlano){
+       
+        List<Objeto> objetosPorFiltro = objetoService.getAllListByFilter(exercicio, nome, idUnidade, idPlano, null, null, null);
+
+        objetosPorFiltro = objetosPorFiltro.stream().filter(obj -> obj.getEmEtapa() == null).toList();
         
         Double totalPrevisto = 0d;
         Double totalContratado = 0d;

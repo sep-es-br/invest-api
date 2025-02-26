@@ -1,6 +1,7 @@
 package br.gov.es.invest.model;
 
 import java.io.Serializable;
+import java.security.cert.CertPath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
 import br.gov.es.invest.dto.ObjetoDto;
+import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,9 +26,15 @@ public class Objeto extends Entidade implements Serializable {
     private String descricao;
     private String tipo;
     private int openPMOId;
-    private String status;
     private String infoComplementares;
     private String contrato;
+    private String possuiOrcamento;
+
+    @Relationship(type = "EM")
+    private EmStatus emStatus;
+
+    @Relationship(type = "EM")
+    private EmEtapa emEtapa;
 
     @Relationship(type = "SOBRE", direction = Direction.OUTGOING)
     private AreaTematica areaTematica;
@@ -46,20 +54,33 @@ public class Objeto extends Entidade implements Serializable {
     @Relationship(type = "CUSTEADO")
     private Conta conta;
 
+    @Relationship("POSSUI")
+    private List<Apontamento> apontamentos;
+
+    @Relationship("POSSUI")
+    private List<Parecer> pareceres;
+
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
         this.nome = dto.nome();
         this.descricao = dto.descricao();
         this.tipo = dto.tipo();
-        this.status = (dto.conta().planoOrcamentario() == null) ?  StatusObjetoEnum.EM_APROVACAO.getNome() : StatusObjetoEnum.CADASTRADO.getNome();
+        this.emStatus = EmStatus.parse(dto.emStatus());
+        this.emEtapa = EmEtapa.parse(dto.emEtapa());
+        this.conta = Conta.parse(dto.conta());
+        
         this.infoComplementares = dto.infoComplementares();
         this.contrato = dto.contrato();
+
+        this.possuiOrcamento = dto.possuiOrcamento();
 
         this.areaTematica = dto.areaTematica() == null ? null : new AreaTematica(dto.areaTematica());
         this.tiposPlano = dto.planos() == null ? null : dto.planos().stream().map(tipoDto -> new TipoPlano(tipoDto)).toList();
         this.responsavel = dto.responsavel() == null ? null : new Usuario(dto.responsavel());
         this.custosEstimadores = new ArrayList<>(dto.recursosFinanceiros().stream().map(custoDto -> new Custo(custoDto)).toList());
         this.microrregiao = dto.microregiaoAtendida() == null ? null : new Localidade(dto.microregiaoAtendida());
+        this.apontamentos = dto.apontamentos() == null ? null : dto.apontamentos().stream().map(Apontamento::parse).toList();
+        this.pareceres = dto.pareceres() == null ? null : dto.pareceres().stream().map(Parecer::parse).toList();
         
     }
 
@@ -86,6 +107,27 @@ public class Objeto extends Entidade implements Serializable {
         }
         
         conta.filtrarExecucoes(anoExercicio, fonteId);
+    }
+
+    public static Objeto parse(ObjetoTiraProjection projection) {
+        if(projection == null)
+            return null;
+
+        Objeto obj = new Objeto();
+        obj.setId(projection.getId());
+        obj.setNome(projection.getNome());
+        obj.setTipo(projection.getTipo());
+        obj.setEmStatus(projection.getEmStatus());
+        obj.setEmEtapa(EmEtapa.parse(projection.getEmEtapa()));
+        obj.setCustosEstimadores(projection.getCustosEstimadores());
+        obj.setConta(projection.getConta());
+
+        return obj;
+    }
+
+    public static Objeto parse(ObjetoDto dto) {
+        return dto == null ? null
+        : new Objeto(dto);
     }
 
 }

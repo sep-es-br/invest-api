@@ -72,4 +72,9 @@ public class Usuario extends Entidade {
         
     }
 
+    public static Usuario parse(UsuarioDto dto) {
+        return dto == null ? null
+        : new Usuario(dto);
+    }
+
 }

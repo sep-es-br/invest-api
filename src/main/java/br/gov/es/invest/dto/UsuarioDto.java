@@ -39,5 +39,10 @@ public class UsuarioDto {
                 this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
                 this.setor = usuario.getSetor() == null ? null : new SetorDto(usuario.getSetor());
         }
+
+        public static UsuarioDto parse(Usuario usuario){
+                return usuario == null ? null
+                : new UsuarioDto(usuario);
+        }
         
 }

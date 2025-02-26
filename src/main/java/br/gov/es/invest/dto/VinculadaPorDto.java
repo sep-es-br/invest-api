@@ -10,7 +10,8 @@ public record VinculadaPorDto(
     double[] empenhado,
     double[] liquidado,
     double[] pago,
-    double orcado
+    double orcado,
+    int gnd
 
 ) {
     public static VinculadaPorDto parse(VinculadaPor model) {
@@ -23,7 +24,8 @@ public record VinculadaPorDto(
                 model.getEmpenhado(), 
                 model.getLiquidado(), 
                 model.getPago(), 
-                model.getOrcado()
+                model.getOrcado(),
+                model.getGnd()
             );
     }
 }

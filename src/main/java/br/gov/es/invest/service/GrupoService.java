@@ -4,7 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.PapelDto;
@@ -31,6 +36,25 @@ public class GrupoService {
     public List<Grupo> findAll(String nome, Pageable pageable) {
         
         return repository.findAllByFilter(nome, pageable);
+
+    }
+
+    public List<Grupo> findAll(String nome) {
+        
+        Grupo grupoProbe = new Grupo();
+
+        ExampleMatcher matcher = ExampleMatcher.matchingAny();
+
+        if(nome != null){
+            grupoProbe.setSigla(nome);
+            grupoProbe.setNome(nome);
+
+            matcher = matcher.withMatcher("sigla", GenericPropertyMatchers.ignoreCase().contains())
+                                .withMatcher("nome", GenericPropertyMatchers.ignoreCase().contains());
+        }
+
+
+        return repository.findAll(Example.of(grupoProbe, matcher), Sort.by("nome"));
 
     }
 

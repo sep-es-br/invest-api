@@ -11,6 +11,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
+import br.gov.es.invest.dto.ContaDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,6 @@ public class Conta extends Entidade implements Serializable {
     private String status;
     private String nome;
 
-  
     @Relationship(type = "ORIENTA", direction = Direction.INCOMING)
     private PlanoOrcamentario planoOrcamentario;
 
@@ -49,6 +49,21 @@ public class Conta extends Entidade implements Serializable {
                 ));
             }
         }
+    }
+
+    public static Conta parse(ContaDto dto) {
+        
+        if(dto == null)
+            return null;
+        
+        Conta conta = new Conta();
+        if(dto.unidadeOrcamentariaImplementadora() != null)
+            conta.setUnidadeOrcamentariaImplementadora(new UnidadeOrcamentaria(dto.unidadeOrcamentariaImplementadora()));
+        if(dto.planoOrcamentario() != null)
+            conta.setPlanoOrcamentario(new PlanoOrcamentario(dto.planoOrcamentario()));
+
+        return conta;
+
     }
 
 }

@@ -1,9 +1,12 @@
 package br.gov.es.invest.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +19,7 @@ import br.gov.es.invest.dto.GrupoDTO;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Setor;
@@ -41,16 +45,38 @@ public class GrupoController {
 
     private final SetorService setorService;
 
-    @GetMapping("/")
-    public GrupoDTO findById(@RequestParam String grupoId) {
+    @GetMapping("")
+    public ResponseEntity<?> findById(@RequestParam(required = false) String grupoId, @RequestParam(required = false) String nome) {
 
-        Optional<Grupo> optGrupo = service.findById(grupoId);
+        if(grupoId != null) {
 
-        if(optGrupo.isPresent()){
-            return new GrupoDTO(optGrupo.get()) ;
+            Optional<Grupo> optGrupo = service.findById(grupoId);
+
+            if(optGrupo.isPresent()){
+                return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(new GrupoDTO(optGrupo.get()));
+            } else {
+                GrupoNaoEncotradoException ex = new GrupoNaoEncotradoException(grupoId);
+    
+                return MensagemErroRest.asResponseEntity(
+                    HttpStatus.NO_CONTENT, 
+                    ex.getLocalizedMessage(), 
+                    Collections.singletonList(ex.getLocalizedMessage())
+                );
+            }
         } else {
-            throw new GrupoNaoEncotradoException(grupoId);
+
+            List<GrupoDTO> dtoList = service.findAll(nome).stream()
+                                        .map(GrupoDTO::parse)
+                                        .toList();
+
+            return ResponseEntity
+                    .ok()
+                    .body(dtoList);
+
         }
+
 
     }
 
