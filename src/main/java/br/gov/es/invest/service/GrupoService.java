@@ -1,5 +1,6 @@
 package br.gov.es.invest.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,23 +16,25 @@ import org.springframework.stereotype.Service;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.GrupoRepository;
 import br.gov.es.invest.repository.ModuloRepository;
 import br.gov.es.invest.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
 public class GrupoService {
     
-    @Autowired
-    private GrupoRepository repository;
+    private final GrupoRepository repository;
 
-    @Autowired
-    private ModuloRepository moduloRepository;
+    private final ModuloRepository moduloRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    private final PapelService papelService;
 
     public List<Grupo> findAll(String nome, Pageable pageable) {
         
@@ -79,24 +82,47 @@ public class GrupoService {
 
     public Grupo addMembro(Grupo grupo, Orgao orgao, Setor setor, PapelDto papelDto){
         
-      
-        Optional<Usuario> usuarioBanco = usuarioRepository.findBySub(papelDto.agenteSub());
-        Usuario membro = new Usuario();
 
-        if(usuarioBanco.isPresent()){
-            membro = usuarioBanco.get();
+        if(setor == null) {
+            this.repository.addMembro(grupo.getId(), orgao.getId());
+        } else if(papelDto == null) {
+            this.repository.addMembro(grupo.getId(), setor.getId());
         } else {
-            membro.setSub(papelDto.agenteSub());
-            membro.setNomeCompleto(papelDto.agenteNome());
-            membro.setName(papelDto.agenteNome().split(" ")[0]);
+
+
+            Optional<Papel> papelBanco = papelService.findByGuid(papelDto.guid());
+            Papel papelMembro = new Papel();
+
+            if(papelBanco.isPresent()) {
+                papelMembro = papelBanco.get();
+            } else {
+
+                papelMembro.setGuid(papelDto.guid());
+                papelMembro.setNome(papelDto.nome());
+                papelMembro.setSetor(setor);
+
+                Optional<Usuario> usuarioBanco = usuarioRepository.findBySub(papelDto.agenteSub());
+                Usuario membro = new Usuario();
+                ArrayList<Papel> papeisDoUsuario = new ArrayList<>();
+    
+                if(usuarioBanco.isPresent()){
+                    membro = usuarioBanco.get();
+                    papeisDoUsuario = new ArrayList<>(membro.getPapeis());
+                } else {
+                    membro.setSub(papelDto.agenteSub());
+                    membro.setNomeCompleto(papelDto.agenteNome());
+                    membro.setName(papelDto.agenteNome().split(" ")[0]);
+                }
+
+                papeisDoUsuario.add(papelMembro);
+
+                usuarioRepository.save(membro);
+
+            }
+            this.repository.addMembro(grupo.getId(), papelMembro.getId());
+
         }
         
-        membro.setPapel(papelDto.nome());
-        membro.setSetor(setor);
-        membro = usuarioRepository.save(membro);
-    
-        this.repository.addMembro(membro.getId(), grupo.getId());
-    
         return this.repository.findById(grupo.getId()).get();
     }
 

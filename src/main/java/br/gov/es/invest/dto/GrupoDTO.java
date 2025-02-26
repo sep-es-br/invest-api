@@ -1,6 +1,5 @@
 package br.gov.es.invest.dto;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,7 +19,9 @@ public class GrupoDTO {
 
     
     private Set<UsuarioDto> membros; 
+    private Set<PapelDto> papeisMembro;
     private Set<SetorDto> setoresMembros;
+    private Set<OrgaoDto> orgaoMembro;
 
     private Set<PodeDto> permissoes;
 
@@ -35,7 +36,21 @@ public class GrupoDTO {
         
         if(grupo.getMembros() != null)
             this.membros = grupo.getMembros().stream().map(usuario -> new UsuarioDto(usuario)).collect(Collectors.toSet());
+        
+        if(grupo.getPapeisMembro() != null)
+            this.papeisMembro = grupo.getPapeisMembro().stream().map(
+                papel -> PapelDto.parse(papel)
+            ).collect(Collectors.toSet());
 
+        if(grupo.getSetoresMembro() != null)
+            this.setoresMembros = grupo.getSetoresMembro().stream().map(
+                setor -> 
+            )
+
+            
+    private Set<OrgaoDto> orgaoMembro;
+        
+        
         if(grupo.getPermissoes() != null)
             this.permissoes = grupo.getPermissoes().stream().map(permissao -> new PodeDto(permissao)).collect(Collectors.toSet());
     }

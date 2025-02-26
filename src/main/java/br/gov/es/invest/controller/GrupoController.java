@@ -117,11 +117,9 @@ public class GrupoController {
         //TODO: process POST request
         Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
         Orgao orgao = orgaoService.findOrCreate(new Orgao(cadastroFormDto.orgao()));
-        Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
+        Setor setor = cadastroFormDto.setor() == null ? null : setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
 
-        for(PapelDto papel : cadastroFormDto.papeis()) {
-            service.addMembro(grupo, orgao, setor, papel);
-        }
+        service.addMembro(grupo, orgao, setor, cadastroFormDto.papel());
 
         return new GrupoDTO(service.findById(grupo.getId()).get());
     }

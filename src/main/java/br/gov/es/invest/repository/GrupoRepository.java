@@ -51,12 +51,11 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
     public List<Grupo> getGruposByUsuario(String usuarioId);
 
     @Query("MATCH (grupo:Grupo)\r\n" + //
-                "WHERE elementId(grupo) = $grupoId\r\n" + //
-                "WITH grupo\r\n" + //
-                "MATCH (usuario:Usuario)\r\n" + //
-                "WHERE elementId(usuario) = $usuarioId\r\n" + //
-                "WITH grupo, usuario\r\n" + //
-                "CREATE (usuario)-[:MEMBRO_DE]->(grupo)")
-    public void addMembro(String usuarioId, String grupoId);
+                "MATCH (entidade)\r\n" + //
+                "WHERE (elementId(grupo) = $grupoId)\r\n" + //
+                "    AND (elementId(entidade) = $membroId) \r\n" + //
+                "    AND (entidade:Usuario OR entidade:Agente OR entidade:Setor OR entidade:Papel OR entidade:Orgao)\r\n" + //
+                "MERGE (entidade)-[:MEMBRO_DE]->(grupo)")
+    public void addMembro(String grupoId, String membroId);
 
 }

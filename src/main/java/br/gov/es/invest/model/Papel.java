@@ -16,7 +16,7 @@ public class Papel extends Entidade{
     
     private String nome;
     private String guid;
-    private boolean prioritario;
+    private Boolean prioritario;
 
     private Setor setor;
 

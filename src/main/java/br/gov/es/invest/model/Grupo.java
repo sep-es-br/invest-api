@@ -35,7 +35,7 @@ public class Grupo extends Entidade {
     private Set<Setor> setoresMembro = new HashSet<>();
     
     @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
-    private Set<Setor> orgaosMembro = new HashSet<>();
+    private Set<Orgao> orgaosMembro = new HashSet<>();
 
     @Relationship(type = "PODE")
     private Set<Pode> permissoes;
