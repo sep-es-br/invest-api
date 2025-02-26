@@ -21,6 +21,8 @@ public class Setor extends Entidade {
     @Relationship(type = "PERTENCE_A")
     private Orgao orgao;
 
+    
+
     public Setor(SetorDto dto) {
         this.setId(dto.getId());
         this.guid = dto.getGuid();
@@ -28,4 +30,6 @@ public class Setor extends Entidade {
         this.sigla = dto.getSigla();
         this.orgao = dto.getOrgao() == null ? null : new Orgao(dto.getOrgao());
     }
+
+
 }
