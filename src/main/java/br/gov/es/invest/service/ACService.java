@@ -93,9 +93,7 @@ public class ACService {
     return null;
   }
 
-  public List<Orgao> getOrgaos(){
-
-    String token = getClientToken();
+  public List<Orgao> getOrgaos(String token){
 
     HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -125,6 +123,13 @@ public class ACService {
     }
 
     return null;
+  }
+
+  public List<Orgao> getOrgaos(){
+
+    String token = getClientToken();
+
+    return this.getOrgaos(token);
   }
 
   

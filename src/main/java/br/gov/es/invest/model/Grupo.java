@@ -26,7 +26,16 @@ public class Grupo extends Entidade {
     private boolean podeVerTodasUnidades;
 
     @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
-    private HashSet<Usuario> membros = new HashSet<>(); 
+    private Set<Usuario> membros = new HashSet<>();
+
+    @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
+    private Set<Papel> papeisMembro = new HashSet<>();
+    
+    @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
+    private Set<Setor> setoresMembro = new HashSet<>();
+    
+    @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
+    private Set<Setor> orgaosMembro = new HashSet<>();
 
     @Relationship(type = "PODE")
     private Set<Pode> permissoes;
