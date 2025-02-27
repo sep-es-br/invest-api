@@ -80,6 +80,11 @@ public class GrupoController {
 
     }
 
+    @GetMapping("/membros")
+    public ResponseEntity<?> getMembros(@RequestParam String grupoId){
+        return ResponseEntity.ok(service.getListaMembros(grupoId));
+    }
+
     @GetMapping("/quantidadeMembros")
     public int getMethodName(@RequestParam String grupoId) {
         return service.quantidadeDeMembros(grupoId);

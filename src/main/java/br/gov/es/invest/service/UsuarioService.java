@@ -1,13 +1,16 @@
 package br.gov.es.invest.service;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.UsuarioRepository;
 
@@ -22,6 +25,13 @@ public class UsuarioService {
 
         return repository.save(usuario);
     }
+
+    public Usuario getByPapel(Papel papel){
+        Usuario userCru = this.repository.getUserCruByPapel(papel.getGuid());
+
+        return userCru == null ? null : this.repository.findById(userCru.getId()).orElse(null);
+
+    } 
 
     public Optional<Usuario> getUserBySub(String sub){
 
