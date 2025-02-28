@@ -4,6 +4,7 @@ package br.gov.es.invest.service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -41,6 +42,21 @@ public class UsuarioService {
         Example<Usuario> example = Example.of(probe);
 
         return this.repository.findBy(example, query -> query.first());
+
+    }
+
+    public void trasnferirNovoFormato(Usuario usuario, Papel papel){
+        if( usuario.getPapeis() != null ){
+            Logger.getGlobal().severe("user \"" + usuario.getId() + "\" usuario já está no novo formato");
+            if(usuario.getPapeis().size() > 0)
+                return;
+        }
+
+        usuario.setPapeis(Arrays.asList(papel));
+
+        usuario = this.save(usuario);
+
+        repository.transferirGrupo(usuario.getId(), usuario.getPapeis().getFirst().getId());
 
     }
 

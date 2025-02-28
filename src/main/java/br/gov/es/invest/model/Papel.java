@@ -4,6 +4,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
 import br.gov.es.invest.dto.PapelDto;
+import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,18 @@ public class Papel extends Entidade{
 
         return papel;
 
+    }
+
+    public static Papel parse(PapelACResponseDto resp) {
+        if(resp == null)
+            return null;
+        
+        return new Papel(
+            resp.Nome(), 
+            resp.Guid(), 
+            resp.Prioritario(), 
+            null
+        );
     }
 
 

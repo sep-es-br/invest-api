@@ -25,12 +25,13 @@ public class TokenService {
     @Value("${token.secret}")
     private String secret;
 
-    public String gerarToken(ACUserInfoDto userInfo) {
+    public String gerarToken(ACUserInfoDto userInfo, String acToken) {
         try {
             Algorithm algoritmo = Algorithm.HMAC256(secret);
             return JWT.create()
                     .withIssuer(ISSUER)
                     .withSubject(userInfo.subNovo())
+                    .withClaim("acToken", acToken)
                     .withClaim("name", userInfo.apelido())
                     .withClaim("email", userInfo.email())
                     .withClaim("roles", new ArrayList<>(userInfo.role()) )

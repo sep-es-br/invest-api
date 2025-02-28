@@ -69,4 +69,10 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
                 "MERGE (entidade)-[:MEMBRO_DE]->(grupo)")
     public void addMembro(String grupoId, String membroId);
 
+
+    @Query("MATCH (g:Grupo)<-[:MEMBRO_DE]-(u:Usuario)\r\n" + //
+                "WHERE elementId(u) = $userId\r\n" + //
+                "RETURN g")
+    public List<Grupo> getGrupoMembroDireto(String userId);
+
 }
