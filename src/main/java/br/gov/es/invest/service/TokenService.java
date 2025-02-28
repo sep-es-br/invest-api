@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 public class TokenService {
-    private static final String ISSUER = "SEP Infoplan API";
+    private static final String ISSUER = "SEP SPO API";
 
     @Value("${token.secret}")
     private String secret;
@@ -42,22 +42,6 @@ public class TokenService {
         }
     }
 
-    
-    public String gerarTokenByUsuario(Usuario user) {
-        try {
-            Algorithm algoritmo = Algorithm.HMAC256(secret);
-            return JWT.create()
-                    .withIssuer(ISSUER)
-                    .withSubject(user.getSub())
-                    .withClaim("name", user.getName())
-                    .withClaim("roles", new ArrayList<>(user.getRole()) )
-                    .withExpiresAt(getDataExpiracao())
-                    .sign(algoritmo);
-        } catch (JWTCreationException exception) {
-            throw new InfoplanServiceException(List.of("Erro ao gerar o token", exception.getMessage()));
-        }
-    }
-
     public String validarToken(String token) {
         Algorithm algoritmo = Algorithm.HMAC256(secret);
         return JWT.require(algoritmo)
@@ -69,6 +53,11 @@ public class TokenService {
 
     private Instant getDataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    }
+
+    public String getAcTokenFromToken(String token){
+        DecodedJWT decodedJWT = JWT.decode(token);
+        return decodedJWT.getClaim("acToken").asString();
     }
 
     public List<String> getRoleFromToken(String token) {
