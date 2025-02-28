@@ -37,13 +37,18 @@ public class AcaoService {
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
                 Objeto objetoOriginal = objetoService.findById(objeto.getId());
+                
                 EmStatus emStatusTarget = new EmStatus();
                 emStatusTarget.setStatus(acao.getStatusFinal());
                 emStatusTarget.setTimestamp(agora);
 
-                objetoOriginal.setEmStatus(emStatusTarget); // aplica status final
-                objetoOriginal.setEmEtapa(null); // remove objeto do fluxo
-                return objetoService.save(objetoOriginal);
+                objeto.setEmStatus(emStatusTarget); // aplica status final
+                objeto.setEmEtapa(null); // remove objeto do fluxo
+
+                objeto.setApontamentos(objetoOriginal.getApontamentos());
+                objeto.setPareceres(objetoOriginal.getPareceres());
+
+                return objetoService.save(objeto);
             } else { // se não significa que o fluxo foi cancelado
                 return objetoService.removerObjeto(objeto.getId());
             }
