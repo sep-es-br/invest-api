@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
@@ -18,14 +17,6 @@ public class UnidadeOrcamentariaService {
     
     @Autowired
     private UnidadeOrcamentariaRepository repository;
-
-    public void saveAll(List<UnidadeOrcamentaria> unidades) {
-        repository.saveAll(unidades);
-    }
-
-    public List<UnidadeOrcamentaria> getAll() {
-        return repository.findAll();
-    }
 
     public List<UnidadeOrcamentariaDTOProjection> getAllSimples() {
         return repository.findAllUnidades();

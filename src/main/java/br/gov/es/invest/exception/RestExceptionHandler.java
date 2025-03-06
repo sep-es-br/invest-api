@@ -81,4 +81,14 @@ public class RestExceptionHandler {
         );
     }
 
+    @ExceptionHandler(PapelInvalidoException.class)
+    private ResponseEntity<MensagemErroRest> papelInvalidoHandler(PapelInvalidoException ex) {
+        logger.log(Level.INFO, ex.getLocalizedMessage(), ex);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            ex.getLocalizedMessage(), 
+            null
+        );
+    }
+
 }

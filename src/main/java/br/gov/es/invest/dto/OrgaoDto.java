@@ -13,4 +13,10 @@ public record OrgaoDto(
         this(orgao.getId(), orgao.getGuid(), orgao.getSigla(), orgao.getNome());
     }
 
+    public static OrgaoDto parse(Orgao orgao) {
+        return orgao == null ? null
+            : new OrgaoDto(orgao);
+
+    }
+
 }

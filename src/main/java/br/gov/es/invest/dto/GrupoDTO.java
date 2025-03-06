@@ -1,6 +1,5 @@
 package br.gov.es.invest.dto;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,11 +15,12 @@ public class GrupoDTO {
     private String sigla;
     private String nome;
     private String descricao;
-    private Boolean podeVerTodasUnidades;
 
     
     private Set<UsuarioDto> membros; 
+    private Set<PapelDto> papeisMembro;
     private Set<SetorDto> setoresMembros;
+    private Set<OrgaoDto> orgaoMembro;
 
     private Set<PodeDto> permissoes;
 
@@ -31,11 +31,27 @@ public class GrupoDTO {
         this.sigla = grupo.getSigla();
         this.nome = grupo.getNome();
         this.descricao = grupo.getDescricao();
-        this.podeVerTodasUnidades = grupo.isPodeVerTodasUnidades();
         
         if(grupo.getMembros() != null)
             this.membros = grupo.getMembros().stream().map(usuario -> new UsuarioDto(usuario)).collect(Collectors.toSet());
+        
+        if(grupo.getPapeisMembro() != null)
+            this.papeisMembro = grupo.getPapeisMembro().stream().map(
+                papel -> PapelDto.parse(papel)
+            ).collect(Collectors.toSet());
 
+        if(grupo.getSetoresMembro() != null)
+            this.setoresMembros = grupo.getSetoresMembro().stream().map(
+                setor -> new SetorDto(setor)
+            ).collect(Collectors.toSet());
+
+        if(grupo.getOrgaosMembro() != null)
+            this.orgaoMembro = grupo.getOrgaosMembro().stream().map(
+                orgao -> new OrgaoDto(orgao)
+            ).collect(Collectors.toSet());
+
+                   
+        
         if(grupo.getPermissoes() != null)
             this.permissoes = grupo.getPermissoes().stream().map(permissao -> new PodeDto(permissao)).collect(Collectors.toSet());
     }

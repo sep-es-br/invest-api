@@ -1,9 +1,8 @@
 package br.gov.es.invest.dto;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import br.gov.es.invest.model.Usuario;
 import lombok.Getter;
@@ -24,6 +23,7 @@ public class UsuarioDto {
         private String telefone;
         private String papel;
         private Set<FuncaoDTO> role;
+        private Set<PapelDto> papeis;
 
         private SetorDto setor;
 
@@ -38,6 +38,7 @@ public class UsuarioDto {
                 this.papel = usuario.getPapel();
                 this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
                 this.setor = usuario.getSetor() == null ? null : new SetorDto(usuario.getSetor());
+                this.papeis = usuario.getPapeis() == null || usuario.getPapeis().isEmpty() ? null : usuario.getPapeis().stream().map(PapelDto::parse).collect(Collectors.toSet());
         }
 
         public static UsuarioDto parse(Usuario usuario){
