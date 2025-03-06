@@ -48,7 +48,7 @@ public class UsuarioService {
 
         usuario = this.save(usuario);
 
-        repository.transferirGrupo(usuario.getId(), usuario.getPapeis().getFirst().getId());
+        repository.transferirGrupo(usuario.getId(), usuario.getPapeis().get(0).getId());
 
     }
 

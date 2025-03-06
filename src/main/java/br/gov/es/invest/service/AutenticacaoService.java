@@ -108,7 +108,7 @@ public class AutenticacaoService {
             }
             
         } else {
-            Papel papelDoUser = user.getPapeis().getFirst();
+            Papel papelDoUser = user.getPapeis().get(0);
 
             Papel papelProbe = new Papel();
             papelProbe.setGuid(papelDoUser.getGuid());
@@ -156,7 +156,7 @@ public class AutenticacaoService {
         if(papeisComPrioridade.isEmpty())
             return null;
 
-        PapelACResponseDto papelAc = papeisComPrioridade.getFirst();
+        PapelACResponseDto papelAc = papeisComPrioridade.get(0);
 
         UnidadeACResponseDto setorAc = acService.getUnidadeInfoByGuid(papelAc.LotacaoGuid(), clientToken);
 
@@ -200,7 +200,7 @@ public class AutenticacaoService {
                 List<Papel> papeisPrioritário = papeisComNome.stream().filter(p -> p.Prioritario()).map(Papel::parse).toList();
 
                 if(papeisPrioritário.size() > 0) {
-                    papeisValidos.add(papeisComNome.getFirst());
+                    papeisValidos.add(papeisComNome.get(0));
                 }
 
                 // independentemente atualiza para novo formato
@@ -218,7 +218,7 @@ public class AutenticacaoService {
         } else {
             // pega o unico papel dele
             if (user.getPapeis().size() == 1){
-                Papel papelNoBanco = user.getPapeis().getFirst();
+                Papel papelNoBanco = user.getPapeis().get(0);
 
                 PapelACResponseDto papelAc = acService.getPapelByGuid(papelNoBanco.getGuid(), clientToken);
                 if(papelAc != null && papelAc.Prioritario()){
