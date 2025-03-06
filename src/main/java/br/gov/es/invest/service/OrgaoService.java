@@ -16,18 +16,18 @@ public class OrgaoService {
     private OrgaoRepository repository;
 
     public Orgao findOrCreate(Orgao orgao){
+        Optional<Orgao> optOrgao = this.findByGuid(orgao.getGuid());
 
-        Orgao probe = new Orgao();
-        probe.setGuid(orgao.getGuid());
-
-        Optional<Orgao> optOrgao = repository.findBy(Example.of(probe), query -> query.first());
-
-        if(optOrgao.isPresent()) {
-            return optOrgao.get();
-        } else {
-            return repository.save(orgao);
-        }
+        return optOrgao.orElse(orgao);
 
     }
+
+    public Optional<Orgao> findByGuid(String guid) {
+        Orgao probe = new Orgao();
+        probe.setGuid(guid);
+
+        return repository.findBy(Example.of(probe), query -> query.first());
+    }
+
 
 }

@@ -1,8 +1,6 @@
 package br.gov.es.invest.dto;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +38,7 @@ public class UsuarioDto {
                 this.papel = usuario.getPapel();
                 this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
                 this.setor = usuario.getSetor() == null ? null : new SetorDto(usuario.getSetor());
-                this.papeis = usuario.getPapeis() == null || usuario.getPapeis().size() == 0 ? null : usuario.getPapeis().stream().map(PapelDto::parse).collect(Collectors.toSet());
+                this.papeis = usuario.getPapeis() == null || usuario.getPapeis().isEmpty() ? null : usuario.getPapeis().stream().map(PapelDto::parse).collect(Collectors.toSet());
         }
 
         public static UsuarioDto parse(Usuario usuario){

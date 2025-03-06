@@ -61,6 +61,34 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
                 "RETURN grupo")
     public List<Grupo> getGruposByUsuario(String usuarioId);
 
+    @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(orgao:Orgao)\r\n" + //
+                "WHERE elementId(orgao) = $orgaoId\r\n" + //
+                "RETURN grupo")
+    public List<Grupo> getGruposByOrgao(String orgaoId);
+
+    @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)\r\n" + //
+                "WHERE elementId(setor) = $setorId\r\n" + //
+                "RETURN grupo\r\n" + //
+                "UNION \r\n" + //
+                "MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(setor:Setor)\r\n" + //
+                "WHERE elementId(setor) = $setorId\r\n" + //
+                "RETURN grupo")
+    public List<Grupo> getGruposBySetor(String setorId);
+
+    @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)\r\n" + //
+                "    WHERE elementId(papel) = $papelId\r\n" + //
+                "    RETURN grupo\r\n" + //
+                "    UNION \r\n" + //
+                "    MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)\r\n" + //
+                "    WHERE elementId(papel) = $papelId\r\n" + //
+                "    RETURN grupo\r\n" + //
+                "    UNION \r\n" + //
+                "    MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(papel:Papel)\r\n" + //
+                "    WHERE elementId(papel) = $papelId\r\n" + //
+                "    RETURN grupo")
+    public List<Grupo> getGruposByPapel(String papelId);
+
+
     @Query("MATCH (grupo:Grupo)\r\n" + //
                 "MATCH (entidade)\r\n" + //
                 "WHERE (elementId(grupo) = $grupoId)\r\n" + //

@@ -42,6 +42,12 @@ public class Papel extends Entidade{
     }
 
     public static Papel parse(PapelACResponseDto resp) {
+        return parse(resp, null);
+    }
+
+    
+
+    public static Papel parse(PapelACResponseDto resp, Setor setor) {
         if(resp == null)
             return null;
         
@@ -49,7 +55,7 @@ public class Papel extends Entidade{
             resp.Nome(), 
             resp.Guid(), 
             resp.Prioritario(), 
-            null
+            setor
         );
     }
 

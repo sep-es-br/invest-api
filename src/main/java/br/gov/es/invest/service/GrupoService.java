@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatcher;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
@@ -201,6 +198,18 @@ public class GrupoService {
 
     public List<Grupo> getGruposDoUsuario(String usuarioId) {
         return this.repository.getGruposByUsuario(usuarioId);
+    }
+
+    public List<Grupo> getGruposByOrgao(String orgaoId){
+        return this.repository.getGruposByOrgao(orgaoId);
+    }
+
+    public List<Grupo> getGruposBySetor(String orgaoId){
+        return this.repository.getGruposByOrgao(orgaoId);
+    }
+
+    public List<Grupo> getGruposByPapel(String papelId){
+        return this.repository.getGruposByPapel(papelId);
     }
 
 }

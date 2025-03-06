@@ -2,13 +2,11 @@ package br.gov.es.invest.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
@@ -21,15 +19,11 @@ import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
+
 @RestController
 @RequestMapping("/unidade")
 @RequiredArgsConstructor
 public class UnidadeOrcamentariaController {
-
-    @Value("${frontend.host}")
-    private String frontHost;
-
     
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
@@ -80,11 +74,13 @@ public class UnidadeOrcamentariaController {
 
             UnidadeOrcamentaria unidade = this.service.findBySigla(usuario.getSetor().getOrgao().getSigla());
 
-            ArrayList<UnidadeOrcamentaria> unidades = new ArrayList<UnidadeOrcamentaria>();
+            if(unidade == null) return null;
+
+            ArrayList<UnidadeOrcamentaria> unidades = new ArrayList<>();
             unidades.add(unidade);
             unidades.addAll(unidade.getFilhas());
 
-            return unidade == null ? null : unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
+            return unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
 
         }
 

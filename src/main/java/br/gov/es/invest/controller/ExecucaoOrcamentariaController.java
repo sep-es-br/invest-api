@@ -1,13 +1,12 @@
 package br.gov.es.invest.controller;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,16 +18,14 @@ import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.FonteOrcamentaria;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.VinculadaPor;
-import br.gov.es.invest.service.AnoService;
 import br.gov.es.invest.service.ExecucaoOrcamentariaService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 
 
-@CrossOrigin(origins = "${frontend.host}")
+
 @RestController
 @RequestMapping("/execucao")
 @RequiredArgsConstructor
@@ -38,13 +35,7 @@ public class ExecucaoOrcamentariaController {
     private final ExecucaoOrcamentariaService service;
     private final InvestimentoService investimentoService;
     private final InvestimentosBIService investimentosBIService;
-    private final AnoService anoService;
     private final FonteOrcamentariaService fonteOrcamentariaService;
-
-    @GetMapping("/totalOrcado")
-    public Double getTotalOrcado(@RequestParam String ano) {
-        return service.getTotalOrcadoByAno(ano);
-    }
 
     @GetMapping("/importarPentaho")
     public String importarPentaho(@RequestParam(required = false) Integer anoRef) {
@@ -77,7 +68,7 @@ public class ExecucaoOrcamentariaController {
             double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
             String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
-            Logger.getGlobal().info("consumindo: " + codUo + " - " + codPo + " em " + ano);
+            Logger.getGlobal().log(Level.INFO, "consumindo: {0} - {1} em {2}", new Object[]{codUo, codPo, ano});
 
             FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
@@ -94,7 +85,7 @@ public class ExecucaoOrcamentariaController {
                     return exec.getAnoExercicio().equals(ano);
                 }).toList();
             
-            ExecucaoOrcamentaria execucao = null;
+            ExecucaoOrcamentaria execucao;
             // se não existir, cria outra
             if(execs.isEmpty()){
                 
@@ -148,7 +139,7 @@ public class ExecucaoOrcamentariaController {
             Integer codTipoFonte = dado.get("tipo_fonte").asInt();
             String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
-            Logger.getGlobal().info("consumindo: unidade: " + codUo + " - " + codPo + " em " + String.format("%02d", mes) + "/" + ano);
+            Logger.getGlobal().log(Level.INFO, "consumindo: unidade: {0} - {1} em {2}/{3}", new Object[]{codUo, codPo, String.format("%02d", mes), ano});
             
             FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
@@ -165,7 +156,7 @@ public class ExecucaoOrcamentariaController {
                     return exec.getAnoExercicio().equals(ano);
                 }).toList();
             
-            ExecucaoOrcamentaria execucao = null;
+            ExecucaoOrcamentaria execucao;
             // se não existir, cria outra
             if(execs.isEmpty()){
                 

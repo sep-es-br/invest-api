@@ -7,33 +7,29 @@ import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
-import br.gov.es.invest.dto.PapelDto;
-import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Setor;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.OrgaoService;
 import br.gov.es.invest.service.SetorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
 
 
 
-@CrossOrigin(origins = "${frontend.host}")
+
 @RestController
 @RequestMapping("/grupo")
 @RequiredArgsConstructor
