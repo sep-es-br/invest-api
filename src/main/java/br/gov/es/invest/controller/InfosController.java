@@ -1,5 +1,6 @@
 package br.gov.es.invest.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +30,7 @@ import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.AnoService;
 import br.gov.es.invest.service.CustoService;
@@ -35,7 +38,9 @@ import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InfosService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
+import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
 
@@ -57,6 +62,9 @@ public class InfosController {
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
     private final FonteOrcamentariaService fonteService;
+    private final TokenService tokenService;
+    private final UsuarioService usuarioService;
+    private final UnidadeOrcamentariaService unidadeOrcamentariaService;
 
     @GetMapping("/allAnos")
     public ResponseEntity<Set<Integer>> getTodosAnos() {
@@ -88,12 +96,29 @@ public class InfosController {
 
     @GetMapping("/cardsTotais")
     public ResponseEntity<?> getCardsTotais(
-        @RequestParam(required=false) String nome,
+        @RequestParam(required=false) String nome, @RequestParam Boolean podeVerUnidades, @RequestHeader("Authorization") String authToken,
         @RequestParam(required=false) String idUo, @RequestParam(required=false) String idFonte,
         @RequestParam(required=false) String idPo, @RequestParam Integer ano, @RequestParam(required = false) Integer gnd
         ) {
             try {
-                List<String> idsUo = idUo == null ? null : new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
+                List<String> idsUo = null;
+                if(idUo == null && !podeVerUnidades) {
+                    
+                    authToken = authToken.replace("Bearer ", "");
+            
+                    String sub = tokenService.validarToken(authToken);
+                            
+                    Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                    
+                    UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+
+                    ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
+                    uos.addAll(uoUser.getFilhas());
+
+                    idsUo = uos.stream().map(u -> u.getId()).toList();
+                } else if(idUo != null) {
+                    idsUo = new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
+                }
                 List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
                 ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);              

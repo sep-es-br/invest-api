@@ -3,7 +3,11 @@ package br.gov.es.invest.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -140,13 +144,15 @@ public class PermissaoController {
             "archive", 
             isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
             "/carteira", 
-            Arrays.asList( new ItemMenu(
-                "Investimentos", 
-                null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
-                "/investimentos", 
-                null
-            ), new ItemMenu(
+            Arrays.asList( 
+                // new ItemMenu(
+                // "Investimentos", 
+                // null, 
+                // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
+                // "/investimentos", 
+                // null
+                // ),
+             new ItemMenu(
                 "Objetos", 
                 null, 
                 isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", usuario.getId()), 
