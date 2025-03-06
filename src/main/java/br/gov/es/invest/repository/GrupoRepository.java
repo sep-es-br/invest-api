@@ -27,17 +27,16 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
             GRUPO_HIDRATADO)
     public Optional<Grupo> findByIdHidratado(String id);
 
-    @Query("MATCH (grupo:Grupo)\r\n" + //
-            "WHERE elementId(grupo) = $grupoId\r\n" + //
-            "OPTIONAL MATCH (grupo)<-[md:MEMBRO_DE]-(membro:Usuario)-[mds:MEMBRO_DE]->(setor:Setor)-[pa:PERTENCE_A]->(orgao:Orgao)\r\n" + //
-            "RETURN count(membro)")
+    @Query("MATCH (grupo:Grupo)<-[md:MEMBRO_DE]-(membro)\r\n" + //
+                "WHERE elementId(grupo) = $grupoId\r\n" + //
+                "RETURN count(membro)")
     public int quantidadeDeMembros(String grupoId);
 
-    @Query("MATCH (grupo:Grupo)<-[md:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
-                "WHERE elementId(grupo) = $grupoId\r\n" + //
-                "    AND elementId(usuario) = $usuarioId\r\n" + //
+    @Query("MATCH (grupo:Grupo)<-[md:MEMBRO_DE]-(elemento)\r\n" + //
+                "WHERE elementId(elemento) = $elementoId\r\n" + //
+                "        AND elementId(grupo) = $grupoId\r\n" + //
                 "DELETE md")
-    public void removerMembro(String grupoId, String usuarioId);
+    public void removerMembro(String grupoId, String elementoId);
 
     @Query("MATCH (modulo:Modulo)<-[pode:PODE]-(grupo:Grupo)\r\n" + //
             "WHERE elementId(modulo) = $moduloId\r\n" + //
@@ -45,7 +44,19 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
             "RETURN grupo, collect(pode), collect(modulo)")
     public Optional<Grupo> findByGrupoModulo(String moduloId, String grupoId);
 
-    @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
+    @Query("MATCH (usuario)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
+                "WHERE elementId(usuario) = $usuarioId\r\n" + //
+                "RETURN grupo\r\n" + //
+                "UNION\r\n" + //
+                "MATCH (usuario)-[:POSSUI]->(:Papel)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
+                "WHERE elementId(usuario) = $usuarioId\r\n" + //
+                "RETURN grupo\r\n" + //
+                "UNION\r\n" + //
+                "MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
+                "WHERE elementId(usuario) = $usuarioId\r\n" + //
+                "RETURN grupo\r\n" + //
+                "UNION\r\n" + //
+                "MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:PERTENCE_A]->(:Orgao)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
                 "WHERE elementId(usuario) = $usuarioId\r\n" + //
                 "RETURN grupo")
     public List<Grupo> getGruposByUsuario(String usuarioId);
@@ -57,5 +68,11 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
                 "    AND (entidade:Usuario OR entidade:Agente OR entidade:Setor OR entidade:Papel OR entidade:Orgao)\r\n" + //
                 "MERGE (entidade)-[:MEMBRO_DE]->(grupo)")
     public void addMembro(String grupoId, String membroId);
+
+
+    @Query("MATCH (g:Grupo)<-[:MEMBRO_DE]-(u:Usuario)\r\n" + //
+                "WHERE elementId(u) = $userId\r\n" + //
+                "RETURN g")
+    public List<Grupo> getGrupoMembroDireto(String userId);
 
 }

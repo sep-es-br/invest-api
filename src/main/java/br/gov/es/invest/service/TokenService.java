@@ -20,36 +20,21 @@ import java.util.List;
 
 @Service
 public class TokenService {
-    private static final String ISSUER = "SEP Infoplan API";
+    private static final String ISSUER = "SEP SPO API";
 
     @Value("${token.secret}")
     private String secret;
 
-    public String gerarToken(ACUserInfoDto userInfo) {
+    public String gerarToken(ACUserInfoDto userInfo, String acToken) {
         try {
             Algorithm algoritmo = Algorithm.HMAC256(secret);
             return JWT.create()
                     .withIssuer(ISSUER)
                     .withSubject(userInfo.subNovo())
+                    .withClaim("acToken", acToken)
                     .withClaim("name", userInfo.apelido())
                     .withClaim("email", userInfo.email())
                     .withClaim("roles", new ArrayList<>(userInfo.role()) )
-                    .withExpiresAt(getDataExpiracao())
-                    .sign(algoritmo);
-        } catch (JWTCreationException exception) {
-            throw new InfoplanServiceException(List.of("Erro ao gerar o token", exception.getMessage()));
-        }
-    }
-
-    
-    public String gerarTokenByUsuario(Usuario user) {
-        try {
-            Algorithm algoritmo = Algorithm.HMAC256(secret);
-            return JWT.create()
-                    .withIssuer(ISSUER)
-                    .withSubject(user.getSub())
-                    .withClaim("name", user.getName())
-                    .withClaim("roles", new ArrayList<>(user.getRole()) )
                     .withExpiresAt(getDataExpiracao())
                     .sign(algoritmo);
         } catch (JWTCreationException exception) {
@@ -68,6 +53,11 @@ public class TokenService {
 
     private Instant getDataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    }
+
+    public String getAcTokenFromToken(String token){
+        DecodedJWT decodedJWT = JWT.decode(token);
+        return decodedJWT.getClaim("acToken").asString();
     }
 
     public List<String> getRoleFromToken(String token) {
