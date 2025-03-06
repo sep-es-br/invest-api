@@ -44,12 +44,14 @@ public class GrupoDTO {
 
         if(grupo.getSetoresMembro() != null)
             this.setoresMembros = grupo.getSetoresMembro().stream().map(
-                setor -> 
-            )
+                setor -> new SetorDto(setor)
+            ).collect(Collectors.toSet());
 
-            
-    private Set<OrgaoDto> orgaoMembro;
-        
+        if(grupo.getOrgaosMembro() != null)
+            this.orgaoMembro = grupo.getOrgaosMembro().stream().map(
+                orgao -> new OrgaoDto(orgao)
+            ).collect(Collectors.toSet());
+       
         
         if(grupo.getPermissoes() != null)
             this.permissoes = grupo.getPermissoes().stream().map(permissao -> new PodeDto(permissao)).collect(Collectors.toSet());
