@@ -122,8 +122,12 @@ public class InfosController {
 
                 ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);              
     
-                String codUo = unidadeService.getCodById(idsUo == null ? null : idsUo.get(0));
-                String codPo = planoService.getCodById(idsPo == null ? null : idsPo.get(0));
+                String codUo = unidadeService.getCodById(idsUo == null ? null 
+                    : String.join(",", idsUo) 
+                );
+                String codPo = planoService.getCodById(idsPo == null ? null 
+                    : String.join(",", idsPo)
+                );
                 String codFonte = fonteService.getCodById(idFonte);
     
                 codFonte = codFonte == null ? null : String.valueOf(Integer.parseInt(codFonte)); 
