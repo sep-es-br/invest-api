@@ -34,9 +34,13 @@ public class AcaoService {
 
         ZonedDateTime agora = ZonedDateTime.now();
         
+
+        Objeto objetoOriginal = objetoService.findById(objeto.getId());
+        objeto.setApontamentos(objetoOriginal.getApontamentos());
+        objeto.setPareceres(objetoOriginal.getPareceres());
+
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
-                Objeto objetoOriginal = objetoService.findById(objeto.getId());
                 EmStatus emStatusTarget = new EmStatus();
                 emStatusTarget.setStatus(acao.getStatusFinal());
                 emStatusTarget.setTimestamp(agora);
@@ -67,7 +71,6 @@ public class AcaoService {
 
                 } else if(apontamentos != null) {
 
-                    Objeto objetoOriginal = objetoService.findById(objeto.getId());
 
                     List<Apontamento> apontamentosAtuais = objetoOriginal.getApontamentos();
                     List<Apontamento> apontamentosRemovidos = apontamentosAtuais.stream()
