@@ -133,7 +133,7 @@ public class InfosController {
                 
                 if(idsPo != null)
                     for(String idPoS : idsPo) {
-                        codsPo.add(unidadeService.getCodById(idPoS));
+                        codsPo.add(planoService.getCodById(idPoS));
                     }
                 String codUo = idsUo == null ? null : String.join(",", codsUo) ;
                 String codPo = idsPo == null ? null : String.join(",", codsPo);
