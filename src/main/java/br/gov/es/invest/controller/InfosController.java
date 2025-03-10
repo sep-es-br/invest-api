@@ -120,14 +120,23 @@ public class InfosController {
                 }
                 List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
-                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);              
+                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);    
+
     
-                String codUo = unidadeService.getCodById(idsUo == null ? null 
-                    : String.join(",", idsUo) 
-                );
-                String codPo = planoService.getCodById(idsPo == null ? null 
-                    : String.join(",", idsPo)
-                );
+                ArrayList<String> codsUo = new ArrayList<>();
+                ArrayList<String> codsPo = new ArrayList<>();
+
+                if(idsUo != null)
+                    for(String idUoS : idsUo) {
+                        codsUo.add(unidadeService.getCodById(idUoS));
+                    }
+                
+                if(idsPo != null)
+                    for(String idPoS : idsPo) {
+                        codsPo.add(unidadeService.getCodById(idPoS));
+                    }
+                String codUo = idsUo == null ? null : String.join(",", codsUo) ;
+                String codPo = idsPo == null ? null : String.join(",", codsPo);
                 String codFonte = fonteService.getCodById(idFonte);
     
                 codFonte = codFonte == null ? null : String.valueOf(Integer.parseInt(codFonte)); 
