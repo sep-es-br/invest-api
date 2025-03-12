@@ -30,4 +30,16 @@ public class OrgaoService {
 
     }
 
+    public Orgao findOrCreateByGuidOrSigla(Orgao orgao){
+
+        Optional<Orgao> optOrgao = repository.findByGuidOrSigla(orgao.getGuid(), orgao.getSigla());
+
+        if(optOrgao.isPresent()) {
+            return repository.findById(optOrgao.get().getId()).get();
+        } else {
+            return repository.save(orgao);
+        }
+
+    }
+
 }
