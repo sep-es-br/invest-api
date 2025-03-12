@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
+import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Grupo;
@@ -117,12 +118,14 @@ public class GrupoController {
     public GrupoDTO addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
         //TODO: process POST request
         Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
-        Orgao orgao = orgaoService.findOrCreate(new Orgao(cadastroFormDto.orgao()));
+        Orgao orgao = orgaoService.findOrCreateByGuidOrSigla(new Orgao(cadastroFormDto.orgao()));
         Setor setor = cadastroFormDto.setor() == null ? null : setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
 
         service.addMembro(grupo, orgao, setor, cadastroFormDto.papel());
 
-        return new GrupoDTO(service.findById(grupo.getId()).get());
+        grupo = service.findById(grupo.getId()).get();
+
+        return new GrupoDTO(grupo);
     }
     
     @DeleteMapping("/")

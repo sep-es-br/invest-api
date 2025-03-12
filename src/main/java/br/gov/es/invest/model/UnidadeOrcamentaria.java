@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
+import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import lombok.Data;
@@ -22,6 +23,9 @@ public class UnidadeOrcamentaria extends Entidade implements Serializable {
 
     @Relationship(type = "CONTROLA")
     private List<UnidadeOrcamentaria> filhas;
+
+    @Relationship(type = "CONTROLA", direction=Direction.INCOMING)
+    private Orgao orgaoPai;
     
     public UnidadeOrcamentaria(UnidadeOrcamentariaDTO dto) {
         this.setId(dto.id());

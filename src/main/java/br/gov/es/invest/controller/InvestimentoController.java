@@ -62,12 +62,9 @@ public class InvestimentoController {
                         
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                uos.addAll(uoUser.getFilhas());
-
-                idsUo = uos.stream().map(u -> u.getId()).toList();
+                idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(codUnidade != null) {
                 idsUo = new JsonMapper().readValue(codUnidade, new TypeReference<List<String>>() {});
             }

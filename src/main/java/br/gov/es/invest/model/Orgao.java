@@ -21,6 +21,7 @@ public class Orgao extends Entidade{
     
     private String guid;
 
+    private String codSigefes;
     private String sigla;
     private String nome;
     

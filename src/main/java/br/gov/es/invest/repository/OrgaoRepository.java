@@ -12,4 +12,9 @@ public interface OrgaoRepository extends Neo4jRepository<Orgao, String>{
     @Query("MATCH (orgao:Orgao) WHERE orgao.guid = $guid RETURN orgao")
     public Optional<Orgao> findByGuid(String guid);
     
+    @Query("MATCH (orgao:Orgao)\r\n" + //
+                "WHERE (NOT orgao.guid IS NULL AND orgao.guid = $guid)\r\n" + //
+                "    OR (orgao.guid IS NULL AND orgao.sigla = $sigla)\r\n" + //
+                "RETURN orgao")
+    public Optional<Orgao> findByGuidOrSigla(String guid, String sigla);
 }

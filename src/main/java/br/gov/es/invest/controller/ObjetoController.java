@@ -69,16 +69,10 @@ public class ObjetoController {
                         
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                if(uoUser == null) {
-                    Logger.getGlobal().log(Level.SEVERE, "Erro ao buscar unidade com sigla {0}", usuario.getSetor().getOrgao().getSigla());
-                } else {
-                    ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                    uos.addAll(uoUser.getFilhas());
+                idsUo = unidades.stream().map(u -> u.getId()).toList();
 
-                    idsUo = uos.stream().map(u -> u.getId()).toList();
-                }
             } else if(unidadeId != null) {
                 idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
             }
@@ -121,12 +115,10 @@ public class ObjetoController {
                         
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+                
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                uos.addAll(uoUser.getFilhas());
-
-                idsUo = uos.stream().map(u -> u.getId()).toList();
+                idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {
                 idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
             }
@@ -193,6 +185,9 @@ public class ObjetoController {
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = new Objeto(objetoDto);
+        if(objeto.getId() != null) {
+            objeto.setEmEtapa(service.getById(objeto.getId()).get().getEmEtapa());
+        }
         
         
         if(objeto.getResponsavel() == null) {
@@ -255,12 +250,10 @@ public class ObjetoController {
                         
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+                
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                uos.addAll(uoUser.getFilhas());
-
-                idsUo = uos.stream().map(u -> u.getId()).toList();
+                idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {
                 idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
             }
@@ -299,12 +292,10 @@ public class ObjetoController {
                         
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+                
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                uos.addAll(uoUser.getFilhas());
-
-                idsUo = uos.stream().map(u -> u.getId()).toList();
+                idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {
                 idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
             }

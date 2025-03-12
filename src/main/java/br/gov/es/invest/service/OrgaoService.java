@@ -29,5 +29,23 @@ public class OrgaoService {
         return repository.findBy(Example.of(probe), query -> query.first());
     }
 
+    public Orgao findOrCreateByGuidOrSigla(Orgao orgao){
+
+        Optional<Orgao> optOrgao = repository.findByGuidOrSigla(orgao.getGuid(), orgao.getSigla());
+
+        if(optOrgao.isPresent()) {
+            Orgao orgaoBanco = repository.findById(optOrgao.get().getId()).get();
+
+            if(orgaoBanco.getGuid() == null) {
+                orgaoBanco.setGuid(orgao.getGuid());
+                return repository.save(orgaoBanco);
+            }
+
+            return orgaoBanco;
+        } else {
+            return repository.save(orgao);
+        }
+
+    }
 
 }

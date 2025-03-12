@@ -34,9 +34,13 @@ public class AcaoService {
 
         ZonedDateTime agora = ZonedDateTime.now();
         
+
+        Objeto objetoOriginal = objetoService.findById(objeto.getId());
+        objeto.setApontamentos(objetoOriginal.getApontamentos());
+        objeto.setPareceres(objetoOriginal.getPareceres());
+
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
-                Objeto objetoOriginal = objetoService.findById(objeto.getId());
                 
                 EmStatus emStatusTarget = new EmStatus();
                 emStatusTarget.setStatus(acao.getStatusFinal());
@@ -44,9 +48,6 @@ public class AcaoService {
 
                 objeto.setEmStatus(emStatusTarget); // aplica status final
                 objeto.setEmEtapa(null); // remove objeto do fluxo
-
-                objeto.setApontamentos(objetoOriginal.getApontamentos());
-                objeto.setPareceres(objetoOriginal.getPareceres());
 
                 return objetoService.save(objeto);
             } else { // se não significa que o fluxo foi cancelado
@@ -72,7 +73,6 @@ public class AcaoService {
 
                 } else if(apontamentos != null) {
 
-                    Objeto objetoOriginal = objetoService.findById(objeto.getId());
 
                     List<Apontamento> apontamentosAtuais = objetoOriginal.getApontamentos();
                     List<Apontamento> apontamentosRemovidos = apontamentosAtuais.stream()
@@ -100,16 +100,13 @@ public class AcaoService {
                 
             }
             
-            if(acao.getProxEtapa() != null) {
-                EmEtapa emEtapaTarget = new EmEtapa();
-                emEtapaTarget.setDevolvido(!acao.getPositivo());
-                emEtapaTarget.setEtapa(acao.getProxEtapa());
-                emEtapaTarget.setAtividade(acao.getAtividadeFinal());
-                
-                objeto.setEmEtapa(emEtapaTarget);
-            } else {
-                objeto.setEmEtapa(null);
-            }
+            EmEtapa emEtapaTarget = new EmEtapa();
+            emEtapaTarget.setDevolvido(!acao.getPositivo());
+            emEtapaTarget.setEtapa(acao.getProxEtapa());
+            emEtapaTarget.setAtividade(acao.getAtividadeFinal());
+            
+            objeto.setEmEtapa(emEtapaTarget);
+            
              
             EmStatus emStatusTarget = new EmStatus();
             emStatusTarget.setStatus(acao.getStatusFinal());
