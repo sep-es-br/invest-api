@@ -2,13 +2,13 @@ package br.gov.es.invest.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
@@ -78,13 +78,10 @@ public class UnidadeOrcamentariaController {
             return null;
         } else {
 
-            UnidadeOrcamentaria unidade = this.service.findBySigla(usuario.getSetor().getOrgao().getSigla());
+            List<UnidadeOrcamentaria> unidades = this.service.findByOrgaoId(usuario.getSetor().getOrgao());
 
-            ArrayList<UnidadeOrcamentaria> unidades = new ArrayList<UnidadeOrcamentaria>();
-            unidades.add(unidade);
-            unidades.addAll(unidade.getFilhas());
 
-            return unidade == null ? null : unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
+            return unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
 
         }
 
