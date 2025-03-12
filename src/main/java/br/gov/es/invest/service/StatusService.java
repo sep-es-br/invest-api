@@ -23,20 +23,9 @@ public class StatusService {
 
     private ObjetoService objetoService;
 
-    public Status findOrCreate(Status status) {
-        
-        Status statusProbe = new Status();
-        statusProbe.setNome(status.getNome());
-
-        Optional<Status> optStatus = repository.findBy(Example.of(statusProbe), q -> q.first());
-
-        return optStatus.orElse(status);
-
-    }
-
-    public List<Status> findAllStatusObjeto(){
-        return repository.findAllStatusObjeto();
-    }
+    // public List<Status> findAllStatusObjeto(){
+    //     return repository.findAllStatusObjeto();
+    // }
 
     public List<Status> findAll(){
         return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
