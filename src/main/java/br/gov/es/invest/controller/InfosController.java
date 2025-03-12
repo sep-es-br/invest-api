@@ -109,25 +109,32 @@ public class InfosController {
                             
                     Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                     
-                    UnidadeOrcamentaria uoUser = unidadeOrcamentariaService.findBySigla(usuario.getSetor().getOrgao().getSigla());
+                   
+                    List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                    ArrayList<UnidadeOrcamentaria> uos = new ArrayList<>(Arrays.asList(uoUser));
-                    uos.addAll(uoUser.getFilhas());
-
-                    idsUo = uos.stream().map(u -> u.getId()).toList();
+                    idsUo = unidades.stream().map(u -> u.getId()).toList();
                 } else if(idUo != null) {
                     idsUo = new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
                 }
                 List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
-                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);              
-    
-                String codUo = unidadeService.getCodById(idsUo == null ? null 
-                    : String.join(",", idsUo) 
-                );
-                String codPo = planoService.getCodById(idsPo == null ? null 
-                    : String.join(",", idsPo)
-                );
+                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);    
+              
+                ArrayList<String> codsUo = new ArrayList<>();
+                ArrayList<String> codsPo = new ArrayList<>();
+
+                if(idsUo != null)
+                    for(String idUoS : idsUo) {
+                        codsUo.add(unidadeService.getCodById(idUoS));
+                    }
+                
+                if(idsPo != null)
+                    for(String idPoS : idsPo) {
+                        codsPo.add(planoService.getCodById(idPoS));
+                    }
+                String codUo = idsUo == null ? null : String.join(",", codsUo) ;
+                String codPo = idsPo == null ? null : String.join(",", codsPo);
+
                 String codFonte = fonteService.getCodById(idFonte);
     
                 codFonte = codFonte == null ? null : String.valueOf(Integer.parseInt(codFonte)); 

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,19 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
 import br.gov.es.invest.dto.PapelDto;
-import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Setor;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.OrgaoService;
 import br.gov.es.invest.service.SetorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
 
 
 
@@ -116,14 +114,16 @@ public class GrupoController {
     public GrupoDTO addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
         //TODO: process POST request
         Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
-        Orgao orgao = orgaoService.findOrCreate(new Orgao(cadastroFormDto.orgao()));
+        Orgao orgao = orgaoService.findOrCreateByGuidOrSigla(new Orgao(cadastroFormDto.orgao()));
         Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
 
         for(PapelDto papel : cadastroFormDto.papeis()) {
             service.addMembro(grupo, orgao, setor, papel);
         }
 
-        return new GrupoDTO(service.findById(grupo.getId()).get());
+        grupo = service.findById(grupo.getId()).get();
+
+        return new GrupoDTO(grupo);
     }
     
     @DeleteMapping("/")

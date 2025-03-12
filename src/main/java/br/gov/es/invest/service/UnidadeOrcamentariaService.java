@@ -5,11 +5,10 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
+import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.UnidadeOrcamentariaRepository;
 
@@ -45,16 +44,15 @@ public class UnidadeOrcamentariaService {
         return optUnidade.orElse(unidade);
     }
 
-    public UnidadeOrcamentaria findBySigla(String sigla) {
+    public List<UnidadeOrcamentaria> findByOrgaoId(Orgao orgao) {
+        Orgao orgaoProbe = new Orgao();
+        orgaoProbe.setId(orgao.getId());
 
         UnidadeOrcamentaria probe = new UnidadeOrcamentaria();
-        probe.setSigla(sigla);
+        probe.setOrgaoPai(orgaoProbe);
 
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                    .withIgnoreCase("sigla");
-
-        return this.repository.findBy(Example.of(probe, matcher), query -> query.firstValue());
-
+        return this.repository.findBy(Example.of(probe), q -> q.all());
     }
+
 
 }

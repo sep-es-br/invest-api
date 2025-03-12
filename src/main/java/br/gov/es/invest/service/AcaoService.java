@@ -34,6 +34,7 @@ public class AcaoService {
 
         ZonedDateTime agora = ZonedDateTime.now();
         
+
         Objeto objetoOriginal = objetoService.findById(objeto.getId());
         objeto.setApontamentos(objetoOriginal.getApontamentos());
         objeto.setPareceres(objetoOriginal.getPareceres());
