@@ -35,7 +35,14 @@ public class OrgaoService {
         Optional<Orgao> optOrgao = repository.findByGuidOrSigla(orgao.getGuid(), orgao.getSigla());
 
         if(optOrgao.isPresent()) {
-            return repository.findById(optOrgao.get().getId()).get();
+            Orgao orgaoBanco = repository.findById(optOrgao.get().getId()).get();
+
+            if(orgaoBanco.getGuid() == null) {
+                orgaoBanco.setGuid(orgao.getGuid());
+                return repository.save(orgaoBanco);
+            }
+
+            return orgaoBanco;
         } else {
             return repository.save(orgao);
         }
