@@ -94,33 +94,6 @@ public class InvestimentoController {
             }
     }
 
-    @GetMapping("/dadosConsolidados")
-    public ResponseEntity<?> getDadosConsolidados (
-        @RequestParam(required=false) String tipoDespesa, @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Integer exercicio,
-        @RequestParam(required=false) String idFonte
-    ){
-        tipoDespesa = "Investimento";
-        gnd = 4;
-        exercicio = 2024;
-        idFonte = "4:c674a958-6c45-4b21-b029-726f513f75d7:7845";
-
-        
-
-
-        return ResponseEntity.ok(Arrays.asList(new DadosConsolidadosDTO(
-            idFonte, 
-            idFonte, 
-            idFonte, 
-            idFonte, 
-            "Teste Nome", 
-            null, 
-            idFonte, 
-            exercicio, 
-            null, 
-            null
-        )));
-    }
-
     @GetMapping("/countValores")
     public ResponseEntity<Integer> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,

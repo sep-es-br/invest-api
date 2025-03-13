@@ -1,35 +1,24 @@
 package br.gov.es.invest.controller;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import br.gov.es.invest.dto.ContaTiraDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.ExecucaoOrcamentaria;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.service.ContaService;
-import br.gov.es.invest.service.InvestimentoService;
-import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.ObjetoService;
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/conta")
 @RequiredArgsConstructor
 public class ContaController {
-
 
     private final ContaService service;
     private final ObjetoService objetoService; 
@@ -73,6 +61,26 @@ public class ContaController {
                 );
             }
         
+    }
+
+    
+
+    @GetMapping("/dadosConsolidados")
+    public ResponseEntity<?> getDadosConsolidados (
+        @RequestParam(required=false) String tipoDespesa, @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Integer exercicio,
+        @RequestParam(required=false) String idFonte
+    ){
+        tipoDespesa = "Investimento";
+        gnd = 4;
+        exercicio = 2024;
+        idFonte = "4:c674a958-6c45-4b21-b029-726f513f75d7:7845";
+
+        
+
+
+        return ResponseEntity.ok(
+            service.getDadosConsolidados(tipoDespesa, gnd, exercicio, idFonte)
+        );
     }
 
     @GetMapping("/count")

@@ -1,37 +1,31 @@
 package br.gov.es.invest.service;
 
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.ExampleMatcher.MatcherConfigurer;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.dto.DadosConsolidadosDTO;
 import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.Investimento;
-import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ContaRepository;
+import br.gov.es.invest.utils.DataListResult;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ContaService {
     
-    @Autowired
-    private ContaRepository repository;
+    private final ContaRepository repository;
 
-    public ObjetoService objetoService;
+    private final ObjetoService objetoService;
 
-    @Autowired
-    public void setObjetoService(ObjetoService objetoService) {
-        this.objetoService = objetoService;
-    }
+    private final Neo4jOperations neo4jOperations;
 
     public Conta getGenericoByCodUnidade(UnidadeOrcamentaria unidadeOrcamentaria) {
 
@@ -97,6 +91,17 @@ public class ContaService {
 
     public Integer countByFilter(String nome, String codUnidade, String codPO, Integer exercicio, String idFonte){
         return findByFiltro(nome, codUnidade, codPO, exercicio, idFonte, null).size();
+    }
+
+    public DataListResult<DadosConsolidadosDTO> getDadosConsolidados (
+        String tipoDespesa, Integer gnd, Integer exercicio, String idFonte
+    ) {
+
+        String cypherBase = "";
+
+        
+
+        return new DataListResult<>(Arrays.asList(), 0);
     }
 
 }

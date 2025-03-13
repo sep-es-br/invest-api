@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import java.util.List;
 
 public record DadosConsolidadosDTO(
-    String idUnidada,
+    String idUnidade,
     String unidadeResponsavel,
     String idPO,
     String codPO,
