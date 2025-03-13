@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import br.gov.es.invest.model.PlanoOrcamentario;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 
 @Service
 public class PlanoOrcamentarioBIService extends PentahoBIService{
@@ -29,6 +28,7 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
         try {
             HashMap<String, String> params = new HashMap<>();
             params.put("parampCodUo", codUnidade);
+            params.put("parampCodPo", "todos");
 
 
             String url = buildEndpointUri(spoPath, planosTarget, params);
