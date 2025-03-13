@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import br.gov.es.invest.dto.DadosConsolidadosDTO;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
@@ -91,6 +92,32 @@ public class InvestimentoController {
                 Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                 return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "erro ao buscar investimentos", Arrays.asList(ex.getLocalizedMessage()));
             }
+    }
+
+    @GetMapping("/dadosConsolidados")
+    public ResponseEntity<?> getDadosConsolidados (
+        @RequestParam(required=false) String tipoDespesa, @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Integer exercicio,
+        @RequestParam(required=false) String idFonte
+    ){
+        tipoDespesa = "Investimento";
+        gnd = 4;
+        exercicio = 2024;
+        idFonte = "4:c674a958-6c45-4b21-b029-726f513f75d7:7845";
+
+
+
+        return ResponseEntity.ok(Arrays.asList(new DadosConsolidadosDTO(
+            idFonte, 
+            idFonte, 
+            idFonte, 
+            idFonte, 
+            "Teste Nome", 
+            null, 
+            idFonte, 
+            exercicio, 
+            null, 
+            null
+        )));
     }
 
     @GetMapping("/countValores")

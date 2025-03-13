@@ -166,13 +166,13 @@ public class PermissaoController {
             isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
             "/carteira", 
             Arrays.asList( 
-                // new ItemMenu(
-                // "Investimentos", 
-                // null, 
-                // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
-                // "/investimentos", 
-                // null
-                // ),
+                new ItemMenu(
+                "Investimentos", 
+                null, 
+                false, // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
+                "/investimentos", 
+                null
+                ),
              new ItemMenu(
                 "Objetos", 
                 null, 
@@ -181,6 +181,26 @@ public class PermissaoController {
                 null
             )
 
+            )
+        ), new ItemMenu(
+            "Relatório", 
+            "file-stats-report", 
+            true, 
+            "/relatorio", 
+            Arrays.asList(
+                new ItemMenu(
+                    "Consolidado", 
+                    null, 
+                    true, 
+                    "/consolidado", 
+                    null
+                ), new ItemMenu(
+                    "Detalhado", 
+                    null, 
+                    false, 
+                    "/detalhado", 
+                    null
+                )
             )
         ), new ItemMenu(
             null ,
