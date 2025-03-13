@@ -166,13 +166,13 @@ public class PermissaoController {
             isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
             "/carteira", 
             Arrays.asList( 
-                // new ItemMenu(
-                // "Investimentos", 
-                // null, 
-                // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
-                // "/investimentos", 
-                // null
-                // ),
+                new ItemMenu(
+                "Investimentos", 
+                null, 
+                false, // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
+                "/investimentos", 
+                null
+                ),
              new ItemMenu(
                 "Objetos", 
                 null, 

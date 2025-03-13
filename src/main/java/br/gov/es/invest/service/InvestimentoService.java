@@ -74,7 +74,6 @@ public class InvestimentoService {
                             "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
                             "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
                             "    RETURN \r\n" + //
-                            "        ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r\n" + //
                             "        sum(indicada_por.previsto) AS totalPrevisto, \r\n" + //
                             "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
                             "} \r\n" + //
@@ -105,7 +104,7 @@ public class InvestimentoService {
 
         String cypherCount = cypherBase + 
                 "RETURN\r\n" + //
-                "    COUNT(*)\r\n";
+                "    COUNT(DISTINCT inv)\r\n";
 
 
 
