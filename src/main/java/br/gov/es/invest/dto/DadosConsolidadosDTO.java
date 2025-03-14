@@ -2,25 +2,24 @@ package br.gov.es.invest.dto;
 
 import java.util.List;
 
-public record DadosConsolidadosDTO(
-    String idUnidade,
-    String unidadeResponsavel,
-    String idPO,
-    String codPO,
-    String nomePO,
-    Boolean projEstrategico,
-    String contrato,
-    Integer anoExercicio,
-    List<DadosValores> dadosPrevisto,
-    List<DadosValores> dadosContratado
-) {
-    
-}
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-record DadosValores(
-    String idFonte,
-    String nomeFonte,
-    String valor
-){
-    
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class DadosConsolidadosDTO {
+    private String idUnidade;
+    private String unidadeResponsavel;
+    private String idPO;
+    private String codPO;
+    private String nomePO;
+    private Boolean projEstrategico;
+    private String contrato;
+    private Integer anoExercicio;
+    private String custoId;
+    private List<DadosConsolidadosValores> valores;
 }

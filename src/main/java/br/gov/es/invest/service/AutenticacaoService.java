@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.gov.es.invest.dto.ACUserInfoDto;
 import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.exception.UsuarioInexistenteException;
-import br.gov.es.invest.exception.UsuarioSemPermissaoException;
 import br.gov.es.invest.exception.service.InfoplanServiceException;
 import br.gov.es.invest.model.Usuario;
 import lombok.RequiredArgsConstructor;
@@ -57,11 +56,7 @@ public class AutenticacaoService {
                 
         usuario = usuarioService.save(usuario);
         
-        UsuarioDto dto = new UsuarioDto(usuario);
-        dto.setToken(token);
-
-        return dto;
-
+        return UsuarioDto.parse(usuario, token);
 
     }
 
@@ -86,28 +81,7 @@ public class AutenticacaoService {
         throw new InfoplanServiceException(List.of("Não foi possível identificar um usuário no acesso cidadão com esse token. Faça login novamente!"));
     }
 
-    protected ACUserInfoDto getUserPermissions(String accessToken) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://acessocidadao.es.gov.br/is/connect/userinfo"))
-                .header("Authorization", "Bearer " + accessToken)
-                .build();
-
-        HttpClient client = HttpClient.newHttpClient();
-        try {
-            ACUserInfoDto userInfoDto;
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            userInfoDto = new ObjectMapper().readValue(response.body(), ACUserInfoDto.class);
-
-            return userInfoDto;
-        } catch (InterruptedException | IOException e) {
-            logger.error(e.getMessage());
-            Thread.currentThread().interrupt();
-        }
-        throw new InfoplanServiceException(List.of("Não foi possível identificar um usuário no acesso cidadão com esse token. Faça login novamente!"));
-    }
-
     private static String getEmailUserInfo(ACUserInfoDto userInfo) {
-        return userInfo.emailCorporativo() != null ? userInfo.emailCorporativo() : userInfo.email();
+        return Optional.ofNullable(userInfo.emailCorporativo()).orElse(userInfo.email());
     }
 }

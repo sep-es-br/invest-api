@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/areaTematica")
 @RequiredArgsConstructor

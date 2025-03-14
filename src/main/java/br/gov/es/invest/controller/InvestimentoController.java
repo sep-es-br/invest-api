@@ -33,7 +33,6 @@ import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/investimento")
 @RequiredArgsConstructor
@@ -43,7 +42,6 @@ public class InvestimentoController {
     private final InvestimentoService service;
 
     private final ObjetoService objetoService;
-    private final ContaService contaService;
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;

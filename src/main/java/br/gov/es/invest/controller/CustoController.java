@@ -14,20 +14,16 @@ import br.gov.es.invest.dto.CustoDTO;
 import br.gov.es.invest.service.CustoService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/custo")
 @RequiredArgsConstructor
 public class CustoController {
 
-    @Value("${frontend.host}")
-    private String frontHost;
-
     private final CustoService service;
 
     @GetMapping("/all")
     public ResponseEntity<List<CustoDTO>> getAllByExercicio(@RequestParam String exercicio) {
-        List<CustoDTO> custos = service.getAllByExercicio(exercicio).stream().map((custo) -> new CustoDTO(custo)).toList();
+        List<CustoDTO> custos = service.getAllByExercicio(exercicio).stream().map(CustoDTO::parse).toList();
         
         return ResponseEntity.ok(custos);
     }

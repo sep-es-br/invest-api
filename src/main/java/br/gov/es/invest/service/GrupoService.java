@@ -20,18 +20,17 @@ import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.GrupoRepository;
 import br.gov.es.invest.repository.ModuloRepository;
 import br.gov.es.invest.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class GrupoService {
     
-    @Autowired
-    private GrupoRepository repository;
+    private final GrupoRepository repository;
 
-    @Autowired
-    private ModuloRepository moduloRepository;
+    private final ModuloRepository moduloRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
     public List<Grupo> findAll(String nome, Pageable pageable) {
         
@@ -80,7 +79,7 @@ public class GrupoService {
     public Grupo addMembro(Grupo grupo, Orgao orgao, Setor setor, PapelDto papelDto){
         
       
-        Optional<Usuario> usuarioBanco = usuarioRepository.findBySub(papelDto.agenteSub());
+        Optional<Usuario> usuarioBanco = usuarioService.getUserBySub(papelDto.agenteSub());
         Usuario membro = new Usuario();
 
         if(usuarioBanco.isPresent()){
@@ -93,7 +92,7 @@ public class GrupoService {
         
         membro.setPapel(papelDto.nome());
         membro.setSetor(setor);
-        membro = usuarioRepository.save(membro);
+        membro = usuarioService.save(membro);
     
         this.repository.addMembro(membro.getId(), grupo.getId());
     

@@ -13,10 +13,7 @@ import br.gov.es.invest.service.FonteOrcamentariaBIService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
-
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/fonte")
 @RequiredArgsConstructor

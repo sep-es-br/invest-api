@@ -1,22 +1,15 @@
 package br.gov.es.invest.controller;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,48 +17,32 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.nimbusds.jose.shaded.gson.JsonObject;
 
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.StatusDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.EmStatus;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.PlanoOrcamentario;
-import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
-import br.gov.es.invest.dto.ContaDto;
 import br.gov.es.invest.dto.ObjetoDto;
-import br.gov.es.invest.dto.ObjetoFiltroDTO;
-import br.gov.es.invest.service.ContaService;
-import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
-import br.gov.es.invest.service.PlanoOrcamentarioService;
-import br.gov.es.invest.service.StatusService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/objeto")
 @RequiredArgsConstructor
 public class ObjetoController {
 
-    @Value("${frontend.host}")
-    private String frontHost;
-
-    private final Logger logger = Logger.getLogger("ObjetoController");
+    private static final Logger logger = Logger.getLogger("ObjetoController");
 
     private final ObjetoService service;
     private final UsuarioService usuarioService;
@@ -99,7 +76,9 @@ public class ObjetoController {
 
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, PageRequest.of(pgAtual-1, tamPag));
+            
+
+            List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
 
             List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
                 return new ObjetoTiraDTO(obj);
@@ -144,7 +123,7 @@ public class ObjetoController {
             }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, PageRequest.of(pgAtual-1, tamPag));
+            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
 
             List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
                 return new ObjetoTiraDTO(obj);

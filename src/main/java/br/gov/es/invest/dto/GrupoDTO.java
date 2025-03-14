@@ -1,48 +1,37 @@
 package br.gov.es.invest.dto;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import br.gov.es.invest.model.Grupo;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-public class GrupoDTO {
-    private String id;
-    private String icone;
-    private String sigla;
-    private String nome;
-    private String descricao;
-    private Boolean podeVerTodasUnidades;
+public record GrupoDTO(
+    String id,
+    String icone,
+    String sigla,
+    String nome,
+    String descricao,
+    Boolean podeVerTodasUnidades,
 
-    
-    private Set<UsuarioDto> membros; 
-    private Set<SetorDto> setoresMembros;
-
-    private Set<PodeDto> permissoes;
-
-
-    public GrupoDTO(Grupo grupo) {
-        this.id = grupo.getId();
-        this.icone = grupo.getIcone();
-        this.sigla = grupo.getSigla();
-        this.nome = grupo.getNome();
-        this.descricao = grupo.getDescricao();
-        this.podeVerTodasUnidades = grupo.isPodeVerTodasUnidades();
-        
-        if(grupo.getMembros() != null)
-            this.membros = grupo.getMembros().stream().map(usuario -> new UsuarioDto(usuario)).collect(Collectors.toSet());
-
-        if(grupo.getPermissoes() != null)
-            this.permissoes = grupo.getPermissoes().stream().map(permissao -> new PodeDto(permissao)).collect(Collectors.toSet());
-    }
-
+    Set<UsuarioDto> membros,
+    Set<PodeDto> permissoes
+){
     public static GrupoDTO parse (Grupo model) {
         return model == null ? null
-        : new GrupoDTO(model);
+        : new GrupoDTO(
+            model.getId(), 
+            model.getIcone(), 
+            model.getSigla(), 
+            model.getNome(), 
+            model.getDescricao(), 
+            model.isPodeVerTodasUnidades(), 
+            
+            model.getMembros() == null ? null : model.getMembros().stream().map(UsuarioDto::parse).collect(Collectors.toSet()), 
+            model.getPermissoes() == null ? null : model.getPermissoes().stream().map(permissao -> new PodeDto(permissao)).collect(Collectors.toSet())
+        );
     }
 
+
 }
+

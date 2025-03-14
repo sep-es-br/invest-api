@@ -22,7 +22,6 @@ import br.gov.es.invest.service.ContaService;
 import br.gov.es.invest.service.ObjetoService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/conta")
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class ContaController {
     private final ContaService service;
     private final ObjetoService objetoService; 
 
-    private final Logger logger = Logger.getLogger("InvestimentoController");
+    private static final Logger logger = Logger.getLogger("InvestimentoController");
     
     @GetMapping("/contaTira")
     public ResponseEntity<?> getAllTiraByFilter(
@@ -68,18 +67,18 @@ public class ContaController {
     @GetMapping("/dadosConsolidados")
     public ResponseEntity<?> getDadosConsolidados (
         @RequestParam(required=false) String tipoDespesa, @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Integer exercicio,
-        @RequestParam(required=false) String idFonte
+        @RequestParam(required=false) String idFonte, @RequestParam Integer pag, @RequestParam Integer pagSize
     ){
         tipoDespesa = "Investimento";
-        gnd = 4;
-        exercicio = 2024;
-        idFonte = "4:c674a958-6c45-4b21-b029-726f513f75d7:7845";
+        gnd = null;
+        exercicio = 2025;
+        idFonte = null;
 
         
 
 
         return ResponseEntity.ok(
-            service.getDadosConsolidados(tipoDespesa, gnd, exercicio, idFonte)
+            service.getDadosConsolidados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize))
         );
     }
 

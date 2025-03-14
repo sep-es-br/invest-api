@@ -150,8 +150,8 @@ public class ACService {
           List<SetorACResponseDto> setoresResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<SetorACResponseDto>>(){});
           return setoresResponse.stream().map(setorResp -> new SetorDto(setorResp)).toList();
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
     } catch (Exception e) {

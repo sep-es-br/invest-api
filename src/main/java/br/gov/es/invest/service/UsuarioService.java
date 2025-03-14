@@ -34,16 +34,8 @@ public class UsuarioService {
 
     }
 
-
     public Usuario findOrSave(Usuario _usuario) {
-        Optional<Usuario> usuarioOpt = repository.findBySub(_usuario.getSub());
-
-        if(usuarioOpt.isPresent()){
-            return usuarioOpt.get();
-        } else {
-            return save(_usuario);
-        }
-        
+        return this.getUserBySub(_usuario.getSub()).orElseGet(() -> save(_usuario));   
     }
 
     public Usuario findOrSaveWithAvatar(Usuario _usuario) {

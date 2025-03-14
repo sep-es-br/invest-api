@@ -1,48 +1,55 @@
 package br.gov.es.invest.dto;
 
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Usuario;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class UsuarioDto {
-        private String id;
-        private String token;
-        private String sub;
-        private AvatarDTO imgPerfil;
-        private String name;
-        private String nomeCompleto;
-        private String email;
-        private String telefone;
-        private String papel;
-        private Set<FuncaoDTO> role;
+public record UsuarioDto(
+        String token,
+        String id,
+        String sub,
+        AvatarDTO imgPerfil,
+        String name,
+        String nomeCompleto,
+        String email,
+        String telefone,
+        String papel,
+        Set<FuncaoDTO> role,
 
-        private SetorDto setor;
-
-        public UsuarioDto(Usuario usuario) {
-                this.id = usuario.getId();
-                this.sub = usuario.getSub();
-                this.imgPerfil = usuario.getImgPerfil() == null ? null : new AvatarDTO(usuario.getImgPerfil());
-                this.name = usuario.getName();
-                this.nomeCompleto = usuario.getNomeCompleto();
-                this.telefone = usuario.getTelefone();
-                this.email = usuario.getEmail();
-                this.papel = usuario.getPapel();
-                this.role = usuario.getRole() == null ? new HashSet<>() : new HashSet<>(usuario.getRole().stream().map(funcao -> new FuncaoDTO(funcao)).toList());
-                this.setor = usuario.getSetor() == null ? null : new SetorDto(usuario.getSetor());
+        SetorDto setor
+){
+        
+        public static UsuarioDto parse(Usuario usuario, String token){
+                return Optional.ofNullable(usuario)
+                        .map(_usuario ->  new UsuarioDto(
+                                        token,
+                                        _usuario.getId(), 
+                                        _usuario.getSub(), 
+                                        AvatarDTO.parse( _usuario.getImgPerfil()), 
+                                        _usuario.getName(), 
+                                        _usuario.getNomeCompleto(), 
+                                        _usuario.getEmail(), 
+                                        _usuario.getTelefone(), 
+                                        _usuario.getPapel(), 
+                                        Optional.ofNullable(_usuario.getRole())
+                                                .map(roles -> roles.stream()
+                                                        .map(FuncaoDTO::new)
+                                                        .collect(Collectors.toSet())
+                                                )
+                                                .orElseGet(Collections::emptySet),
+                                        _usuario.getSetor() == null ? null : new SetorDto(_usuario.getSetor())
+                        ))
+                        .orElse(null);
+                
         }
 
         public static UsuarioDto parse(Usuario usuario){
-                return usuario == null ? null
-                : new UsuarioDto(usuario);
+                return UsuarioDto.parse(usuario, null);
         }
-        
 }

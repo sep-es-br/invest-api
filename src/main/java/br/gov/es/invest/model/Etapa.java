@@ -1,6 +1,7 @@
 package br.gov.es.invest.model;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 import org.springframework.data.neo4j.core.schema.Node;
@@ -37,8 +38,7 @@ public class Etapa extends Entidade {
         etapa.setOrdem(dto.ordem());
         etapa.setNome(dto.nome());
         etapa.setEtapaId(dto.etapaId());
-        etapa.setGrupoResponsavel(dto.grupoResponsavel() == null ? null : Grupo.parse(dto.grupoResponsavel()));
-
+        etapa.setGrupoResponsavel( Grupo.parse(dto.grupoResponsavel()) );
 
         return etapa;
 

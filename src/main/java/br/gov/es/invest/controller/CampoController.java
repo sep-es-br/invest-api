@@ -13,7 +13,6 @@ import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.service.CampoService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/campo")
 @RequiredArgsConstructor
@@ -36,13 +35,5 @@ public class CampoController {
 
 
     }
-
-    // @GetMapping("/gerarCampos")
-    // public String getMethodName() {
-    //     campoService.gerarCampos();
-        
-    //     return "Sucesso";
-    // }
-    
 
 }
