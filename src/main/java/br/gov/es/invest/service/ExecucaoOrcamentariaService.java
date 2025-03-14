@@ -26,6 +26,10 @@ public class ExecucaoOrcamentariaService {
         return repository.getTotalOrcadoByAno(ano);
     }
 
+    public void setaTudoNovo(Integer ano, boolean novo){
+        repository.setaTudoNovo(ano, novo);
+    }
+
 
 }
 

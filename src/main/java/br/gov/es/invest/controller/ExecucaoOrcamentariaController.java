@@ -1,7 +1,6 @@
 package br.gov.es.invest.controller;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +24,6 @@ import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 
 
 @CrossOrigin(origins = "${frontend.host}")
@@ -62,6 +60,11 @@ public class ExecucaoOrcamentariaController {
         List<Map<String, JsonNode>> dadosPorAno = investimentosBIService.getDadosPorAno(anoRef, anoRef+1);
 
         // processa os dados
+
+        // seta tudo como sujo
+        service.setaTudoNovo(anoRef, false);
+        service.setaTudoNovo(anoRef+1, false);
+       
 
         // primeiro o mais facil, dados por ano
         for(Map<String, JsonNode> dado : dadosPorAno){
@@ -125,14 +128,27 @@ public class ExecucaoOrcamentariaController {
             } else {
                 valores = valoresList.get(0);
             }
+
+            // se não for novo, limpa os valores antigos
+            if(!valores.isNovo()){
+                valores.setOrcado(0);
+                valores.setAutorizado(0);
+                valores.setDispSemReserva(0);
+                valores.setNovo(true);
+            }
             
-            valores.setOrcado(orcado);
-            valores.setAutorizado(autorizado);
-            valores.setDispSemReserva(dispSemReserva);
+            valores.setOrcado(valores.getOrcado() + orcado);
+            valores.setAutorizado(valores.getAutorizado() + autorizado);
+            valores.setDispSemReserva(valores.getDispSemReserva() + dispSemReserva);
             valores.setGnd(Integer.parseInt(codGnd));
 
             service.save(execucao);
         }
+
+        
+        // seta tudo como sujo
+        service.setaTudoNovo(anoRef-1, false);
+        service.setaTudoNovo(anoRef, false);
 
         // agora começa a brincadeira
         for(Map<String, JsonNode> dado : dadosPorMes) {
@@ -198,18 +214,16 @@ public class ExecucaoOrcamentariaController {
 
             // garantir que os campos tem os 12 espaços
 
-            if(valores.getLiquidado().length == 0)
+            if(!valores.isNovo()){
                 valores.setLiquidado(new double[12]);
-
-            if(valores.getEmpenhado().length == 0)
                 valores.setEmpenhado(new double[12]);
-            
-            if(valores.getPago().length == 0)
                 valores.setPago(new double[12]);
+                valores.setNovo(true);
+            }
             
-            valores.getLiquidado()[mes-1] = (double) liquidado;
-            valores.getEmpenhado()[mes-1] = (double) empenhado;            
-            valores.getPago()[mes-1] = (double) pago;
+            valores.getLiquidado()[mes-1] += (double) liquidado;
+            valores.getEmpenhado()[mes-1] += (double) empenhado;            
+            valores.getPago()[mes-1] += (double) pago;
             valores.setGnd(Integer.parseInt(codGnd));
 
             service.save(execucao);
