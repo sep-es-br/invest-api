@@ -3,13 +3,12 @@ package br.gov.es.invest.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatcher;
-import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.PapelDto;
@@ -19,7 +18,6 @@ import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.GrupoRepository;
 import br.gov.es.invest.repository.ModuloRepository;
-import br.gov.es.invest.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,6 +29,8 @@ public class GrupoService {
     private final ModuloRepository moduloRepository;
 
     private final UsuarioService usuarioService;
+
+    private final Neo4jClient neo4jClient;
 
     public List<Grupo> findAll(String nome, Pageable pageable) {
         
@@ -67,28 +67,29 @@ public class GrupoService {
     }
 
     public Grupo delete (String grupoId){
-        Grupo deletedGrupo = repository.findById(grupoId).orElse(null);
-
-        if(deletedGrupo != null) {
-            repository.delete(deletedGrupo);
-        }
-
-        return deletedGrupo;
+        Optional<Grupo> optGrupo = repository.findById(grupoId);
+        
+        return optGrupo.map(grupo -> {
+            repository.delete(grupo);
+            return grupo;
+        }).orElse(null);
     }
+
 
     public Grupo addMembro(Grupo grupo, Orgao orgao, Setor setor, PapelDto papelDto){
         
       
         Optional<Usuario> usuarioBanco = usuarioService.getUserBySub(papelDto.agenteSub());
-        Usuario membro = new Usuario();
 
-        if(usuarioBanco.isPresent()){
-            membro = usuarioBanco.get();
-        } else {
-            membro.setSub(papelDto.agenteSub());
-            membro.setNomeCompleto(papelDto.agenteNome());
-            membro.setName(papelDto.agenteNome().split(" ")[0]);
-        }
+        Usuario membro = usuarioBanco.orElseGet(
+            () -> {
+                Usuario _membro = new Usuario();
+                _membro.setSub(papelDto.agenteSub());
+                _membro.setNomeCompleto(papelDto.agenteNome());
+                _membro.setName(papelDto.agenteNome().split(" ")[0]);
+                return _membro;
+            }
+        );
         
         membro.setPapel(papelDto.nome());
         membro.setSetor(setor);
@@ -110,6 +111,12 @@ public class GrupoService {
     }
 
     public List<Grupo> getGruposDoUsuario(String usuarioId) {
+
+
+        // MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
+        //         "WHERE elementId(usuario) = $usuarioId\r\n" + //
+        //         "RETURN grupo 
+
         return this.repository.getGruposByUsuario(usuarioId);
     }
 

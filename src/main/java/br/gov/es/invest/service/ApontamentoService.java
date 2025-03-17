@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.Objeto;
@@ -25,11 +24,13 @@ public class ApontamentoService {
     public void remover(Apontamento apontamento) {
         // apontamentoRepository.delete(apontamento);
         Optional<Apontamento> optApontamento = apontamentoRepository.findById(apontamento.getId());
-        if(optApontamento.isPresent()) {
-            apontamento = optApontamento.get();
-            apontamento.setActive(false);
-            apontamentoRepository.save(apontamento);
-        }
+
+        optApontamento.ifPresent(_apontamento -> {
+            _apontamento.setActive(false);
+            apontamentoRepository.save(_apontamento);
+        } );
+
+        
     }
 
     public void mergeObjetoApontamento(Apontamento apontamento, Objeto objeto){

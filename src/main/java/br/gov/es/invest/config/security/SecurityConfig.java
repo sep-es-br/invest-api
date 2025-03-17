@@ -26,7 +26,7 @@ public class SecurityConfig {
         private final SecurityFilter securityFilter;
 
         @Value("${frontend.host}")
-        private final String frontend;
+        private String frontend;
 
         @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,6 +50,7 @@ public class SecurityConfig {
                                         clientRegistrationRepository, "/oauth2/authorization")))
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(Customizer.withDefaults())
                 .exceptionHandling(Customizer.withDefaults())
                 .build();
         }
@@ -59,7 +60,10 @@ public class SecurityConfig {
                 return new WebMvcConfigurer() {
                         @Override
                         public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
-                                registry.addMapping("**").allowedOrigins(frontend);
+                                registry.addMapping("/**").allowedOrigins(frontend)
+                                                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                                                .allowedHeaders("*")
+                                                .allowCredentials(true);
                         }
                 };
         }

@@ -38,11 +38,11 @@ public class Orgao extends Entidade{
     }
 
     public static Orgao parse(UnidadesACResponseDto unidadeAC) {
-        return Optional.ofNullable(unidadeAC).map(Orgao::parse).orElse(null);
+        return Optional.ofNullable(unidadeAC).map(Orgao::new).orElse(null);
     }
 
     public static Orgao parse(OrgaoDto dto) {
-        return Optional.ofNullable(dto).map(Orgao::parse).orElse(null);
+        return Optional.ofNullable(dto).map(Orgao::new).orElse(null);
     }
 
 

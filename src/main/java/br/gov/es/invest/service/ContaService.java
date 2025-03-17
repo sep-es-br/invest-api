@@ -1,12 +1,14 @@
 package br.gov.es.invest.service;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
@@ -28,18 +30,20 @@ public class ContaService {
 
     private final Neo4jOperations neo4jOperations;
 
-    public Conta getGenericoByCodUnidade(UnidadeOrcamentaria unidadeOrcamentaria) {
+    private final Neo4jClient neo4jClient;
 
+    public Conta getGenericoByCodUnidade(UnidadeOrcamentaria unidadeOrcamentaria) {
+                
         Conta conta = repository.getGenericoByCodUnidade(unidadeOrcamentaria.getCodigo());
         
-        if(conta == null) {
-            conta = new Conta();
-            conta.setNome("Conta sem PO da Unidade " + unidadeOrcamentaria.getCodigo());
-            conta.setUnidadeOrcamentariaImplementadora(unidadeOrcamentaria);
-            return conta;
-        } else {
-            return repository.findById(conta.getId()).get();
-        }
+        return Optional.ofNullable(conta)
+                .map(_conta -> repository.findById(_conta.getId()).get())
+                .orElseGet(() -> {
+                    Conta _conta = new Conta();
+                    _conta.setNome("Conta sem PO da Unidade " + unidadeOrcamentaria.getCodigo());
+                    _conta.setUnidadeOrcamentariaImplementadora(unidadeOrcamentaria);
+                    return _conta;
+                });
 
     }
 
@@ -105,7 +109,8 @@ public class ContaService {
         paramMap.put("exercicio", exercicio);
         paramMap.put("idFonte", idFonte);
 
-        String cypherBase = "WITH\r\n" + //
+        String cypherBase = 
+                        "WITH\r\n" + //
                         "    $tipoDespesa AS _tpDespesa,\r\n" + //
                         "    $gnd AS _gnd,\r\n" + //
                         "    $exercicio AS _exercicio,\r\n" + //
@@ -118,46 +123,26 @@ public class ContaService {
                         "        _tpDespesa IN LABELS(conta)\r\n" + //
                         "    AND (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
                         "    AND custo.anoExercicio = _exercicio\r\n" + //
-                        "    AND (_idFonte IS NULL OR elementId(fonte) = _idFonte)\r\n" + //
-                        "WITH\r\n" + //
-                        "    unidade.codigo AS codUnidade,\r\n" + //
-                        "    elementId(conta) AS idUnidade,\r\n" + //
-                        "    unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,\r\n" + //
-                        "    elementId(po) AS idPO,\r\n" + //
-                        "    po.codigo AS codPO,\r\n" + //
-                        "    po.nome AS nomePO,\r\n" + //
-                        "    'E' IN collect(tipoPlano.sigla) AS projEstrategico,\r\n" + //
-                        "    obj.contrato AS contrato,\r\n" + //
-                        "    custo.anoExercicio AS anoExercicio,\r\n" + //
-                        "    elementId(custo) AS custoId\r\n" + //
-                        "WITH codUnidade, \r\n" + //
-                        "    {\r\n" + //
-                        "        idUnidade: idUnidade,\r\n" + //
-                        "        unidadeResponsavel: unidadeResponsavel,\r\n" + //
-                        "        idPO: idPO,\r\n" + //
-                        "        codPO: codPO,\r\n" + //
-                        "        nomePO: nomePO,\r\n" + //
-                        "        anoExercicio: anoExercicio,\r\n" + //
-                        "        projEstrategico: projEstrategico,\r\n" + //
-                        "        contrato: contrato,\r\n" + //
-                        "        custoId: custoId,\r\n" + //
-                        "        valores: null\r\n" + //
-                        "    } as dado\r\n";
+                        "    AND (_idFonte IS NULL OR elementId(fonte) = _idFonte)\r\n";
         
         String cypherQuery = cypherBase + 
-                            "RETURN dado\r\n" + //
+                            "RETURN\r\n" + //
+                            "    unidade.codigo AS codUnidade,\r\n" + //
+                            "    elementId(conta) AS idUnidade,\r\n" + //
+                            "    unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,\r\n" + //
+                            "    elementId(po) AS idPO,\r\n" + //
+                            "    po.codigo AS codPO,\r\n" + //
+                            "    po.nome AS nomePO,\r\n" + //
+                            "    'E' IN collect(tipoPlano.sigla) AS projEstrategico,\r\n" + //
+                            "    obj.contrato AS contrato,\r\n" + //
+                            "    custo.anoExercicio AS anoExercicio,\r\n" + //
+                            "    collect({\r\n" + //
+                            "        idFonte: elementId(fonte),\r\n" + //
+                            "        nomeFonte: fonte.nome,\r\n" + //
+                            "        valorPrevisto: CASE WHEN custo IS NULL THEN 0 ELSE indicada_por.previsto END,\r\n" + //
+                            "        valorContratado: CASE WHEN custo IS NULL THEN 0 ELSE indicada_por.contratado END\r\n" + //
+                            "    }) AS valores\r\n" + //
                             "ORDER BY codUnidade\r\n";
-
-        String cypherCusto = 
-            "MATCH (fonte:FonteOrcamentaria)\r\n" + //
-            "OPTIONAL MATCH (custo:Custo)-[indicada_por:INDICADA_POR]->(fonte)\r\n" + //
-            "WHERE elementId(custo) = $custoId\r\n" + //
-            "RETURN {\r\n" + //
-            "    idFonte: elementId(fonte),\r\n" + //
-            "    nomeFonte: fonte.nome,\r\n" + //
-            "    valorPrevisto: CASE WHEN custo IS NULL THEN 0 ELSE indicada_por.previsto END,\r\n" + //
-            "    valorContratado: CASE WHEN custo IS NULL THEN 0 ELSE indicada_por.contratado END\r\n" + //
-            "}";
 
         
         if(pageable != null) {
@@ -165,17 +150,32 @@ public class ContaService {
             paramMap.put("skip", pageable.getOffset());
             paramMap.put("limit", pageable.getPageSize());
         }
-        String cypherCount = cypherBase + "RETURN count(*)";
+        String cypherCount = cypherBase + "RETURN count(conta)";
 
-        List<DadosConsolidadosDTO> dados = neo4jOperations.findAll(cypherQuery, paramMap, DadosConsolidadosDTO.class);
-
-        for(DadosConsolidadosDTO dado : dados){
-            dado.setValores(neo4jOperations.findAll(cypherCusto, Map.of("custoId", dado.getCustoId()), DadosConsolidadosValores.class));
-            
-        }
+        // List<DadosConsolidadosDTO> dados = neo4jOperations.findAll(cypherQuery, paramMap, DadosConsolidadosDTO.class);
+        Collection<DadosConsolidadosDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
+        .fetchAs(DadosConsolidadosDTO.class)
+        .mappedBy((typeSystem, record) -> new DadosConsolidadosDTO(
+            record.get("idUnidade").asString(),
+            record.get("unidadeResponsavel").asString(),
+            record.get("idPO").asString(),
+            record.get("codPO").asString(),
+            record.get("nomePO").asString(),
+            record.get("projEstrategico").asBoolean(),
+            record.get("contrato").asString(),
+            record.get("anoExercicio").asInt(),
+            record.get("valores").asList(value -> new DadosConsolidadosValores(
+                value.get("idFonte").asString(),
+                value.get("nomeFonte").asString(),
+                value.get("valorPrevisto").asDouble(),
+                value.get("valorContratado").asDouble()
+            ))
+        ))
+        .all();
+        
 
         return new DataListResult<>(
-            dados, 
+            (List<DadosConsolidadosDTO>) dados, 
             (int) neo4jOperations.count(cypherCount, paramMap)
         );
     }

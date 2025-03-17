@@ -20,6 +20,5 @@ public class DadosConsolidadosDTO {
     private Boolean projEstrategico;
     private String contrato;
     private Integer anoExercicio;
-    private String custoId;
     private List<DadosConsolidadosValores> valores;
 }

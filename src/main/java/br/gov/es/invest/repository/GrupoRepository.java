@@ -59,4 +59,7 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
                 "CREATE (usuario)-[:MEMBRO_DE]->(grupo)")
     public void addMembro(String usuarioId, String grupoId);
 
+
+    
+
 }
