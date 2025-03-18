@@ -189,13 +189,13 @@ public class PermissaoController {
                 new ItemMenu(
                     "Consolidado", 
                     null, 
-                    true, 
+                    false, 
                     "/consolidado", 
                     null
                 ), new ItemMenu(
                     "Detalhado", 
                     null, 
-                    false, 
+                    true, 
                     "/detalhado", 
                     null
                 )

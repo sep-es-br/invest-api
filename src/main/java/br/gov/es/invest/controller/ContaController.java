@@ -64,7 +64,7 @@ public class ContaController {
 
     
 
-    @GetMapping("/dadosConsolidados")
+    @GetMapping("/dadosDetalhados")
     public ResponseEntity<?> getDadosConsolidados (
         @RequestParam(required=false) String tipoDespesa, @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Integer exercicio,
         @RequestParam(required=false) String idFonte, @RequestParam Integer pag, @RequestParam Integer pagSize

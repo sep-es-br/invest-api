@@ -50,12 +50,6 @@ public class UsuarioController {
         return UsuarioDto.parse(optUsuario.orElse(null));
     }
 
-    @GetMapping("/byGrupo")
-    public List<UsuarioDto> getUsuarioByGrupo(@RequestParam String grupoId) {
-
-        return service.findByGrupo(grupoId).stream().map(UsuarioDto::parse).toList();
-    }
-
     @GetMapping("comAvatar")
     public UsuarioDto getUsuarioComAvatar(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
         authToken = authToken.replace("Bearer ", "");

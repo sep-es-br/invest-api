@@ -117,13 +117,39 @@ public class ContaService {
                         "    $idFonte AS _idFonte\r\n" + //
                         "MATCH \r\n" + //
                         "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),\r\n" + //
-                        "    (conta)<-[:CUSTEADO]-(obj:Objeto)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonte:FonteOrcamentaria),\r\n" + //
+                        "    (conta)<-[:CUSTEADO]-(obj:Objeto)<-[:ESTIMADO]-(custo:Custo),\r\n" + //
                         "    (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)\r\n" + //
+                        "MATCH (fonte:FonteOrcamentaria)\r\n" + //
                         "WHERE\r\n" + //
-                        "        _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
+                        "    _tpDespesa IN LABELS(conta)\r\n" + //
+                        "    AND (_idFonte IS NULL OR elementId(fonte) = _idFonte)\r\n" + //
                         "    AND custo.anoExercicio = _exercicio\r\n" + //
-                        "    AND (_idFonte IS NULL OR elementId(fonte) = _idFonte)\r\n";
+                        "OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonte)\r\n" + //
+                        "WHERE (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
+                        "WITH \r\n" + //
+                        "    unidade,\r\n" + //
+                        "    conta,\r\n" + //
+                        "    po,\r\n" + //
+                        "    obj,\r\n" + //
+                        "    custo,\r\n" + //
+                        "    tipoPlano,\r\n" + //
+                        "    sum(indicada_por.previsto) AS valorPrevisto,\r\n" + //
+                        "    sum(indicada_por.contratado) AS valorContratado,\r\n" + //
+                        "    elementId(fonte) AS idFonte,\r\n" + //
+                        "    fonte.nome AS nomeFonte\r\n" + //
+                        "WITH \r\n" + //
+                        "    unidade,\r\n" + //
+                        "    conta,\r\n" + //
+                        "    po,\r\n" + //
+                        "    obj,\r\n" + //
+                        "    custo,\r\n" + //
+                        "    tipoPlano,\r\n" + //
+                        "    collect({\r\n" + //
+                        "        valorPrevisto: valorPrevisto,\r\n" + //
+                        "        valorContratado: valorContratado,\r\n" + //
+                        "        idFonte: idFonte,\r\n" + //
+                        "        nomeFonte: nomeFonte\r\n" + //
+                        "    }) AS valores\r\n";
         
         String cypherQuery = cypherBase + 
                             "RETURN\r\n" + //
@@ -136,12 +162,7 @@ public class ContaService {
                             "    'E' IN collect(tipoPlano.sigla) AS projEstrategico,\r\n" + //
                             "    obj.contrato AS contrato,\r\n" + //
                             "    custo.anoExercicio AS anoExercicio,\r\n" + //
-                            "    collect({\r\n" + //
-                            "        idFonte: elementId(fonte),\r\n" + //
-                            "        nomeFonte: fonte.nome,\r\n" + //
-                            "        valorPrevisto: CASE WHEN custo IS NULL THEN 0 ELSE indicada_por.previsto END,\r\n" + //
-                            "        valorContratado: CASE WHEN custo IS NULL THEN 0 ELSE indicada_por.contratado END\r\n" + //
-                            "    }) AS valores\r\n" + //
+                            "    valores\r\n" + //
                             "ORDER BY codUnidade\r\n";
 
         
@@ -162,7 +183,7 @@ public class ContaService {
             record.get("codPO").asString(),
             record.get("nomePO").asString(),
             record.get("projEstrategico").asBoolean(),
-            record.get("contrato").asString(),
+            record.get("contrato").isNull() || record.get("contrato").isEmpty() ? "-" : record.get("contrato") .asString(),
             record.get("anoExercicio").asInt(),
             record.get("valores").asList(value -> new DadosConsolidadosValores(
                 value.get("idFonte").asString(),
