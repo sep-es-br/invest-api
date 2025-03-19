@@ -63,7 +63,8 @@ public class SecurityConfig {
                                 registry.addMapping("/**").allowedOrigins(frontend)
                                                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                                                 .allowedHeaders("*")
-                                                .allowCredentials(true);
+                                                .allowCredentials(true)
+                                                .exposedHeaders("Content-Disposition");
                         }
                 };
         }

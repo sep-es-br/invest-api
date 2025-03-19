@@ -71,11 +71,7 @@ public class ContaController {
     ){
         tipoDespesa = "Investimento";
         gnd = null;
-        exercicio = 2025;
         idFonte = null;
-
-        
-
 
         return ResponseEntity.ok(
             service.getDadosConsolidados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize))
