@@ -236,8 +236,8 @@ public class RelatorioService {
                         "    nomePO,\r\n" + //
                         "    descObjeto,\r\n" + //
                         "    apoc.text.join(collect(DISTINCT tiposPo.sigla), '; ') AS tiposPo,\r\n" + //
-                        "    COALESCE(microrregiao, ' - '),\r\n" + //
-                        "    COALESCE(areaTematica, ' - '),\r\n" + //
+                        "    COALESCE(microrregiao, ' - ') AS microrregiao,\r\n" + //
+                        "    COALESCE(areaTematica, ' - ') AS areaTematica,\r\n" + //
                         "    contrato,\r\n" + //
                         "    gnd,\r\n" + //
                         "    objetoId\r\n" + //
