@@ -3,14 +3,13 @@ package br.gov.es.invest.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,26 +44,7 @@ public class PermissaoController {
     private final GrupoService grupoService;
 
     private final TokenService tokenService;
-
-    @PutMapping("/acessoTeste")
-    public void testeDeAcesso(@RequestBody Map<String, String> map) {
-
-        for(Entry<String, String> entry : map.entrySet()){
-            Logger.getGlobal().info(entry.getKey() + " : " + entry.getValue());
-        }
-
-        System.out.println();
-
-    }
     
-
-
-    @GetMapping("/grupoTemAcesso")
-    public boolean checarAcesso(@RequestParam String grupoId,@RequestParam String path){
-        
-        return moduloService.checarAcesso(grupoId, path);
-        
-    }
 
     @GetMapping("/usuarioTemAcesso")
     public boolean checarAcessoUsuario(@RequestParam String path, @RequestHeader("Authorization") String authToken){

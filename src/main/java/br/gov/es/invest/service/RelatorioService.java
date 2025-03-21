@@ -220,6 +220,8 @@ public class RelatorioService {
                         "WHERE  \r\n" + //
                         "    _tpDespesa IN LABELS(conta)\r\n" + //
                         "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
+                        "    AND (_unidadeOrcamentaria IS NULL OR elementId(unidade) IN _unidadeOrcamentaria)\r\n" + //
+                        "    AND (_planoOrcamentario IS NULL OR elementId(po) IN _planoOrcamentario)\r\n" + //
                         "\r\n" + //
                         "MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(:FonteOrcamentaria)\r\n" + //
                         "\r\n" + //

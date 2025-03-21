@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -115,8 +116,7 @@ public class InfosController {
                 List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
                 ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);    
-
-    
+              
                 ArrayList<String> codsUo = new ArrayList<>();
                 ArrayList<String> codsPo = new ArrayList<>();
 
@@ -131,6 +131,7 @@ public class InfosController {
                     }
                 String codUo = idsUo == null ? null : String.join(",", codsUo) ;
                 String codPo = idsPo == null ? null : String.join(",", codsPo);
+
                 String codFonte = fonteService.getCodById(idFonte);
     
                 codFonte = codFonte == null ? null : String.valueOf(Integer.parseInt(codFonte)); 

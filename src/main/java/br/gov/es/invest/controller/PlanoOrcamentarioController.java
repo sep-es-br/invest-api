@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
@@ -13,7 +14,7 @@ import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.service.PlanoOrcamentarioBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/planoOrcamentario")
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PlanoOrcamentarioController {
 
 
-    // private final Logger logger = Logger.getLogger("PlanoOrcamentarioController");
 
     private final PlanoOrcamentarioService service;
     private final PlanoOrcamentarioBIService biService;

@@ -1,6 +1,7 @@
 package br.gov.es.invest.model;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,9 +18,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Node
+@Node(labels = {"Usuario", "Agente"})
 public class Usuario extends Entidade {
-    private String ACToken;
+    
     private String sub;
     private String name;
     private String nomeCompleto;
@@ -35,6 +36,9 @@ public class Usuario extends Entidade {
 
     @Relationship(type ="MEMBRO_DE")
     private Setor setor;
+
+    @Relationship("POSSUI")
+    private List<Papel> papeis;
 
     public Usuario(UsuarioDto dto){
 

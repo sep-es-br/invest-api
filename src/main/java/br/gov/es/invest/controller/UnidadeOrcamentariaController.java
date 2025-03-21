@@ -69,7 +69,6 @@ public class UnidadeOrcamentariaController {
 
             List<UnidadeOrcamentaria> unidades = this.service.findByOrgaoId(usuario.getSetor().getOrgao());
 
-
             return unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
 
         }

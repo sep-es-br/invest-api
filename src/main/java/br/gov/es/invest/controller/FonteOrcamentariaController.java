@@ -1,18 +1,14 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.FonteOrcamentariaDTO;
-import br.gov.es.invest.model.FonteOrcamentaria;
-import br.gov.es.invest.service.FonteOrcamentariaBIService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/fonte")
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class FonteOrcamentariaController {
     
     private final FonteOrcamentariaService service;
-    private final FonteOrcamentariaBIService biService;
 
     @GetMapping("")
     public List<FonteOrcamentariaDTO> findAll() {
@@ -34,18 +29,5 @@ public class FonteOrcamentariaController {
                 .toList();
     }
     
-
-    @GetMapping("/doSigefes")
-    public List<FonteOrcamentariaDTO> getDoSigefes () {
-
-        ArrayList<FonteOrcamentaria> fontes = new ArrayList<>(service.findFontesExtras()) ;
-
-        fontes.addAll(biService.getFontes());
-
-        return fontes.stream()
-            .map(fonte -> new FonteOrcamentariaDTO(fonte))
-            .sorted((fonte1, fonte2) -> fonte1.getCodigo().compareTo(fonte2.getCodigo()))
-            .toList();
-    }
     
 }

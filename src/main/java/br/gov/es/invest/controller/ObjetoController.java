@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import br.gov.es.invest.dto.ObjetoTiraDTO;
-import br.gov.es.invest.dto.StatusDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -35,6 +34,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 
 @RestController
@@ -70,6 +71,7 @@ public class ObjetoController {
                 List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
                 idsUo = unidades.stream().map(u -> u.getId()).toList();
+
             } else if(unidadeId != null) {
                 idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
             }
@@ -85,7 +87,7 @@ public class ObjetoController {
             }).toList();
 
             return ResponseEntity.ok(objetosDTO);
-        } catch(Exception e){
+        } catch(JsonProcessingException e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Erro desconhecido ao buscar objetos", 
@@ -130,7 +132,7 @@ public class ObjetoController {
             }).toList();
 
             return ResponseEntity.ok(objetosDTO);
-        } catch(Exception e){
+        } catch(JsonProcessingException e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Erro desconhecido ao buscar objetos", 
@@ -179,20 +181,6 @@ public class ObjetoController {
         return b == null ? 0 : (b.equals(Boolean.TRUE) ? 1 : -1);
     }
 
-    @GetMapping("/byFiltro")
-    public ResponseEntity<?> findByFiltro(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
-        @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
-        @RequestParam(required = false) String planoId
-    ){
-        List<Objeto> objList = service.findByFilter(nome, unidadeId, planoId, ano, null);
-
-        List<ObjetoTiraDTO> objDto = objList.stream().map(obj -> new ObjetoTiraDTO(obj)).toList();
-
-        return ResponseEntity
-                .ok()
-                .body(objDto);
-    }
 
     @PostMapping("")
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
@@ -246,35 +234,6 @@ public class ObjetoController {
 
     }
 
-
-    @GetMapping("/statusCadastrado")
-    public List<StatusDTO> findStatusCadastrados() {
-        return service.findStatusCadastrados().stream().map(StatusDTO::parse).toList();
-    }
-    
-    
-
-    @GetMapping("/countInvestimentoFiltro")
-    public ResponseEntity<?> getAmmoutByInvestimentoFilter(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam Integer exercicio
-    ) {
-        try{
-
-            List<String> idsUo = codUnidade == null ? null : new JsonMapper().readValue(codUnidade, new TypeReference<List<String>>() {});
-            List<String> idsPo = codPO == null ? null : new JsonMapper().readValue(codPO, new TypeReference<List<String>>() {});
-
-            return ResponseEntity.ok(service.countByInvestimentoFilter(nome, idsUo, idsPo, exercicio));
-        } catch(Exception e){
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Erro desconhecido ao contar objetos", 
-                Collections.singletonList(e.getLocalizedMessage())
-            );
-        }
-
-    }
-
     @GetMapping("/count")
     public ResponseEntity<?> getAmmoutByFilter(
         @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId,
@@ -304,7 +263,7 @@ public class ObjetoController {
             List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, null);
 
             return ResponseEntity.ok(objetos.size());
-        } catch(Exception e){
+        } catch(JsonProcessingException e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Erro desconhecido ao contar objetos", 
@@ -347,7 +306,7 @@ public class ObjetoController {
             List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, null);
 
             return ResponseEntity.ok(objetos.size());
-        } catch(Exception e){
+        } catch(JsonProcessingException e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Erro desconhecido ao contar objetos", 

@@ -1,6 +1,5 @@
 package br.gov.es.invest.controller;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;

@@ -35,11 +35,6 @@ public class ExecucaoOrcamentariaController {
     private final InvestimentosBIService investimentosBIService;
     private final FonteOrcamentariaService fonteOrcamentariaService;
 
-    @GetMapping("/totalOrcado")
-    public Double getTotalOrcado(@RequestParam String ano) {
-        return service.getTotalOrcadoByAno(ano);
-    }
-
     @GetMapping("/importarPentaho")
     public String importarPentaho(@RequestParam(required = false) Integer anoRef) {
 

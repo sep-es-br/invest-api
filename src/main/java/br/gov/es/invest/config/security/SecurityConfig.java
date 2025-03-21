@@ -26,7 +26,7 @@ public class SecurityConfig {
         private final SecurityFilter securityFilter;
 
         @Value("${frontend.host}")
-        private String frontend;
+        private String frontendUrl;
 
         @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,15 +34,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(authConfig -> {
-                    authConfig.requestMatchers(HttpMethod.GET,
-                            "/swagger-ui.html",
-                            "/swagger-ui/*",
-                            "/v3/*",
-                            "/v3/api-docs/*",
-                            "/signin/*",
-                            "/acesso-cidadao-response.html",
-                            "*/importarPentaho").permitAll();
-                     authConfig.anyRequest().authenticated();
+                        authConfig.requestMatchers(HttpMethod.GET,
+                                "/swagger-ui.html",
+                                "/swagger-ui/*",
+                                "/v3/*",
+                                "/v3/api-docs/*",
+                                "/signin/*",
+                                "/acesso-cidadao-response.html",
+                                "*/importarPentaho").permitAll();
+                        authConfig.anyRequest().authenticated();
                 })
                 .oauth2Login(oAuth2LoginConfig ->
                         oAuth2LoginConfig.authorizationEndpoint(authEndpointConfig ->
@@ -60,7 +60,7 @@ public class SecurityConfig {
                 return new WebMvcConfigurer() {
                         @Override
                         public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
-                                registry.addMapping("/**").allowedOrigins(frontend)
+                                registry.addMapping("/**").allowedOrigins(frontendUrl)
                                                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                                                 .allowedHeaders("*")
                                                 .allowCredentials(true)
@@ -68,4 +68,6 @@ public class SecurityConfig {
                         }
                 };
         }
+    
+
 }

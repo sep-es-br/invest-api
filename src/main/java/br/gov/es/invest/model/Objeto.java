@@ -1,7 +1,6 @@
 package br.gov.es.invest.model;
 
 import java.io.Serializable;
-import java.security.cert.CertPath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

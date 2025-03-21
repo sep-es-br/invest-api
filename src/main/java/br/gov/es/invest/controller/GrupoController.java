@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -77,6 +76,11 @@ public class GrupoController {
 
     }
 
+    @GetMapping("/membros")
+    public ResponseEntity<?> getMembros(@RequestParam String grupoId){
+        return ResponseEntity.ok(service.getListaMembros(grupoId));
+    }
+
     @GetMapping("/quantidadeMembros")
     public int getMethodName(@RequestParam String grupoId) {
         return service.quantidadeDeMembros(grupoId);
@@ -112,11 +116,9 @@ public class GrupoController {
     public GrupoDTO addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
         Grupo grupo = service.findById(cadastroFormDto.grupo().id()).get();
         Orgao orgao = orgaoService.findOrCreateByGuidOrSigla(new Orgao(cadastroFormDto.orgao()));
-        Setor setor = setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
+        Setor setor = cadastroFormDto.setor() == null ? null : setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
 
-        for(PapelDto papel : cadastroFormDto.papeis()) {
-            service.addMembro(grupo, orgao, setor, papel);
-        }
+        service.addMembro(grupo, orgao, setor, cadastroFormDto.papel());
 
         grupo = service.findById(grupo.getId()).get();
 

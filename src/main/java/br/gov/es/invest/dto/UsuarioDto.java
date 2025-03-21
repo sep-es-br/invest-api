@@ -1,13 +1,10 @@
 package br.gov.es.invest.dto;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Usuario;
 
 public record UsuarioDto(
@@ -21,8 +18,8 @@ public record UsuarioDto(
         String telefone,
         String papel,
         Set<FuncaoDTO> role,
-
-        SetorDto setor
+        SetorDto setor,
+        Set<PapelDto> papeis
 ){
         
         public static UsuarioDto parse(Usuario usuario, String token){
@@ -43,10 +40,11 @@ public record UsuarioDto(
                                                         .collect(Collectors.toSet())
                                                 )
                                                 .orElseGet(Collections::emptySet),
-                                        _usuario.getSetor() == null ? null : new SetorDto(_usuario.getSetor())
+                                        _usuario.getSetor() == null ? null : new SetorDto(_usuario.getSetor()),
+                                        usuario.getPapeis() == null || usuario.getPapeis().isEmpty() ? null : usuario.getPapeis().stream().map(PapelDto::parse).collect(Collectors.toSet())
                         ))
                         .orElse(null);
-                
+     
         }
 
         public static UsuarioDto parse(Usuario usuario){

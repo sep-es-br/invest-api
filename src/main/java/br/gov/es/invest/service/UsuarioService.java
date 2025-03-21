@@ -1,9 +1,11 @@
 package br.gov.es.invest.service;
 
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.neo4j.cypherdsl.core.Cypher;
 import org.neo4j.cypherdsl.core.Node;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.UsuarioRepository;
 
@@ -27,7 +30,7 @@ public class UsuarioService {
         repository.getIdBySub(usuario.getSub()).ifPresent(usuario::setId);
 
         return repository.save(usuario);
-    }
+    } 
 
     public Optional<Usuario> getUserBySub(String sub){
 
@@ -38,6 +41,20 @@ public class UsuarioService {
 
         return this.repository.findBy(example, query -> query.first());
 
+    }
+
+    public void trasnferirNovoFormato(Usuario usuario, Papel papel){
+        if( usuario.getPapeis() != null ){
+            Logger.getGlobal().log(Level.SEVERE, "user \"{0}\" usuario já está no novo formato", usuario.getId());
+            if(!usuario.getPapeis().isEmpty())
+                return;
+        }
+
+        usuario.setPapeis(Arrays.asList(papel));
+
+        usuario = this.save(usuario);
+
+        repository.transferirGrupo(usuario.getId(), usuario.getPapeis().get(0).getId());
     }
 
     public Usuario findOrSave(Usuario _usuario) {
