@@ -80,11 +80,27 @@ public class RelatorioService {
             this.createCell(colIndex++, registroDadoDetalhado.getContrato(), style, row);
             this.createCell(colIndex++, String.valueOf(registroDadoDetalhado.getGnd()), style, row);
 
+            XSSFCellStyle styleValor = ((XSSFWorkbook)sheet.getWorkbook()).createCellStyle();
+            styleValor.setBorderBottom(BorderStyle.THIN);
+            styleValor.setBorderTop(BorderStyle.THIN);
+            styleValor.setBorderLeft(BorderStyle.THIN);
+            styleValor.setBorderRight(BorderStyle.THIN);
+            styleValor.setAlignment(HorizontalAlignment.RIGHT);
+
             for(RegistroDadoDetalhadoValoresPorFonte valoresPorFonte : registroDadoDetalhado.getValoresPorFonte() ) {
                 for(RegistroDadoDetalhadoValoresPorAno valoresPorAno : valoresPorFonte.getValoresPorAno()){
                     
-                    this.createCell(colIndex++, String.format(new Locale("pt", "BR"), "R$ %,.2f", valoresPorAno.getPrevisto()), style, row);
-                    this.createCell(colIndex++, String.format(new Locale("pt", "BR"), "R$ %,.2f", valoresPorAno.getContratado()), style, row);
+                    String previsto = valoresPorAno.getPrevisto() != 0
+                                ? String.format(new Locale("pt", "BR"), "R$ %,.2f", valoresPorAno.getPrevisto())
+                                : " - ";
+                    
+                    String contratado = valoresPorAno.getContratado() != 0
+                                ? String.format(new Locale("pt", "BR"), "R$ %,.2f", valoresPorAno.getContratado())
+                                : " - ";
+                                        
+
+                    this.createCell(colIndex++, previsto, styleValor, row);
+                    this.createCell(colIndex++, contratado, styleValor, row);
                 }
             }
 
