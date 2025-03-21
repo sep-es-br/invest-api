@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.springframework.data.neo4j.core.schema.Node;
 
+
 import br.gov.es.invest.dto.FuncaoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

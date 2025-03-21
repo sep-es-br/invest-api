@@ -19,7 +19,6 @@ import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/etapa")
 @RequiredArgsConstructor

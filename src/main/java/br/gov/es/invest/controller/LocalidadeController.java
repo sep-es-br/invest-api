@@ -11,7 +11,6 @@ import br.gov.es.invest.service.LocalidadeService;
 import lombok.RequiredArgsConstructor;
 
 
-
 @RestController
 @RequestMapping("/localidade")
 @RequiredArgsConstructor

@@ -3,7 +3,6 @@ package br.gov.es.invest.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,7 +19,6 @@ import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/unidade")
 @RequiredArgsConstructor
@@ -28,10 +26,6 @@ public class UnidadeOrcamentariaController {
     
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
-
-
-    // private final Logger logger = Logger.getLogger("PlanoOrcamentarioController");
-
     private final UnidadeOrcamentariaService service;
     private final UnidadeOrcamentariaBIService biService;
 

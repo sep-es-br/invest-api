@@ -12,9 +12,6 @@ import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.service.StatusService;
 import lombok.RequiredArgsConstructor;
 
-
-
-
 @RestController
 @RequestMapping("/status")
 @RequiredArgsConstructor

@@ -10,6 +10,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +26,14 @@ import br.gov.es.invest.repository.ModuloRepository;
 import br.gov.es.invest.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class GrupoService {
     
     private final GrupoRepository repository;
 
+
+    private final UsuarioService usuarioService;
     private final ModuloRepository moduloRepository;
 
     private final UsuarioRepository usuarioRepository;
@@ -40,6 +43,7 @@ public class GrupoService {
     private final PapelService papelService;
 
     
+    private final Neo4jClient neo4jClient;
 
     public List<Grupo> findAll(String nome, Pageable pageable) {
         
@@ -76,14 +80,14 @@ public class GrupoService {
     }
 
     public Grupo delete (String grupoId){
-        Grupo deletedGrupo = repository.findById(grupoId).orElse(null);
-
-        if(deletedGrupo != null) {
-            repository.delete(deletedGrupo);
-        }
-
-        return deletedGrupo;
+        Optional<Grupo> optGrupo = repository.findById(grupoId);
+        
+        return optGrupo.map(grupo -> {
+            repository.delete(grupo);
+            return grupo;
+        }).orElse(null);
     }
+
 
     public List<MembroGrupo> getListaMembros(String grupoId) {
         String cypher = "MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)\r\n" + //
@@ -160,7 +164,7 @@ public class GrupoService {
                 papelMembro.setNome(papelDto.nome());
                 papelMembro.setSetor(setor);
 
-                Optional<Usuario> usuarioBanco = usuarioRepository.findBySub(papelDto.agenteSub());
+                Optional<Usuario> usuarioBanco = usuarioService.getUserBySub(papelDto.agenteSub());
                 Usuario membro = new Usuario();
                 ArrayList<Papel> papeisDoUsuario = new ArrayList<>();
     
@@ -197,6 +201,12 @@ public class GrupoService {
     }
 
     public List<Grupo> getGruposDoUsuario(String usuarioId) {
+
+
+        // MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
+        //         "WHERE elementId(usuario) = $usuarioId\r\n" + //
+        //         "RETURN grupo 
+
         return this.repository.getGruposByUsuario(usuarioId);
     }
 

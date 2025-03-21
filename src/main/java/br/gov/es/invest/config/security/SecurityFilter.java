@@ -13,6 +13,7 @@ import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +45,7 @@ public class SecurityFilter extends OncePerRequestFilter {
        
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
         if (checarWhiteList(request, Arrays.asList(
             "/user-info",
             "/oauth2/authorization",
@@ -56,6 +57,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             return;
         }
 
+        
         String token = recuperarToken(request);
         if(token == null) {
             
@@ -108,6 +110,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                 erros.add("Por favor, faça o login novamente.");
                 if (LocalDateTime.now().isAfter((ChronoLocalDateTime<?>) expiresAt))
                     erros.add("Token expirado em " + expiresAt);
+                
+                enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
                 
                 enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
                 return;

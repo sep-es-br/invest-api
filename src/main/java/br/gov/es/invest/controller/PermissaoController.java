@@ -30,7 +30,6 @@ import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/permissao")
 @RequiredArgsConstructor
@@ -145,13 +144,13 @@ public class PermissaoController {
             isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
             "/carteira", 
             Arrays.asList( 
-                // new ItemMenu(
-                // "Investimentos", 
-                // null, 
-                // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
-                // "/investimentos", 
-                // null
-                // ),
+                new ItemMenu(
+                "Investimentos", 
+                null, 
+                false, // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
+                "/investimentos", 
+                null
+                ),
              new ItemMenu(
                 "Objetos", 
                 null, 
@@ -160,6 +159,26 @@ public class PermissaoController {
                 null
             )
 
+            )
+        ), new ItemMenu(
+            "Relatório", 
+            "file-stats-report", 
+            true, 
+            "/relatorio", 
+            Arrays.asList(
+                new ItemMenu(
+                    "Consolidado", 
+                    null, 
+                    false, 
+                    "/consolidado", 
+                    null
+                ), new ItemMenu(
+                    "Detalhado", 
+                    null, 
+                    true, 
+                    "/detalhado", 
+                    null
+                )
             )
         ), new ItemMenu(
             null ,

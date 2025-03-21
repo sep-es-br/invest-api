@@ -2,12 +2,18 @@ package br.gov.es.invest.service;
 
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.neo4j.cypherdsl.core.Cypher;
+import org.neo4j.cypherdsl.core.Node;
+import org.neo4j.cypherdsl.core.Relationship;
+import org.neo4j.cypherdsl.core.ResultStatement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Papel;
@@ -49,7 +55,10 @@ public class UsuarioService {
         usuario = this.save(usuario);
 
         repository.transferirGrupo(usuario.getId(), usuario.getPapeis().get(0).getId());
+    }
 
+    public Usuario findOrSave(Usuario _usuario) {
+        return this.getUserBySub(_usuario.getSub()).orElseGet(() -> save(_usuario));   
     }
 
 }

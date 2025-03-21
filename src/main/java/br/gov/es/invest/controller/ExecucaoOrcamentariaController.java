@@ -24,8 +24,6 @@ import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import lombok.RequiredArgsConstructor;
 
-
-
 @RestController
 @RequestMapping("/execucao")
 @RequiredArgsConstructor

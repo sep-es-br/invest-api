@@ -2,7 +2,9 @@ package br.gov.es.invest.model;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -40,19 +42,20 @@ public class Usuario extends Entidade {
 
     public Usuario(UsuarioDto dto){
 
-        this.setId(dto.getId());
-        this.sub = dto.getSub();
-        this.name = dto.getName();
-        this.nomeCompleto = dto.getNomeCompleto();
-        this.telefone = dto.getTelefone();
+        this.setId(dto.id());
+        this.sub = dto.sub();
+        this.name = dto.name();
+        this.nomeCompleto = dto.nomeCompleto();
+        this.telefone = dto.telefone();
         
-        this.email = dto.getEmail();
-        this.papel = dto.getPapel();
+        this.email = dto.email();
+        this.papel = dto.papel();
 
-        this.imgPerfil = dto.getImgPerfil() == null ? null : new Avatar(dto.getImgPerfil());
-        this.role = (dto.getRole() == null ) ? null : new HashSet<>(dto.getRole().stream().map(funcao -> new Funcao(funcao)).toList());
+        this.imgPerfil = Avatar.parse(dto.imgPerfil());
+        this.role = Optional.ofNullable(dto.role())
+            .map(roles -> roles.stream().map(Funcao::new).collect(Collectors.toSet())).orElse(null);
 
-        this.setor = dto.getSetor() == null ? null : new Setor(dto.getSetor());
+        this.setor = Setor.parse(dto.setor());
     }
 
     public Usuario(ACUserInfoDto acUser) {
@@ -67,7 +70,6 @@ public class Usuario extends Entidade {
 
     @Override
     public boolean equals(Object obj) {
-        // TODO Auto-generated method stub
         if(!(obj instanceof Usuario)) return false;
 
         Usuario other = (Usuario) obj;

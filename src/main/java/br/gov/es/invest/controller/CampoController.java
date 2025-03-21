@@ -12,7 +12,6 @@ import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.service.CampoService;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/campo")
 @RequiredArgsConstructor
@@ -35,6 +34,5 @@ public class CampoController {
 
 
     }
-    
 
 }

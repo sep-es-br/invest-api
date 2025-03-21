@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +30,6 @@ import br.gov.es.invest.service.SetorService;
 import lombok.RequiredArgsConstructor;
 
 
-
-
 @RestController
 @RequestMapping("/grupo")
 @RequiredArgsConstructor
@@ -52,7 +51,7 @@ public class GrupoController {
             if(optGrupo.isPresent()){
                 return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(new GrupoDTO(optGrupo.get()));
+                    .body(GrupoDTO.parse(optGrupo.get()));
             } else {
                 GrupoNaoEncotradoException ex = new GrupoNaoEncotradoException(grupoId);
     
@@ -93,7 +92,7 @@ public class GrupoController {
             @RequestParam(required = false) String nome, @RequestParam Integer pagAtual, @RequestParam Integer tamPag
         ) {
         
-            return service.findAll(nome, PageRequest.of(pagAtual, tamPag)).stream().map(grupo -> new GrupoDTO(grupo)).toList();
+            return service.findAll(nome, Pageable.ofSize(tamPag).withPage(pagAtual)).stream().map(GrupoDTO::parse).toList();
 
     }
     
@@ -103,21 +102,19 @@ public class GrupoController {
             @RequestParam String usuarioId
         ) {
         
-            return service.getGruposDoUsuario(usuarioId).stream().map(grupo -> new GrupoDTO(grupo)).toList();
+            return service.getGruposDoUsuario(usuarioId).stream().map(GrupoDTO::parse).toList();
 
     }
 
     @PutMapping("/save")
     public GrupoDTO saveGrupo(@RequestBody GrupoDTO grupoDTO) {
-        //TODO: process POST request
         
-        return new GrupoDTO(service.save(new Grupo(grupoDTO)));
+        return GrupoDTO.parse(service.save(new Grupo(grupoDTO)));
     }
 
     @PutMapping("/addMembro")
     public GrupoDTO addMembro(@RequestBody CadastroMembroFormDto cadastroFormDto) {
-        //TODO: process POST request
-        Grupo grupo = service.findById(cadastroFormDto.grupo().getId()).get();
+        Grupo grupo = service.findById(cadastroFormDto.grupo().id()).get();
         Orgao orgao = orgaoService.findOrCreateByGuidOrSigla(new Orgao(cadastroFormDto.orgao()));
         Setor setor = cadastroFormDto.setor() == null ? null : setorService.findOrCreate(new Setor(cadastroFormDto.setor()), orgao);
 
@@ -125,17 +122,17 @@ public class GrupoController {
 
         grupo = service.findById(grupo.getId()).get();
 
-        return new GrupoDTO(grupo);
+        return GrupoDTO.parse(grupo);
     }
     
     @DeleteMapping("/")
     public GrupoDTO deleteGrupo(@RequestParam String idGrupo) {
-        return new GrupoDTO(service.delete(idGrupo));
+        return GrupoDTO.parse(service.delete(idGrupo));
     }
     
     @DeleteMapping("/membro")
     public GrupoDTO deleteGrupo(@RequestParam String idGrupo, @RequestParam String idMembro) {
-        return new GrupoDTO(service.removerMembro(idGrupo, idMembro));
+        return GrupoDTO.parse(service.removerMembro(idGrupo, idMembro));
     }
 
     

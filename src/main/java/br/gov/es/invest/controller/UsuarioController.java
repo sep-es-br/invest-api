@@ -18,9 +18,6 @@ import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-
-
-
 @RestController
 @RequestMapping("/usuario")
 @RequiredArgsConstructor
@@ -45,24 +42,22 @@ public class UsuarioController {
     public UsuarioDto getUsuario(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
         authToken = authToken.replace("Bearer ", "");
         
-        
-        sub = sub == null ? tokenService.validarToken(authToken) : sub;
+        sub = Optional.ofNullable(sub).orElse(tokenService.validarToken(authToken));
 
         Optional<Usuario> optUsuario = service.getUserBySub(sub);
 
-        return optUsuario.isPresent() ? new UsuarioDto(optUsuario.get()) : null;
+        return UsuarioDto.parse(optUsuario.orElse(null));
     }
-
 
     @GetMapping("comAvatar")
     public UsuarioDto getUsuarioComAvatar(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
         authToken = authToken.replace("Bearer ", "");
         
-        sub = sub == null ? tokenService.validarToken(authToken) : sub;
+        sub = Optional.ofNullable(sub).orElse(tokenService.validarToken(authToken));
 
         Optional<Usuario> optUsuario = service.getUserBySub(sub);
 
-        return optUsuario.isPresent() ? new UsuarioDto(optUsuario.get()) : null;
+        return UsuarioDto.parse( optUsuario.orElse(null) );
     }
     
 
@@ -73,7 +68,7 @@ public class UsuarioController {
         
         user = service.save(user);
 
-        return ResponseEntity.ok(new UsuarioDto(user));
+        return ResponseEntity.ok(UsuarioDto.parse(user));
     }
     
 

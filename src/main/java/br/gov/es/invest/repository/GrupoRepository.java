@@ -103,4 +103,7 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, String> {
                 "RETURN g")
     public List<Grupo> getGrupoMembroDireto(String userId);
 
+
+    
+
 }

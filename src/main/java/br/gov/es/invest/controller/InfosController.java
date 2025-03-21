@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -44,21 +45,16 @@ import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
 
-
 @RestController
 @RequestMapping("/infos")
 @RequiredArgsConstructor
 public class InfosController {
-
-    @Value("${frontend.host}")
-    private String frontHost;
 
     private final InvestimentosBIService investimentosBIService;
 
     private final InfosService service;
     private final AnoService anoService;
     private final ACService aCService;
-    private final CustoService custoService;
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
     private final FonteOrcamentariaService fonteService;

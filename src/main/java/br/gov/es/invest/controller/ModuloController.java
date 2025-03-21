@@ -11,7 +11,6 @@ import br.gov.es.invest.service.ModuloService;
 import lombok.RequiredArgsConstructor;
 
 
-
 @RestController
 @RequestMapping("/modulo")
 @RequiredArgsConstructor

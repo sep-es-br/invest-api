@@ -16,11 +16,12 @@ import br.gov.es.invest.service.PlanoOrcamentarioService;
 import lombok.RequiredArgsConstructor;
 
 
-
 @RestController
 @RequestMapping("/planoOrcamentario")
 @RequiredArgsConstructor
 public class PlanoOrcamentarioController {
+
+
 
     private final PlanoOrcamentarioService service;
     private final PlanoOrcamentarioBIService biService;

@@ -17,7 +17,6 @@ import br.gov.es.invest.service.TipoPlanoService;
 import lombok.RequiredArgsConstructor;
 
 
-
 @RestController
 @RequestMapping("/tipoPlano")
 @RequiredArgsConstructor

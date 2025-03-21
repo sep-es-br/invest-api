@@ -1,5 +1,7 @@
 package br.gov.es.invest.dto;
 
+import java.util.Optional;
+
 import br.gov.es.invest.model.Orgao;
 
 public record OrgaoDto(
@@ -14,9 +16,7 @@ public record OrgaoDto(
     }
 
     public static OrgaoDto parse(Orgao orgao) {
-        return orgao == null ? null
-            : new OrgaoDto(orgao);
-
+        return Optional.ofNullable(orgao).map(OrgaoDto::new).orElse(null);
     }
 
 }

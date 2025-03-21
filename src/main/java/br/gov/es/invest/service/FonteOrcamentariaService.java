@@ -34,25 +34,6 @@ public class FonteOrcamentariaService {
 
     }
 
-    public FonteOrcamentaria findOrCreate(String codigo, String nome) {
-
-        FonteOrcamentaria probeFonte = new FonteOrcamentaria();
-        probeFonte.setCodigo(codigo);
-
-        Optional<FonteOrcamentaria> optFonte = repository.findBy(Example.of(probeFonte), query -> query.first());
-        
-        if(optFonte.isPresent()) {
-            return optFonte.get();
-        } else {
-            FonteOrcamentaria novaFonte = new FonteOrcamentaria();
-
-            novaFonte.setCodigo(codigo);
-            novaFonte.setNome(nome);
-
-            return repository.save(novaFonte);
-        }
-    }
-
     public List<FonteOrcamentaria> findFontesExtras(){
         return repository.findFontesExtra();
     }
@@ -60,11 +41,8 @@ public class FonteOrcamentariaService {
     public String getCodById(String id){
         Optional<FonteOrcamentaria> optFonte = repository.findById(id);
 
-        if(optFonte.isPresent()){
-            return optFonte.get().getCodigo();
-        } else {
-            return null;
-        }
+        return optFonte.map(fonte -> fonte.getCodigo()).orElse(null);
+ 
     }
 
 }

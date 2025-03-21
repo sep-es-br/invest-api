@@ -6,14 +6,14 @@ import org.springframework.web.bind.annotation.RestController;
 import br.gov.es.invest.service.CustoService;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/custo")
 @RequiredArgsConstructor
 public class CustoController {
 
-    private final CustoService custoService;
+    private final CustoService service;
 
+    
     
     
 }
