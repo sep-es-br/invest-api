@@ -212,7 +212,7 @@ public class RelatorioService {
                         "\r\n" + //
                         "OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Usuario)\r\n" + //
                         "\r\n" + //
-                        "MATCH (custo:Custo)-[_indicada_por:INDICADA_POR]->(:FonteOrcamentaria)\r\n" + //
+                        "MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(:FonteOrcamentaria)\r\n" + //
                         "\r\n" + //
                         "WITH \r\n" + //
                         "    unidade.codigo AS codUnidade,\r\n" + //
@@ -225,7 +225,7 @@ public class RelatorioService {
                         "    microrregiao.nome AS microrregiao,\r\n" + //
                         "    areaTematica.nome AS areaTematica,\r\n" + //
                         "    CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,\r\n" + //
-                        "    COALESCE(_indicada_por.gnd, -1) AS gnd,\r\n" + //
+                        "    COALESCE(indicada_por.gnd, -1) AS gnd,\r\n" + //
                         "    elementId(obj) AS objetoId\r\n" + //
                         "\r\n" + //
                         "RETURN DISTINCT\r\n" + //
