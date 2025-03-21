@@ -18,6 +18,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -122,13 +123,14 @@ public class RelatorioService {
 
     public void createHeaderRow(int index,List<RegistroDadoDetalhado> dados, Sheet sheet) {
         Row row = sheet.createRow(index);
+        XSSFWorkbook workbook = (XSSFWorkbook) sheet.getWorkbook();
 
         int colIndex = 0;
 
         XSSFColor header1Color = getColor(179, 198, 231);
         XSSFColor header2Color = getColor(222, 235, 246);
 
-        XSSFCellStyle header1Style = ((XSSFWorkbook)sheet.getWorkbook()).createCellStyle();
+        XSSFCellStyle header1Style = workbook.createCellStyle();
 
         header1Style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         header1Style.setFillForegroundColor(header1Color);
@@ -139,7 +141,7 @@ public class RelatorioService {
         header1Style.setAlignment(HorizontalAlignment.CENTER);
 
 
-        XSSFCellStyle header2Style = ((XSSFWorkbook)sheet.getWorkbook()).createCellStyle();
+        XSSFCellStyle header2Style = workbook.createCellStyle();
 
         header2Style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         header2Style.setFillForegroundColor(header2Color);
@@ -176,6 +178,8 @@ public class RelatorioService {
             current = current == header2Style ? header1Style : header2Style;
 
         }
+
+        sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, colIndex - 1));
 
 
     }
@@ -237,7 +241,7 @@ public class RelatorioService {
                         "RETURN DISTINCT\r\n" + //
                         "    codUnidade,\r\n" + //
                         "    unidadeResponsavel,\r\n" + //
-                        "    emailResponsavel,\r\n" + //
+                        "    nomeResponsavel,\r\n" + //
                         "    codPO,\r\n" + //
                         "    nomePO,\r\n" + //
                         "    descObjeto,\r\n" + //
@@ -318,15 +322,15 @@ public class RelatorioService {
                                                 }
 
                                                 return RegistroDadoDetalhado.builder()
-                                                        .unidadeResponsável(record.get("unidadeResponsavel").asString())
-                                                        .nomeResponsavel(record.get("nomeResponsavel").asString())
-                                                        .codPo(record.get("codPO").asString())
-                                                        .nomePo(record.get("nomePO").asString())
-                                                        .descObjeto(record.get("descObjeto").asString())
-                                                        .tipoDePlano(record.get("tiposPo").asString())
-                                                        .microrregiao(record.get("microrregiao").asString())
-                                                        .areaEstrategica(record.get("areaTematica").asString())
-                                                        .contrato(record.get("contrato").asString())
+                                                        .unidadeResponsável(record.get("unidadeResponsavel").asString().trim())
+                                                        .nomeResponsavel(record.get("nomeResponsavel").asString().trim())
+                                                        .codPo(record.get("codPO").asString().trim())
+                                                        .nomePo(record.get("nomePO").asString().trim())
+                                                        .descObjeto(record.get("descObjeto").asString().trim())
+                                                        .tipoDePlano(record.get("tiposPo").asString().trim())
+                                                        .microrregiao(record.get("microrregiao").asString().trim())
+                                                        .areaEstrategica(record.get("areaTematica").asString().trim())
+                                                        .contrato(record.get("contrato").asString().trim())
                                                         .gnd(record.get("gnd").asInt())
                                                         .valoresPorFonte(valoresPorFontes).build();
                                             }))
