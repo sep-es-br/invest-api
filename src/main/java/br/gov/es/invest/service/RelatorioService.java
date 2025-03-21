@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -40,9 +39,11 @@ public class RelatorioService {
     @Autowired
     private FonteOrcamentariaService fonteOrcamentariaService;
 
-    public Workbook gerarPlanilha(){
+    public Workbook gerarPlanilha(
+        String tipoDespesa, List<String> idsUnidade, List<String> idsPlanos, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
+    ){
         
-        List<RegistroDadoDetalhado> dados = getRegistroDadoDetalhados();
+        List<RegistroDadoDetalhado> dados = getRegistroDadoDetalhados(tipoDespesa, idsUnidade, idsPlanos, idFonte, gnd, anoInicio, anoFim);
 
         XSSFWorkbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Base de Dados");
@@ -96,7 +97,7 @@ public class RelatorioService {
 
             for(RegistroDadoDetalhadoValoresPorFonte valoresPorFonte : registroDadoDetalhado.getValoresPorFonte() ) {
                 for(RegistroDadoDetalhadoValoresPorAno valoresPorAno : valoresPorFonte.getValoresPorAno()){
-                    
+                                      
                     this.createCell(colIndex++, valoresPorAno.getPrevisto(), styleValor, row);
                     this.createCell(colIndex++, valoresPorAno.getContratado(), styleValor, row);
                 }
@@ -200,10 +201,13 @@ public class RelatorioService {
         return new XSSFColor(rgb, null);
     }
 
-    private List<RegistroDadoDetalhado> getRegistroDadoDetalhados(){
+    private List<RegistroDadoDetalhado> getRegistroDadoDetalhados(
+        String tipoDespesa, List<String> idsUnidade, List<String> idsPlanos, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
+        ){
         
+
         String cypher = "WITH\r\n" + //
-                        "    'Investimento' AS _tpDespesa,\r\n" + //
+                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
                         "    $unidades AS _unidadeOrcamentaria,\r\n" + //
                         "    $planos AS _planoOrcamentario,\r\n" + //
                         "    $fonte AS _idFonte,\r\n" + //
@@ -261,19 +265,18 @@ public class RelatorioService {
                             "ORDER BY ano";
 
         Collection<Integer> allAnos = neo4jClient.query(cypherAnos)
-                                        .bind(2024).to("anoInicio")
-                                        .bind(2027).to("anoFim")
+                                        .bind(anoInicio).to("anoInicio")
+                                        .bind(anoFim).to("anoFim")
                                         .fetchAs(Integer.class).all();
 
         Collection<FonteOrcamentaria> allFontes = fonteOrcamentariaService.findFontesExtras();
         
         Map<String, Object> params = new HashMap<>();
-        params.put("unidades", null);
-        params.put("planos", null);
-        params.put("fonte", null);
-        params.put("gnd", null);
-        params.put("anoInicio", 2024);
-        params.put("anoFim", 2027);
+        params.put("unidades", idsUnidade);
+        params.put("planos", idsPlanos);
+        params.put("fonte", idFonte);
+        params.put("gnd", gnd);
+        params.put("tipoDespesa", tipoDespesa);
 
         String cypherPrevistoContratado = "MATCH (objeto:Objeto)\r\n" + //
                                                 "WHERE elementId(objeto) = $idObjeto\r\n" + //

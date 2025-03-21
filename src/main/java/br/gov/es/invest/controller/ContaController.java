@@ -1,5 +1,6 @@
 package br.gov.es.invest.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -8,11 +9,14 @@ import java.util.logging.Logger;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.dto.ContaTiraDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
@@ -64,18 +68,34 @@ public class ContaController {
 
     
 
-    @GetMapping("/dadosDetalhados")
+    @GetMapping("{tipoDespesa}/dadosDetalhados/{exercicio}")
     public ResponseEntity<?> getDadosConsolidados (
-        @RequestParam(required=false) String tipoDespesa, @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Integer exercicio,
-        @RequestParam(required=false) String idFonte, @RequestParam Integer pag, @RequestParam Integer pagSize
+        @PathVariable String tipoDespesa, @PathVariable Integer exercicio, 
+        @RequestParam(required=false) Integer gnd, @RequestParam(required=false) String idFonte, @RequestParam Integer pag,
+        @RequestParam Integer pagSize, @RequestParam(required=false) String idsUnidade, @RequestParam(required=false) String idsPlanos
     ){
-        tipoDespesa = "Investimento";
-        gnd = null;
-        idFonte = null;
+        
+        try {
+            
+            List<String> idsUnidadeList = idsUnidade == null ? null
+                    : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
 
-        return ResponseEntity.ok(
-            service.getDadosConsolidados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize))
-        );
+            List<String> idsPlanosList = idsPlanos == null ? null
+            : new ObjectMapper().readValue(idsPlanos, new TypeReference<List<String>>(){});
+
+            return ResponseEntity.ok(
+                service.getDadosDetalhados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList, idsPlanosList)
+            );
+
+        } catch (IOException ex) {
+            Logger.getGlobal().log(Level.SEVERE, "Erro ao filtrar os dados", ex);
+            return  MensagemErroRest.asResponseEntity(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Erro ao filtrar os dados", 
+                Arrays.asList(ex.getLocalizedMessage()));
+        }
+
+        
     }
 
     @GetMapping("/count")

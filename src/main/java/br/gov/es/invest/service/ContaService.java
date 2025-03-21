@@ -98,9 +98,9 @@ public class ContaService {
         return findByFiltro(nome, codUnidade, codPO, exercicio, idFonte, null).size();
     }
 
-    public DataListResult<DadosConsolidadosDTO> getDadosConsolidados (
+    public DataListResult<DadosConsolidadosDTO> getDadosDetalhados (
         String tipoDespesa, Integer gnd, Integer exercicio, String idFonte,
-        Pageable pageable
+        Pageable pageable, List<String> idsUnidade, List<String> idsPlano
     ) {
 
         HashMap<String, Object> paramMap = new HashMap<>();
@@ -108,13 +108,17 @@ public class ContaService {
         paramMap.put("gnd", gnd);
         paramMap.put("exercicio", exercicio);
         paramMap.put("idFonte", idFonte);
+        paramMap.put("idsUnidade", idsUnidade);
+        paramMap.put("idsPlano", idsPlano);
 
         String cypherBase = 
                         "WITH\r\n" + //
                         "    $tipoDespesa AS _tpDespesa,\r\n" + //
                         "    $gnd AS _gnd,\r\n" + //
                         "    $exercicio AS _exercicio,\r\n" + //
-                        "    $idFonte AS _idFonte\r\n" + //
+                        "    $idFonte AS _idFonte,\r\n" + //
+                        "    $idsUnidade AS _idsUnidade,\r\n" + //
+                        "    $idsPlano AS _idsPlano\r\n" + //
                         "MATCH \r\n" + //
                         "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),\r\n" + //
                         "    (conta)<-[:CUSTEADO]-(obj:Objeto)<-[:ESTIMADO]-(custo:Custo),\r\n" + //
@@ -124,6 +128,8 @@ public class ContaService {
                         "    _tpDespesa IN LABELS(conta)\r\n" + //
                         "    AND (_idFonte IS NULL OR elementId(fonte) = _idFonte)\r\n" + //
                         "    AND custo.anoExercicio = _exercicio\r\n" + //
+                        "    AND (_idsUnidade IS NULL OR elementId(unidade) IN _idsUnidade)\r\n" + //
+                        "    AND (_idsPlano IS NULL OR elementId(po) IN _idsPlano)\r\n" + //
                         "OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonte)\r\n" + //
                         "WHERE (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
                         "WITH \r\n" + //
