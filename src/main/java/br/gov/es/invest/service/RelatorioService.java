@@ -202,17 +202,17 @@ public class RelatorioService {
                         "\r\n" + //
                         "MATCH  \r\n" + //
                         "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),\r\n" + //
-                        "    (conta)<-[:CUSTEADO]-(obj:Objeto),\r\n" + //
-                        "    (microrregiao:Localidade)<-[:ATENDE]-(obj)-[:DO_TIPO]->(tipoPlano:TipoPlano),\r\n" + //
-                        "    (obj)-[:SOBRE]->(areaTematica:AreaTematica)\r\n" + //
+                        "    (conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
+                        "    \r\n" + //
                         "WHERE  \r\n" + //
                         "    _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND (_unidadeOrcamentaria IS NULL OR size(_unidadeOrcamentaria) = 0 OR elementId(unidade) IN _unidadeOrcamentaria)\r\n" + //
-                        "    AND (_planoOrcamentario IS NULL OR size(_planoOrcamentario) = 0 OR elementId(po) IN _planoOrcamentario)\r\n" + //
-                        "\r\n" + //
-                        "OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Usuario)\r\n" + //
                         "\r\n" + //
                         "MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(:FonteOrcamentaria)\r\n" + //
+                        "\r\n" + //
+                        "OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)\r\n" + //
+                        "OPTIONAL MATCH (obj)-[:ATENDE]->(microrregiao:Localidade)\r\n" + //
+                        "OPTIONAL MATCH (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)\r\n" + //
+                        "OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Usuario)\r\n" + //
                         "\r\n" + //
                         "WITH \r\n" + //
                         "    unidade.codigo AS codUnidade,\r\n" + //
@@ -221,7 +221,7 @@ public class RelatorioService {
                         "    po.codigo AS codPO,\r\n" + //
                         "    po.nome AS nomePO,\r\n" + //
                         "    obj.descricao AS descObjeto,\r\n" + //
-                        "    apoc.text.join(collect(DISTINCT tipoPlano.sigla), '; ') AS tiposPo,\r\n" + //
+                        "    CASE WHEN tipoPlano IS NULL THEN { sigla: 'PIP'} ELSE tipoPlano END AS tiposPo,\r\n" + //
                         "    microrregiao.nome AS microrregiao,\r\n" + //
                         "    areaTematica.nome AS areaTematica,\r\n" + //
                         "    CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,\r\n" + //
@@ -235,9 +235,9 @@ public class RelatorioService {
                         "    codPO,\r\n" + //
                         "    nomePO,\r\n" + //
                         "    descObjeto,\r\n" + //
-                        "    tiposPo,\r\n" + //
-                        "    microrregiao,\r\n" + //
-                        "    areaTematica,\r\n" + //
+                        "    apoc.text.join(collect(DISTINCT tiposPo.sigla), '; ') AS tiposPo,\r\n" + //
+                        "    COALESCE(microrregiao, ' - '),\r\n" + //
+                        "    COALESCE(areaTematica, ' - '),\r\n" + //
                         "    contrato,\r\n" + //
                         "    gnd,\r\n" + //
                         "    objetoId\r\n" + //
