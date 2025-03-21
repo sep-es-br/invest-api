@@ -11,7 +11,7 @@ import lombok.Setter;
 @Builder
 public class RegistroDadoDetalhado {
     private String unidadeResponsável;
-    private String emailResponsavel;
+    private String nomeResponsavel;
     private String codPo;
     private String nomePo;
     private String descObjeto;

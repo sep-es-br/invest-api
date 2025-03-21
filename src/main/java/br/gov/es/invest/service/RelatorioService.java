@@ -55,8 +55,9 @@ public class RelatorioService {
 
     private void preencherComDados(int startRow, Sheet sheet, List<RegistroDadoDetalhado> dados){
         int rowIndex = startRow;
+        XSSFWorkbook workbook = (XSSFWorkbook)sheet.getWorkbook();
 
-        XSSFCellStyle style = ((XSSFWorkbook)sheet.getWorkbook()).createCellStyle();
+        XSSFCellStyle style = workbook.createCellStyle();
         style.setBorderBottom(BorderStyle.THIN);
         style.setBorderTop(BorderStyle.THIN);
         style.setBorderLeft(BorderStyle.THIN);
@@ -70,7 +71,7 @@ public class RelatorioService {
             
 
             this.createCell(colIndex++, registroDadoDetalhado.getUnidadeResponsável(), style, row);
-            this.createCell(colIndex++, registroDadoDetalhado.getEmailResponsavel(), style, row);
+            this.createCell(colIndex++, registroDadoDetalhado.getNomeResponsavel(), style, row);
             this.createCell(colIndex++, registroDadoDetalhado.getCodPo(), style, row);
             this.createCell(colIndex++, registroDadoDetalhado.getNomePo(), style, row);
             this.createCell(colIndex++, registroDadoDetalhado.getDescObjeto(), style, row);
@@ -80,27 +81,22 @@ public class RelatorioService {
             this.createCell(colIndex++, registroDadoDetalhado.getContrato(), style, row);
             this.createCell(colIndex++, String.valueOf(registroDadoDetalhado.getGnd()), style, row);
 
-            XSSFCellStyle styleValor = ((XSSFWorkbook)sheet.getWorkbook()).createCellStyle();
+            XSSFCellStyle styleValor = workbook.createCellStyle();
             styleValor.setBorderBottom(BorderStyle.THIN);
             styleValor.setBorderTop(BorderStyle.THIN);
             styleValor.setBorderLeft(BorderStyle.THIN);
             styleValor.setBorderRight(BorderStyle.THIN);
             styleValor.setAlignment(HorizontalAlignment.RIGHT);
 
+            DataFormat format = workbook.createDataFormat();
+
+            styleValor.setDataFormat(format.getFormat("\"R$\" #,##0.00;-\"R$\" #,##0.00;\"-\""));
+
             for(RegistroDadoDetalhadoValoresPorFonte valoresPorFonte : registroDadoDetalhado.getValoresPorFonte() ) {
                 for(RegistroDadoDetalhadoValoresPorAno valoresPorAno : valoresPorFonte.getValoresPorAno()){
                     
-                    String previsto = valoresPorAno.getPrevisto() != 0
-                                ? String.format(new Locale("pt", "BR"), "R$ %,.2f", valoresPorAno.getPrevisto())
-                                : " - ";
-                    
-                    String contratado = valoresPorAno.getContratado() != 0
-                                ? String.format(new Locale("pt", "BR"), "R$ %,.2f", valoresPorAno.getContratado())
-                                : " - ";
-                                        
-
-                    this.createCell(colIndex++, previsto, styleValor, row);
-                    this.createCell(colIndex++, contratado, styleValor, row);
+                    this.createCell(colIndex++, valoresPorAno.getPrevisto(), styleValor, row);
+                    this.createCell(colIndex++, valoresPorAno.getContratado(), styleValor, row);
                 }
             }
 
@@ -109,6 +105,14 @@ public class RelatorioService {
 
     private void createCell(int index, String value, XSSFCellStyle style, Row row){
         Cell cell = row.createCell(index);
+        cell.setCellStyle(style);
+        cell.setCellValue(value);
+        
+
+    }
+
+    private void createCell(int index, double value, XSSFCellStyle style, Row row){
+        Cell cell = row.createCell(index, CellType.NUMERIC);
         cell.setCellStyle(style);
         cell.setCellValue(value);
         
@@ -145,7 +149,7 @@ public class RelatorioService {
         header2Style.setAlignment(HorizontalAlignment.CENTER);
 
         this.createHeaderCell(colIndex++, "Unidade Responsável", header1Style, pixelParaWidth(144) , row);
-        this.createHeaderCell(colIndex++, "E-mail do Responsável", header1Style, pixelParaWidth(150), row);
+        this.createHeaderCell(colIndex++, "Nome do Responsável", header1Style, pixelParaWidth(150), row);
         this.createHeaderCell(colIndex++, "Código do PO", header1Style, pixelParaWidth(95), row);
         this.createHeaderCell(colIndex++, "Nome do Projeto/PO", header1Style, pixelParaWidth(450), row);
         this.createHeaderCell(colIndex++, "Descrição/Objeto detalhado", header1Style, pixelParaWidth(450), row);
@@ -206,6 +210,7 @@ public class RelatorioService {
                         "    \r\n" + //
                         "WHERE  \r\n" + //
                         "    _tpDespesa IN LABELS(conta)\r\n" + //
+                        "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
                         "\r\n" + //
                         "MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(:FonteOrcamentaria)\r\n" + //
                         "\r\n" + //
@@ -217,7 +222,7 @@ public class RelatorioService {
                         "WITH \r\n" + //
                         "    unidade.codigo AS codUnidade,\r\n" + //
                         "    unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,\r\n" + //
-                        "    COALESCE(usuario.email, \"-\") AS emailResponsavel,\r\n" + //
+                        "    COALESCE(usuario.nomeCompleto, \"-\") AS nomeResponsavel,\r\n" + //
                         "    po.codigo AS codPO,\r\n" + //
                         "    po.nome AS nomePO,\r\n" + //
                         "    obj.descricao AS descObjeto,\r\n" + //
@@ -313,7 +318,7 @@ public class RelatorioService {
 
                                                 return RegistroDadoDetalhado.builder()
                                                         .unidadeResponsável(record.get("unidadeResponsavel").asString())
-                                                        .emailResponsavel(record.get("emailResponsavel").asString())
+                                                        .nomeResponsavel(record.get("nomeResponsavel").asString())
                                                         .codPo(record.get("codPO").asString())
                                                         .nomePo(record.get("nomePO").asString())
                                                         .descObjeto(record.get("descObjeto").asString())
