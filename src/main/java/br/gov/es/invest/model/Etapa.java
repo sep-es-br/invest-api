@@ -10,11 +10,13 @@ import br.gov.es.invest.dto.EtapaDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Etapa extends Entidade {
 
     private Integer ordem;

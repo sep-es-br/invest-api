@@ -12,11 +12,13 @@ import br.gov.es.invest.dto.CustoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Custo extends Entidade implements Serializable {
      
     private Integer anoExercicio;

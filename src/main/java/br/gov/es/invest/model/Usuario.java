@@ -14,10 +14,12 @@ import br.gov.es.invest.dto.UsuarioDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@SuperBuilder
 @Node(labels = {"Usuario", "Agente"})
 public class Usuario extends Entidade {
     

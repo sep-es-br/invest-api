@@ -4,16 +4,17 @@ import java.util.Set;
 
 import org.springframework.data.neo4j.core.schema.Node;
 
-
 import br.gov.es.invest.dto.FuncaoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Funcao extends Entidade {
     
     private String nome;

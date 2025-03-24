@@ -7,10 +7,12 @@ import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.projection.EmEtapaProjection;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @RelationshipProperties
+@SuperBuilder
 public class EmEtapa extends Entidade {
     
     @TargetNode

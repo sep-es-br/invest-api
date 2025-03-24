@@ -10,11 +10,13 @@ import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class ExecucaoOrcamentaria extends Entidade implements Serializable {
     
     private Integer anoExercicio;

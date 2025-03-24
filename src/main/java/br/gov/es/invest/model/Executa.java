@@ -6,10 +6,12 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @RelationshipProperties
+@SuperBuilder
 public class Executa extends Entidade {
     
     @TargetNode

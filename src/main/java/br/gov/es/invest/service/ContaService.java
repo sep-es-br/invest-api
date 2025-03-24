@@ -65,15 +65,19 @@ public class ContaService {
         }
 
         if(planoId != null){ 
-            PlanoOrcamentario plano = new PlanoOrcamentario();
-            plano.setId(planoId);
-            contaProbe.setPlanoOrcamentario(plano);
+            contaProbe.setPlanoOrcamentario(
+                PlanoOrcamentario.builder()
+                .id(planoId)
+                .build()
+            );
         } 
 
         if(unidadeId != null){
-            UnidadeOrcamentaria unidade = new UnidadeOrcamentaria();
-            unidade.setId(unidadeId);
-            contaProbe.setUnidadeOrcamentariaImplementadora(unidade);
+            contaProbe.setUnidadeOrcamentariaImplementadora(
+                UnidadeOrcamentaria.builder()
+                .id(unidadeId)
+                .build()
+            );
         }
 
         List<Conta> result = repository.findAll(Example.of(contaProbe, matcher));

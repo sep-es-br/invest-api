@@ -9,10 +9,12 @@ import br.gov.es.invest.dto.ApontamentoDTO;
 import br.gov.es.invest.utils.DateTimeUtils;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Apontamento extends Entidade{
     
     private ZonedDateTime timestamp;

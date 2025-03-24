@@ -14,11 +14,13 @@ import br.gov.es.invest.dto.GrupoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Grupo extends Entidade {
     private String sigla;
     private String icone;

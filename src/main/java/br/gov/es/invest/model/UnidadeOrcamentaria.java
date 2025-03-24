@@ -10,10 +10,12 @@ import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class UnidadeOrcamentaria extends Entidade implements Serializable {
     
     private String codigo;

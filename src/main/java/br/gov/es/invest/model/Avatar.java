@@ -8,11 +8,13 @@ import br.gov.es.invest.dto.AvatarDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Avatar extends Entidade{
     
     private String blob;

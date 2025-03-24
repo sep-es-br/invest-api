@@ -9,10 +9,12 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 import br.gov.es.invest.dto.IndicadaPorDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @RelationshipProperties
 @NoArgsConstructor
+@SuperBuilder
 public class IndicadaPor extends Entidade {
     
     @TargetNode
