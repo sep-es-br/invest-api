@@ -1,17 +1,5 @@
 package br.gov.es.invest.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import br.gov.es.invest.dto.ACUserInfoDto;
-import br.gov.es.invest.dto.UsuarioDto;
-import br.gov.es.invest.exception.UsuarioInexistenteException;
-import br.gov.es.invest.exception.service.InfoplanServiceException;
-import br.gov.es.invest.model.Usuario;
-import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -76,7 +64,7 @@ public class AutenticacaoService {
             usuario = optUsuario.get();
 
             if(!userInfo.role().contains("GESTOR_MASTER"))
-                if(!validarPapel(usuario)) throw new PapelInvalidoException("Papel não existe ou não é prioritário");
+                if(!validarPapel(usuario)) throw new PapelInvalidoException("Papel não existe ou não é prioritário; usuario-sub: " + usuario.getSub());
         } else {
             usuario = this.gerarUsuario(userInfo);
 
