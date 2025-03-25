@@ -191,7 +191,7 @@ public class AutenticacaoService {
         String clientToken = acService.getClientToken();
 
         // 1º valida se o papel ainda existe e é prioritário
-        if(user.getPapeis() == null) {
+        if(user.getPapeis() == null || user.getPapeis().isEmpty()) {
             List<PapelACResponseDto> papeisDoUser = acService.getPapeisBySub(user.getSub(), clientToken);
             
             List<PapelACResponseDto> papeisComNome = papeisDoUser.stream().filter(papelac -> papelac.Nome().equals(user.getPapel())).toList();
@@ -210,6 +210,10 @@ public class AutenticacaoService {
                     papel.setSetor(user.getSetor());
                     
                     usuarioService.trasnferirNovoFormato(user, papel);
+                } else {
+                    user.setPapeis(Arrays.asList(
+                        Papel.parse(papeisComNome.get(0), user.getSetor())
+                    ));
                 }
 
                 
