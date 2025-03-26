@@ -12,8 +12,9 @@ import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
-import br.gov.es.invest.dto.DadosConsolidadosDTO;
-import br.gov.es.invest.dto.DadosConsolidadosValores;
+import br.gov.es.invest.dto.DadoConsolidadoDTO;
+import br.gov.es.invest.dto.DadosDetalhadoDTO;
+import br.gov.es.invest.dto.DadosDetalhadoValores;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -102,7 +103,7 @@ public class ContaService {
         return findByFiltro(nome, codUnidade, codPO, exercicio, idFonte, null).size();
     }
 
-    public DataListResult<DadosConsolidadosDTO> getDadosDetalhados (
+    public DataListResult<DadosDetalhadoDTO> getDadosDetalhados (
         String tipoDespesa, Integer gnd, Integer exercicio, String idFonte,
         Pageable pageable, List<String> idsUnidade, List<String> idsPlano
     ) {
@@ -184,9 +185,9 @@ public class ContaService {
         String cypherCount = cypherBase + "RETURN count(conta)";
 
         // List<DadosConsolidadosDTO> dados = neo4jOperations.findAll(cypherQuery, paramMap, DadosConsolidadosDTO.class);
-        Collection<DadosConsolidadosDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
-        .fetchAs(DadosConsolidadosDTO.class)
-        .mappedBy((typeSystem, record) -> new DadosConsolidadosDTO(
+        Collection<DadosDetalhadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
+        .fetchAs(DadosDetalhadoDTO.class)
+        .mappedBy((typeSystem, record) -> new DadosDetalhadoDTO(
             record.get("idUnidade").asString(),
             record.get("unidadeResponsavel").asString(),
             record.get("idPO").asString(),
@@ -195,7 +196,7 @@ public class ContaService {
             record.get("projEstrategico").asBoolean(),
             record.get("contrato").isNull() || record.get("contrato").isEmpty() ? "-" : record.get("contrato") .asString(),
             record.get("anoExercicio").asInt(),
-            record.get("valores").asList(value -> new DadosConsolidadosValores(
+            record.get("valores").asList(value -> new DadosDetalhadoValores(
                 value.get("idFonte").asString(),
                 value.get("nomeFonte").asString(),
                 value.get("valorPrevisto").asDouble(),
@@ -206,7 +207,83 @@ public class ContaService {
         
 
         return new DataListResult<>(
-            (List<DadosConsolidadosDTO>) dados, 
+            (List<DadosDetalhadoDTO>) dados, 
+            (int) neo4jOperations.count(cypherCount, paramMap)
+        );
+    }
+
+    public DataListResult<DadoConsolidadoDTO> getDadosConsolidados (
+        String tipoDespesa, Integer gnd, Integer exercicioInicio, Integer exercicioFim, String idFonte,
+        Pageable pageable, List<String> idsUnidade
+    ) {
+
+
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("tipoDespesa", tipoDespesa);
+        paramMap.put("gnd", gnd);
+        paramMap.put("exercicioInicio", exercicioInicio);
+        paramMap.put("exercicioFim", exercicioFim);
+        paramMap.put("idFonte", idFonte);
+        paramMap.put("idsUnidade", idsUnidade);
+
+        String cypherBase = 
+                        "WITH\r\n" + //
+                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
+                        "    $gnd AS _gnd,\r\n" + //
+                        "    $exercicioInicio AS _exercicioInicio,\r\n" + //
+                        "    $exercicioFim AS _exercicioFim,\r\n" + //
+                        "    $idFonte AS _idFonte,\r\n" + //
+                        "    $idsUnidade AS _idsUnidade\r\n" + //
+                        "MATCH \r\n" + //
+                        "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
+                        "WHERE\r\n" + //
+                        "    _tpDespesa IN LABELS(conta)\r\n" + //
+                        "    AND (_idsUnidade IS NULL OR elementId(unidade) IN _idsUnidade)\r\n" + //
+                        "\r\n" + //
+                        "OPTIONAL MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
+                        "WHERE \r\n" + //
+                        "    (_idFonte IS NULL OR elementId(fonteCusto) = _idFonte)\r\n" + //
+                        "    AND (custo.anoExercicio >= _exercicioInicio AND custo.anoExercicio <= _exercicioFim)\r\n" + //
+                        "    AND (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
+                        "OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
+                        "WHERE \r\n" + //
+                        "    (_idFonte IS NULL OR elementId(fonteExec) = _idFonte)\r\n" + //
+                        "    AND (exec.anoExercicio >= _exercicioInicio AND exec.anoExercicio <= _exercicioFim)\r\n" + //
+                        "    AND (_gnd IS NULL OR vinculada_por.gnd = _gnd)\r\n";
+        
+        String cypherQuery = cypherBase + 
+                            "RETURN\r\n" + //
+                            "    unidade.codigo AS codUnidade,\r\n" + //
+                            "    unidade.codigo + ' - ' + unidade.sigla AS unidadoOperacional,\r\n" + //
+                            "    SUM(indicada_por.previsto) AS previsto,\r\n" + //
+                            "    SUM(indicada_por.contratado) AS contratado,\r\n" + //
+                            "    SUM(vinculada_por.autorizado) AS autorizado,\r\n" + //
+                            "    SUM(vinculada_por.autorizado) - SUM(indicada_por.contratado) AS difAutorizadoContratado\r\n" + //
+                            "ORDER BY codUnidade\r\n";
+
+        
+        if(pageable != null) {
+            cypherQuery += "SKIP $skip LIMIT $limit";
+            paramMap.put("skip", pageable.getOffset());
+            paramMap.put("limit", pageable.getPageSize());
+        }
+        String cypherCount = cypherBase + "RETURN count(DISTINCT unidade)";
+
+        Collection<DadoConsolidadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
+        .fetchAs(DadoConsolidadoDTO.class)
+        .mappedBy((typeSystem, record) -> DadoConsolidadoDTO.builder()
+                                            .unidadeOrcamentaria(record.get("unidadoOperacional").asString())
+                                            .previsto(record.get("previsto").asDouble() )
+                                            .contratado(record.get("contratado").asDouble())
+                                            .autorizado(record.get("autorizado").asDouble())
+                                            .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())
+                                            .build()
+                                    )
+        .all();
+        
+
+        return new DataListResult<>(
+            (List<DadoConsolidadoDTO>) dados, 
             (int) neo4jOperations.count(cypherCount, paramMap)
         );
     }

@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class DadosConsolidadosDTO {
+public class DadosDetalhadoDTO {
     private String idUnidade;
     private String unidadeResponsavel;
     private String idPO;
@@ -20,5 +20,5 @@ public class DadosConsolidadosDTO {
     private Boolean projEstrategico;
     private String contrato;
     private Integer anoExercicio;
-    private List<DadosConsolidadosValores> valores;
+    private List<DadosDetalhadoValores> valores;
 }

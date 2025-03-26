@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import br.gov.es.invest.dto.DadosConsolidadosDTO;
+import br.gov.es.invest.dto.DadosDetalhadoDTO;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;

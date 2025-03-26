@@ -67,10 +67,8 @@ public class ContaController {
         
     }
 
-    
-
     @GetMapping("{tipoDespesa}/dadosDetalhados/{exercicio}")
-    public ResponseEntity<?> getDadosConsolidados (
+    public ResponseEntity<?> getDadosDetalhados (
         @PathVariable String tipoDespesa, @PathVariable Integer exercicio, 
         @RequestParam(required=false) Integer gnd, @RequestParam(required=false) String idFonte, @RequestParam Integer pag,
         @RequestParam Integer pagSize, @RequestParam(required=false) String idsUnidade, @RequestParam(required=false) String idsPlanos
@@ -86,6 +84,33 @@ public class ContaController {
 
             return ResponseEntity.ok(
                 service.getDadosDetalhados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList, idsPlanosList)
+            );
+
+        } catch (IOException ex) {
+            Logger.getGlobal().log(Level.SEVERE, "Erro ao filtrar os dados", ex);
+            return  MensagemErroRest.asResponseEntity(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Erro ao filtrar os dados", 
+                Arrays.asList(ex.getLocalizedMessage()));
+        }
+
+        
+    }
+
+    @GetMapping("{tipoDespesa}/dadosConsolidado/{exercicioInicio}/{exercicioFim}")
+    public ResponseEntity<?> getDadosConsolidados (
+        @PathVariable String tipoDespesa, @PathVariable Integer exercicioInicio, @PathVariable Integer exercicioFim, 
+        @RequestParam(required=false) Integer gnd, @RequestParam(required=false) String idFonte, @RequestParam Integer pag,
+        @RequestParam Integer pagSize, @RequestParam(required=false) String idsUnidade
+    ){
+        
+        try {
+            
+            List<String> idsUnidadeList = idsUnidade == null ? null
+                    : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+
+            return ResponseEntity.ok(
+                service.getDadosConsolidados(tipoDespesa, gnd, exercicioInicio, exercicioFim, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList)
             );
 
         } catch (IOException ex) {
