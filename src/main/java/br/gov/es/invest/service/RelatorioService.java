@@ -42,6 +42,66 @@ public class RelatorioService {
     @Autowired
     private FonteOrcamentariaService fonteOrcamentariaService;
 
+
+    public RegistroDadoConsolidado cardsTotaisRelatorioConsolidado(
+        String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
+    ){
+
+        String cypher = "match (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
+                        "where \r\n" + //
+                        "    $tipoDespesa in labels(conta)\r\n" + //
+                        "AND ($idsUnidade is null or elementId(unidade) in $idsUnidade)\r\n" + //
+                        "AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
+                        "CALL(obj) {\r\n" + //
+                        "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
+                        "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
+                        "        AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio )\r\n" + //
+                        "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
+                        "    RETURN\r\n" + //
+                        "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
+                        "        sum(indicada_por.contratado) AS totalContratado\r\n" + //
+                        "}\r\n" + //
+                        "CALL(conta) {\r\n" + //
+                        "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
+                        "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
+                        "        AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio )\r\n" + //
+                        "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
+                        "    RETURN\r\n" + //
+                        "        sum(vinculada_por.autorizado) AS totalAutorizado\r\n" + //
+                        "}\r\n" + //
+                        "WITH\r\n" + //
+                        "    SUM(totalPrevisto) as previsto,\r\n" + //
+                        "    SUM(totalContratado) as contratado,\r\n" + //
+                        "    totalAutorizado as autorizado\r\n" + //
+                        "RETURN\r\n" + //
+                        "    SUM(previsto) as previsto,\r\n" + //
+                        "    SUM(contratado) as contratado,\r\n" + //
+                        "    SUM(autorizado) as autorizado,\r\n" + //
+                        "    SUM(autorizado) - SUM(contratado) as difAutorizadoContratado\r\n";
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("tipoDespesa", tipoDespesa);
+        params.put("idsUnidade", idsUnidade);
+        params.put("idFonte", idFonte);
+        params.put("gnd", gnd);
+        params.put("exercicioInicio", anoInicio);
+        params.put("exercicioFim", anoFim);
+
+        RegistroDadoConsolidado result = neo4jClient.query(cypher)
+                                            .bindAll(params)
+                                            .fetchAs(RegistroDadoConsolidado.class)
+                                            .mappedBy((typeSystem, record) -> RegistroDadoConsolidado.builder()
+                                                                                .previsto(record.get("previsto").asDouble())
+                                                                                .contratado(record.get("contratado").asDouble())
+                                                                                .autorizado(record.get("autorizado").asDouble())
+                                                                                .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble() )
+                                                                                .build()
+                                                                                )
+                                            .first().get();      
+
+        return result;
+    }
+
     public Workbook gerarPlanilha(
         String tipoDespesa, List<String> idsUnidade, List<String> idsPlanos, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
@@ -63,9 +123,8 @@ public class RelatorioService {
         String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
         
-        // List<RegistroDadoConsolidado> dados = getRegistroDadoDetalhados(tipoDespesa, idsUnidade, idFonte, gnd, anoInicio, anoFim);
-        List<RegistroDadoConsolidado> dados = Arrays.asList();
-
+        List<RegistroDadoConsolidado> dados = getRegistroDadoConsolidados(tipoDespesa, idsUnidade, idFonte, gnd, anoInicio, anoFim);
+        
         XSSFWorkbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Painel - PIP");
 
@@ -225,7 +284,6 @@ public class RelatorioService {
 
         XSSFCellStyle headerStyleUo = workbook.createCellStyle();
 
-        headerStyleUo.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyleUo.setBorderBottom(BorderStyle.THIN);
         headerStyleUo.setBorderTop(BorderStyle.THIN);
         headerStyleUo.setBorderLeft(BorderStyle.THIN);
@@ -235,15 +293,16 @@ public class RelatorioService {
         headerStyleUo.setFont(font);
         
         XSSFCellStyle headerStylePrevisto = headerStyleUo.copy();
+        headerStylePrevisto.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStylePrevisto.setFillForegroundColor(headerColorPrevisto);
         
-        XSSFCellStyle headerStyleContratado = headerStyleUo.copy();
+        XSSFCellStyle headerStyleContratado = headerStylePrevisto.copy();
         headerStyleContratado.setFillForegroundColor(headerColorContratado);
         
-        XSSFCellStyle headerStyleAutorizado = headerStyleUo.copy();
+        XSSFCellStyle headerStyleAutorizado = headerStylePrevisto.copy();
         headerStyleAutorizado.setFillForegroundColor(headerColorAutorizado);
         
-        XSSFCellStyle headerStyleDif = headerStyleUo.copy();
+        XSSFCellStyle headerStyleDif = headerStylePrevisto.copy();
         headerStyleDif.setFillForegroundColor(headerColorDif);
 
         this.createHeaderCell(colIndex++, "UO", headerStyleUo, pixelParaWidth(150) , row);
@@ -421,38 +480,42 @@ public class RelatorioService {
     private RegistroDadoConsolidado getTotalizacaoConsolidado(
         String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ) {
-        
-        String cypher = 
-                        "WITH\r\n" + //
-                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
-                        "    $gnd AS _gnd,\r\n" + //
-                        "    $exercicioInicio AS _exercicioInicio,\r\n" + //
-                        "    $exercicioFim AS _exercicioFim,\r\n" + //
-                        "    $idFonte AS _idFonte,\r\n" + //
-                        "    $idsUnidade AS _idsUnidade\r\n" + //
-                        "MATCH \n" +
-                        "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\n" +
-                        "WHERE\n" +
-                        "    _tpDespesa IN LABELS(conta)\n" +
-                        "    AND (_idsUnidade IS NULL OR elementId(unidade) IN _idsUnidade)\n" +
-                        "\n" +
-                        "OPTIONAL MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\n" +
-                        "WHERE \n" +
-                        "    (_idFonte IS NULL OR elementId(fonteCusto) = _idFonte)\n" +
-                        "    AND (custo.anoExercicio >= _exercicioInicio AND custo.anoExercicio <= _exercicioFim)\n" +
-                        "    AND (_gnd IS NULL OR indicada_por.gnd = _gnd)\n" +
-                        "\n" +
-                        "OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\n" +
-                        "WHERE \n" +
-                        "    (_idFonte IS NULL OR elementId(fonteExec) = _idFonte)\n" +
-                        "    AND (exec.anoExercicio >= _exercicioInicio AND exec.anoExercicio <= _exercicioFim)\n" +
-                        "    AND (_gnd IS NULL OR vinculada_por.gnd = _gnd)\n" +
-                        "\n" +
-                        "RETURN\n" +
-                        "    SUM(indicada_por.previsto) AS previsto,\n" +
-                        "    SUM(indicada_por.contratado) AS contratado,\n" +
-                        "    SUM(vinculada_por.autorizado) AS autorizado,\n" +
-                        "    SUM(vinculada_por.autorizado) - SUM(indicada_por.contratado) AS difAutorizadoContratado";                          
+        String cypher = """
+                            MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)
+                            WHERE 
+                                $tipoDespesa IN labels(conta)
+                                AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
+                                AND NOT EXISTS((obj)-[:EM]->(:Etapa))
+                            
+                            CALL {
+                                WITH obj
+                                MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
+                                WHERE 
+                                    ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                                    AND (custo.anoExercicio >= $exercicioInicio AND custo.anoExercicio <= $exercicioFim)
+                                    AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                                RETURN
+                                    SUM(indicada_por.previsto) AS totalPrevisto,
+                                    SUM(indicada_por.contratado) AS totalContratado
+                            }
+                            
+                            CALL {
+                                WITH conta
+                                MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
+                                WHERE 
+                                    ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                                    AND (exec.anoExercicio >= $exercicioInicio AND exec.anoExercicio <= $exercicioFim)
+                                    AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
+                                RETURN
+                                    SUM(vinculada_por.autorizado) AS totalAutorizado
+                            }
+                            
+                            RETURN
+                                COALESCE(SUM(totalPrevisto), 0) AS previsto,
+                                COALESCE(SUM(totalContratado), 0) AS contratado,
+                                COALESCE(SUM(totalAutorizado), 0) AS autorizado,
+                                COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado
+                            """;                         
         
         Map<String, Object> params = new HashMap<>();
         params.put("idsUnidade", idsUnidade);
@@ -482,44 +545,51 @@ public class RelatorioService {
         String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
         ){
         
-
-        String cypher = 
-                        "WITH\r\n" + //
-                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
-                        "    $gnd AS _gnd,\r\n" + //
-                        "    $exercicioInicio AS _exercicioInicio,\r\n" + //
-                        "    $exercicioFim AS _exercicioFim,\r\n" + //
-                        "    $idFonte AS _idFonte,\r\n" + //
-                        "    $idsUnidade AS _idsUnidade\r\n" + //
-                        "MATCH \r\n" + //
-                        "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
-                        "WHERE\r\n" + //
-                        "    _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND (_idsUnidade IS NULL OR elementId(unidade) IN _idsUnidade)\r\n" + //
-                        "\r\n" + //
-                        "OPTIONAL MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                        "WHERE \r\n" + //
-                        "    (_idFonte IS NULL OR elementId(fonteCusto) = _idFonte)\r\n" + //
-                        "    AND (custo.anoExercicio >= _exercicioInicio AND custo.anoExercicio <= _exercicioFim)\r\n" + //
-                        "    AND (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
-                        "OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                        "WHERE \r\n" + //
-                        "    (_idFonte IS NULL OR elementId(fonteExec) = _idFonte)\r\n" + //
-                        "    AND (exec.anoExercicio >= _exercicioInicio AND exec.anoExercicio <= _exercicioFim)\r\n" + //
-                        "    AND (_gnd IS NULL OR vinculada_por.gnd = _gnd)\r\n" + //
-                        "RETURN\r\n" + //
-                        "    unidade.codigo AS codUnidade,\r\n" + //
-                        "    unidade.codigo + ' - ' + unidade.sigla AS unidadoOperacional,\r\n" + //
-                        "    SUM(indicada_por.previsto) AS previsto,\r\n" + //
-                        "    SUM(indicada_por.contratado) AS contratado,\r\n" + //
-                        "    SUM(vinculada_por.autorizado) AS autorizado,\r\n" + //
-                        "    SUM(vinculada_por.autorizado) - SUM(indicada_por.contratado) AS difAutorizadoContratado\r\n" + //
-                        "ORDER BY codUnidade\r\n";
-                          
+            String cypher = """
+                MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)
+                WHERE 
+                    $tipoDespesa IN labels(conta)
+                    AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
+                    AND NOT EXISTS((obj)-[:EM]->(:Etapa))
+                
+                // Subconsulta para valores previstos e contratados
+                CALL {
+                    WITH obj
+                    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
+                    WHERE 
+                        ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                        AND (custo.anoExercicio >= $exercicioInicio AND custo.anoExercicio <= $exercicioFim)
+                        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                    RETURN
+                        SUM(indicada_por.previsto) AS totalPrevisto,
+                        SUM(indicada_por.contratado) AS totalContratado
+                }
+                
+                // Subconsulta para valores autorizados
+                CALL {
+                    WITH conta
+                    MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
+                    WHERE 
+                        ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                        AND (exec.anoExercicio >= $exercicioInicio AND exec.anoExercicio <= $exercicioFim)
+                        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
+                    RETURN
+                        SUM(vinculada_por.autorizado) AS totalAutorizado
+                }
+                
+                RETURN
+                    unidade.codigo AS codUnidade,
+                    unidade.codigo + ' - ' + unidade.sigla AS unidadeOperacional,
+                    COALESCE(SUM(totalPrevisto), 0) AS previsto,
+                    COALESCE(SUM(totalContratado), 0) AS contratado,
+                    COALESCE(SUM(totalAutorizado), 0) AS autorizado,
+                    COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado
+                ORDER BY codUnidade
+                """;
         
         Map<String, Object> params = new HashMap<>();
-        params.put("unidades", idsUnidade);
-        params.put("fonte", idFonte);
+        params.put("idsUnidade", idsUnidade);
+        params.put("idFonte", idFonte);
         params.put("gnd", gnd);
         params.put("tipoDespesa", tipoDespesa);
         params.put("exercicioInicio", anoInicio);
@@ -530,7 +600,7 @@ public class RelatorioService {
                                             .fetchAs(RegistroDadoConsolidado.class)
                                             .mappedBy(((typeSystem, record) -> 
                                                 RegistroDadoConsolidado.builder()
-                                                .unidadeOrcamentaria(record.get("unidadoOperacional").asString())
+                                                .unidadeOrcamentaria(record.get("unidadeOperacional").asString())
                                                 .previsto(record.get("previsto").asDouble())
                                                 .contratado(record.get("contratado").asDouble())
                                                 .autorizado(record.get("autorizado").asDouble())
@@ -618,7 +688,7 @@ public class RelatorioService {
 
         }
 
-
+        sheet.autoSizeColumn(0);
 
     }
 

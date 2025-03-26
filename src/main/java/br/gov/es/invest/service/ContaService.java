@@ -227,38 +227,41 @@ public class ContaService {
         paramMap.put("idsUnidade", idsUnidade);
 
         String cypherBase = 
-                        "WITH\r\n" + //
-                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
-                        "    $gnd AS _gnd,\r\n" + //
-                        "    $exercicioInicio AS _exercicioInicio,\r\n" + //
-                        "    $exercicioFim AS _exercicioFim,\r\n" + //
-                        "    $idFonte AS _idFonte,\r\n" + //
-                        "    $idsUnidade AS _idsUnidade\r\n" + //
-                        "MATCH \r\n" + //
-                        "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
-                        "WHERE\r\n" + //
-                        "    _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND (_idsUnidade IS NULL OR elementId(unidade) IN _idsUnidade)\r\n" + //
-                        "\r\n" + //
-                        "OPTIONAL MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                        "WHERE \r\n" + //
-                        "    (_idFonte IS NULL OR elementId(fonteCusto) = _idFonte)\r\n" + //
-                        "    AND (custo.anoExercicio >= _exercicioInicio AND custo.anoExercicio <= _exercicioFim)\r\n" + //
-                        "    AND (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
-                        "OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                        "WHERE \r\n" + //
-                        "    (_idFonte IS NULL OR elementId(fonteExec) = _idFonte)\r\n" + //
-                        "    AND (exec.anoExercicio >= _exercicioInicio AND exec.anoExercicio <= _exercicioFim)\r\n" + //
-                        "    AND (_gnd IS NULL OR vinculada_por.gnd = _gnd)\r\n";
+                        "MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
+                                "WHERE \r\n" + //
+                                "    $tipoDespesa IN labels(conta)\r\n" + //
+                                "    AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)\r\n" + //
+                                "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
+                                "\r\n" + //
+                                "CALL {\r\n" + //
+                                "    WITH obj\r\n" + //
+                                "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
+                                "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
+                                "        AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio)\r\n" + //
+                                "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
+                                "    RETURN\r\n" + //
+                                "        SUM(indicada_por.previsto) AS totalPrevisto,\r\n" + //
+                                "        SUM(indicada_por.contratado) AS totalContratado\r\n" + //
+                                "}\r\n" + //
+                                "\r\n" + //
+                                "CALL {\r\n" + //
+                                "    WITH conta\r\n" + //
+                                "    MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
+                                "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
+                                "        AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio)\r\n" + //
+                                "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
+                                "    RETURN\r\n" + //
+                                "        SUM(vinculada_por.autorizado) AS totalAutorizado\r\n" + //
+                                "}\r\n";
         
         String cypherQuery = cypherBase + 
                             "RETURN\r\n" + //
                             "    unidade.codigo AS codUnidade,\r\n" + //
-                            "    unidade.codigo + ' - ' + unidade.sigla AS unidadoOperacional,\r\n" + //
-                            "    SUM(indicada_por.previsto) AS previsto,\r\n" + //
-                            "    SUM(indicada_por.contratado) AS contratado,\r\n" + //
-                            "    SUM(vinculada_por.autorizado) AS autorizado,\r\n" + //
-                            "    SUM(vinculada_por.autorizado) - SUM(indicada_por.contratado) AS difAutorizadoContratado\r\n" + //
+                            "    unidade.codigo + ' - ' + unidade.sigla AS unidadeOperacional,\r\n" + //
+                            "    COALESCE(SUM(totalPrevisto), 0) AS previsto,\r\n" + //
+                            "    COALESCE(SUM(totalContratado), 0) AS contratado,\r\n" + //
+                            "    COALESCE(SUM(totalAutorizado), 0) AS autorizado,\r\n" + //
+                            "    COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado\r\n" + //
                             "ORDER BY codUnidade\r\n";
 
         
@@ -272,7 +275,7 @@ public class ContaService {
         Collection<DadoConsolidadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
         .fetchAs(DadoConsolidadoDTO.class)
         .mappedBy((typeSystem, record) -> DadoConsolidadoDTO.builder()
-                                            .unidadeOrcamentaria(record.get("unidadoOperacional").asString())
+                                            .unidadeOrcamentaria(record.get("unidadeOperacional").asString())
                                             .previsto(record.get("previsto").asDouble() )
                                             .contratado(record.get("contratado").asDouble())
                                             .autorizado(record.get("autorizado").asDouble())

@@ -121,7 +121,25 @@ public class RelatorioController {
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao gerar planilha", Arrays.asList(exception.getLocalizedMessage()));
         }
 
-        
+    }
+
+    @GetMapping("/valoresTotalizadosConsolidado/{tipoDespesa}/{anoDe}/{anoAte}")
+    public ResponseEntity<?> getValoresConsolidado(
+        @PathVariable String tipoDespesa, @PathVariable Integer anoDe, @PathVariable Integer anoAte,
+        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) String idFonte,
+        @RequestParam(required=false) Integer gnd
+        ) {
+            
+        try{
+            List<String> idUnidadeList = idsUnidade == null ? null
+                        : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+
+
+            return ResponseEntity.ok(relatorioService.cardsTotaisRelatorioConsolidado(tipoDespesa, idUnidadeList, idFonte, gnd, anoDe, anoAte));
+        } catch (IOException exception) {
+            Logger.getGlobal().log(Level.SEVERE, exception.getLocalizedMessage(), exception);
+            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao gerar Totalização", Arrays.asList(exception.getLocalizedMessage()));
+        }
     }
     
     

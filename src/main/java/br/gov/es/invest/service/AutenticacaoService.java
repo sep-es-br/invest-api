@@ -152,10 +152,16 @@ public class AutenticacaoService {
         
         List<PapelACResponseDto>  papeisComPrioridade = papeis.stream().filter(p -> p.Prioritario()).toList();
 
-        if(papeisComPrioridade.isEmpty())
-            return null;
+        PapelACResponseDto papelAc;
 
-        PapelACResponseDto papelAc = papeisComPrioridade.get(0);
+        if(!userInfo.role().contains("GESTOR_MASTER")){
+            if(papeisComPrioridade.isEmpty())
+                return null;
+            
+            papelAc = papeisComPrioridade.get(0);
+        } else {
+            papelAc = papeis.get(0);
+        }
 
         UnidadeACResponseDto setorAc = acService.getUnidadeInfoByGuid(papelAc.LotacaoGuid(), clientToken);
 

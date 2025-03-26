@@ -22,6 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Funcao;
@@ -108,12 +109,11 @@ public class SecurityFilter extends OncePerRequestFilter {
                 var expiresAt = LocalDateTime.ofInstant(JWT.decode(token).getExpiresAt().toInstant(), ZoneOffset.of("-03:00"));
                 List<String> erros = new ArrayList<>();
                 erros.add("Por favor, faça o login novamente.");
-                if (LocalDateTime.now().isAfter((ChronoLocalDateTime<?>) expiresAt))
+                if (LocalDateTime.now().isAfter(expiresAt))
                     erros.add("Token expirado em " + expiresAt);
                 
                 enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
                 
-                enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
                 return;
             }
         }
@@ -160,9 +160,10 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
     
     private void enviarMensagemErro(MensagemErroRest objetoErro, HttpServletResponse response) throws IOException {
-        String mensagem = ToStringBuilder.reflectionToString(objetoErro, ToStringStyle.JSON_STYLE);
-        response.setHeader("Content-Type", "application/json");
+        response.setContentType("application/json;charset=UTF-8");
         response.setStatus(objetoErro.codigo());
-        response.getWriter().write(mensagem);
+        
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(response.getWriter(), objetoErro);
     }
 }

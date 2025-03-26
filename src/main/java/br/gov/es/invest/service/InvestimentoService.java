@@ -105,7 +105,7 @@ public class InvestimentoService {
 
         String cypherCount = cypherBase + 
                 "RETURN\r\n" + //
-                "    COUNT(*)\r\n";
+                "    COUNT(inv)\r\n";
 
 
 
