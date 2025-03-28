@@ -338,65 +338,61 @@ public class RelatorioService {
         ){
         
 
-        String cypher = "WITH\r\n" + //
-                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
-                        "    $unidades AS _unidadeOrcamentaria,\r\n" + //
-                        "    $planos AS _planoOrcamentario,\r\n" + //
-                        "    $fonte AS _idFonte,\r\n" + //
-                        "    $gnd AS _gnd\r\n" + //
-                        "\r\n" + //
-                        "MATCH  \r\n" + //
-                        "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),\r\n" + //
-                        "    (conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
-                        "    \r\n" + //
-                        "WHERE  \r\n" + //
-                        "    _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                        "    AND (_unidadeOrcamentaria IS NULL OR elementId(unidade) IN _unidadeOrcamentaria)\r\n" + //
-                        "    AND (_planoOrcamentario IS NULL OR elementId(po) IN _planoOrcamentario)\r\n" + //
-                        "\r\n" + //
-                        "MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(:FonteOrcamentaria)\r\n" + //
-                        "\r\n" + //
-                        "OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)\r\n" + //
-                        "OPTIONAL MATCH (obj)-[:ATENDE]->(microrregiao:Localidade)\r\n" + //
-                        "OPTIONAL MATCH (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)\r\n" + //
-                        "OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Usuario)\r\n" + //
-                        "\r\n" + //
-                        "WITH \r\n" + //
-                        "    unidade.codigo AS codUnidade,\r\n" + //
-                        "    unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,\r\n" + //
-                        "    COALESCE(usuario.nomeCompleto, \"-\") AS nomeResponsavel,\r\n" + //
-                        "    po.codigo AS codPO,\r\n" + //
-                        "    po.nome AS nomePO,\r\n" + //
-                        "    obj.descricao AS descObjeto,\r\n" + //
-                        "    CASE WHEN tipoPlano IS NULL THEN { sigla: 'PIP'} ELSE tipoPlano END AS tiposPo,\r\n" + //
-                        "    microrregiao.nome AS microrregiao,\r\n" + //
-                        "    areaTematica.nome AS areaTematica,\r\n" + //
-                        "    CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,\r\n" + //
-                        "    COALESCE(indicada_por.gnd, -1) AS gnd,\r\n" + //
-                        "    elementId(obj) AS objetoId\r\n" + //
-                        "\r\n" + //
-                        "RETURN DISTINCT\r\n" + //
-                        "    codUnidade,\r\n" + //
-                        "    unidadeResponsavel,\r\n" + //
-                        "    nomeResponsavel,\r\n" + //
-                        "    codPO,\r\n" + //
-                        "    nomePO,\r\n" + //
-                        "    descObjeto,\r\n" + //
-                        "    apoc.text.join(collect(DISTINCT tiposPo.sigla), '; ') AS tiposPo,\r\n" + //
-                        "    COALESCE(microrregiao, ' - ') AS microrregiao,\r\n" + //
-                        "    COALESCE(areaTematica, ' - ') AS areaTematica,\r\n" + //
-                        "    contrato,\r\n" + //
-                        "    gnd,\r\n" + //
-                        "    objetoId\r\n" + //
-                        "ORDER BY codUnidade, codPO;\r\n" + //
-                        "\r\n";
+        String cypher = """
+                        MATCH  
+                            (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),
+                            (conta)<-[:CUSTEADO]-(obj:Objeto)
+                        WHERE  
+                            $tipoDespesa IN LABELS(conta)
+                            AND NOT EXISTS((obj)-[:EM]->(:Etapa))
+                            AND ($unidades IS NULL OR elementId(unidade) IN $unidades)
+                            AND ($planos IS NULL OR elementId(po) IN $planos)
 
-        String cypherAnos = "MATCH (custo:Custo)\r\n" + //
-                            "WHERE custo.anoExercicio >= $anoInicio\r\n" + //
-                            "  AND custo.anoExercicio <= $anoFim\r\n" + //
-                            "RETURN DISTINCT custo.anoExercicio AS ano\r\n" + //
-                            "ORDER BY ano";
+                        MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(fonte:FonteOrcamentaria)
+                        WHERE ($fonte IS NULL OR elementId(fonte) = $fonte)
+                            AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+
+                        OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)
+                        OPTIONAL MATCH (obj)-[:ATENDE]->(microrregiao:Localidade)
+                        OPTIONAL MATCH (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)
+                        OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Usuario)
+
+                        WITH 
+                            unidade.codigo AS codUnidade,
+                            unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,
+                            COALESCE(usuario.nomeCompleto, "-") AS nomeResponsavel,
+                            po.codigo AS codPO,
+                            po.nome AS nomePO,
+                            obj.descricao AS descObjeto,
+                            CASE WHEN tipoPlano IS NULL THEN { sigla: 'PIP'} ELSE tipoPlano END AS tiposPo,
+                            microrregiao.nome AS microrregiao,
+                            areaTematica.nome AS areaTematica,
+                            CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,
+                            COALESCE(indicada_por.gnd, -1) AS gnd,
+                            elementId(obj) AS objetoId
+
+                        RETURN DISTINCT
+                            codUnidade,
+                            unidadeResponsavel,
+                            nomeResponsavel,
+                            codPO,
+                            nomePO,
+                            descObjeto,
+                            apoc.text.join(collect(DISTINCT tiposPo.sigla), '; ') AS tiposPo,
+                            COALESCE(microrregiao, ' - ') AS microrregiao,
+                            COALESCE(areaTematica, ' - ') AS areaTematica,
+                            contrato,
+                            gnd,
+                            objetoId
+                        ORDER BY codUnidade, codPO
+                        """;
+
+        String cypherAnos = """
+                            MATCH (custo:Custo)
+                            WHERE $anoInicio <= custo.anoExercicio <= $anoFim
+                            RETURN DISTINCT custo.anoExercicio AS ano
+                            ORDER BY ano
+                            """;
 
         Collection<Integer> allAnos = neo4jClient.query(cypherAnos)
                                         .bind(anoInicio).to("anoInicio")
@@ -412,14 +408,16 @@ public class RelatorioService {
         params.put("gnd", gnd);
         params.put("tipoDespesa", tipoDespesa);
 
-        String cypherPrevistoContratado = "MATCH (objeto:Objeto)\r\n" + //
-                                                "WHERE elementId(objeto) = $idObjeto\r\n" + //
-                                                "OPTIONAL MATCH (objeto)<-[:ESTIMADO]-(custo:Custo)\r\n" + //
-                                                "WHERE custo.anoExercicio = $ano\r\n" + //
-                                                "OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonteOrcamentaria:FonteOrcamentaria)\r\n" + //
-                                                "WHERE elementId(fonteOrcamentaria) = $idFonte\r\n" + //
-                                                "RETURN COALESCE(indicada_por.previsto, 0) AS previsto,\r\n" + //
-                                                "        COALESCE(indicada_por.contratado, 0) AS contratado";
+        String cypherPrevistoContratado = """
+                                        MATCH (objeto:Objeto)
+                                        WHERE elementId(objeto) = $idObjeto
+                                        OPTIONAL MATCH (objeto)<-[:ESTIMADO]-(custo:Custo)
+                                        WHERE custo.anoExercicio = $ano
+                                        OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonteOrcamentaria:FonteOrcamentaria)\r
+                                        WHERE elementId(fonteOrcamentaria) = $idFonte
+                                        RETURN COALESCE(indicada_por.previsto, 0) AS previsto,
+                                                COALESCE(indicada_por.contratado, 0) AS contratado
+                                        """ ;
 
         Collection<RegistroDadoDetalhado> list = neo4jClient.query(cypher)
                                             .bindAll(params)

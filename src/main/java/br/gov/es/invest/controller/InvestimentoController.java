@@ -1,28 +1,16 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-
-import br.gov.es.invest.dto.DadosDetalhadoDTO;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.InvestimentoService;
@@ -32,6 +20,14 @@ import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.PostMapping;
+
+import br.gov.es.invest.dto.FiltroInvestimentoDto;
+import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
+import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+
+
 
 @RestController
 @RequestMapping("/investimento")
@@ -46,15 +42,13 @@ public class InvestimentoController {
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
     
-    @GetMapping("/filtrarValores")
+    @PostMapping("filtrarValores")    
     public ResponseEntity<?> getAllTiraByFilter(
-            @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag,
-            @RequestParam(required = false) Integer gnd, @RequestParam boolean verUnidades, @RequestHeader("Authorization") String authToken 
-        ) {
-            try{
+            @RequestBody FiltroInvestimentoDto filtro, @RequestHeader("Authorization") String authToken
+        ) {                
+            
             List<String> idsUo = null;
-            if(codUnidade == null && !verUnidades) {
+            if(filtro.unidades() == null && !filtro.podeVerUnidades()) {
                 
                 authToken = authToken.replace("Bearer ", "");
         
@@ -64,31 +58,31 @@ public class InvestimentoController {
                 
                 List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                idsUo = unidades.stream().map(u -> u.getId()).toList();
-            } else if(codUnidade != null) {
-                idsUo = new JsonMapper().readValue(codUnidade, new TypeReference<List<String>>() {});
+                idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
+            } else if(filtro.unidades() != null) {
+                idsUo = filtro.unidades().stream().map(UnidadeOrcamentariaDTO::id).toList();
             }
 
         
-            List<String> idsPo = codPO == null ? null : new JsonMapper().readValue(codPO, new TypeReference<List<String>>() {});
+            List<String> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
         
         
-        DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(nome, idsUo, idsPo, exercicio, idFonte, gnd, PageRequest.of(numPag-1, qtPorPag));
-        
-        
-        DataListResult<InvestimentoTiraDTO> dataListDto = new DataListResult<>(
-            dataList.data().stream().map(investimento -> {
-                return InvestimentoTiraDTO.parse(investimento, objetoService.findObjetoCadastradoByContaBy(investimento.id(), exercicio, idFonte, gnd, null));
-            }).toList(), 
-            dataList.ammount()
-        );
+            DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(
+                filtro.nome(), idsUo, idsPo, filtro.ano(), filtro.fonte() == null ? null : filtro.fonte().getId(), 
+                filtro.gnd(), filtro.ordem(), PageRequest.of(filtro.numPag()-1, filtro.qtPorPag())
+            );
+            
+            
+            DataListResult<InvestimentoTiraDTO> dataListDto = new DataListResult<>(
+                dataList.data().stream().map(investimento -> {
+                    return InvestimentoTiraDTO.parse(investimento, 
+                            objetoService.findObjetoCadastradoByContaBy(investimento.id(), filtro.ano(), filtro.fonte() == null ? null : filtro.fonte().getId(), filtro.gnd(), null)
+                        );
+                }).toList(), 
+                dataList.ammount()
+            );
 
-        return ResponseEntity.ok(dataListDto);
-            }
-            catch( JsonProcessingException ex) {
-                Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-                return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "erro ao buscar investimentos", Arrays.asList(ex.getLocalizedMessage()));
-            }
+            return ResponseEntity.ok(dataListDto);
     }
     
     

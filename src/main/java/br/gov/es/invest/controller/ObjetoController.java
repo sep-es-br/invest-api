@@ -37,6 +37,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import br.gov.es.invest.dto.ObjetoFiltroDTO;
+import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
+import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.utils.DataListResult;
+
 
 @RestController
 @RequestMapping("/objeto")
@@ -50,50 +55,44 @@ public class ObjetoController {
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
 
-    @GetMapping("/allTira")
+    @PostMapping("/allTira")
     public ResponseEntity<?> getAllByFiltro(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
-        @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
-        @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
-        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
+        @RequestBody ObjetoFiltroDTO filtro, @RequestHeader("Authorization") String authToken
     ) {
+        List<String> idsUo = null;
+        if(filtro.unidades() == null && !filtro.podeVerUnidades()) {
 
-        try{
-            List<String> idsUo = null;
-            if(unidadeId == null && !podeVerUnidades) {
+            authToken = authToken.replace("Bearer ", "");
+    
+            String sub = tokenService.validarToken(authToken);
+                    
+            Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+            
+            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
 
-                authToken = authToken.replace("Bearer ", "");
-        
-                String sub = tokenService.validarToken(authToken);
-                        
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-                
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
+            idsUo = unidades.stream().map(u -> u.getId()).toList();
 
-                idsUo = unidades.stream().map(u -> u.getId()).toList();
+        } else if(filtro.unidades() != null) {
+            idsUo = filtro.unidades().stream().map(UnidadeOrcamentariaDTO::id).toList();
+        }
 
-            } else if(unidadeId != null) {
-                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
-            }
-
-            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
+        List<String> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
 
             
 
-            List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
+        DataListResult<ObjetoTiraDTO> objetos = service.getAllListByFilter(
+            filtro.exercicio(), 
+            filtro.nome(), 
+            idsUo, idsPo, 
+            filtro.status() == null ? null : filtro.status().id(), 
+            null, 
+            filtro.ordem(),
+            Pageable.ofSize(filtro.tamPag()).withPage(filtro.pagAtual()-1)
+        );
 
-            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
-                return new ObjetoTiraDTO(obj);
-            }).toList();
-
-            return ResponseEntity.ok(objetosDTO);
-        } catch(JsonProcessingException e){
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Erro desconhecido ao buscar objetos", 
-                Collections.singletonList(e.getLocalizedMessage())
-            );
-        }
+        
+        return ResponseEntity.ok(objetos);
+     
 
     }
 
@@ -127,9 +126,7 @@ public class ObjetoController {
 
             List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
 
-            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(obj -> {                
-                return new ObjetoTiraDTO(obj);
-            }).toList();
+            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(ObjetoTiraDTO::parse).toList();
 
             return ResponseEntity.ok(objetosDTO);
         } catch(JsonProcessingException e){
@@ -260,9 +257,9 @@ public class ObjetoController {
             }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, null);
+            // List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, null);
 
-            return ResponseEntity.ok(objetos.size());
+            return ResponseEntity.ok(0);
         } catch(JsonProcessingException e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
