@@ -124,9 +124,7 @@ public class ObjetoController {
             }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
-
-            List<ObjetoTiraDTO> objetosDTO = objetos.stream().map(ObjetoTiraDTO::parse).toList();
+            List<ObjetoTiraDTO> objetosDTO = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
 
             return ResponseEntity.ok(objetosDTO);
         } catch(JsonProcessingException e){
@@ -300,7 +298,7 @@ public class ObjetoController {
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
 
-            List<Objeto> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, null);
+            List<ObjetoTiraDTO> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, null);
 
             return ResponseEntity.ok(objetos.size());
         } catch(JsonProcessingException e){

@@ -63,8 +63,32 @@ public class AutenticacaoService {
         if(optUsuario.isPresent()){
             usuario = optUsuario.get();
 
-            if(!userInfo.role().contains("GESTOR_MASTER"))
+            if(!userInfo.role().contains("GESTOR_MASTER")){
                 if(!validarPapel(usuario)) throw new PapelInvalidoException("Papel não existe ou não é prioritário; usuario-sub: " + usuario.getSub());
+            } else if(usuario.getPapeis() == null || usuario.getPapeis().isEmpty()){
+                final String papelBanco = usuario.getPapel();
+
+                String clientToken = acService.getClientToken();
+        
+                List<PapelACResponseDto> papeisDoUser = acService.getPapeisBySub(usuario.getSub(), clientToken);
+                
+                List<PapelACResponseDto> papeisComNome = papeisDoUser.stream().filter(papelac -> papelac.Nome().equals(papelBanco)).toList();
+                if(!papeisComNome.isEmpty()){
+    
+                    Setor setor = usuario.getSetor();
+    
+                    // independentemente atualiza para novo formato
+                    Optional<PapelACResponseDto> optPapelCerto = papeisComNome.stream().filter(p -> p.LotacaoGuid().equals(setor.getGuid())).findFirst();
+    
+                    if(optPapelCerto.isPresent()) {
+                        Papel papel = Papel.parse(optPapelCerto.get());
+                        papel.setSetor(setor);
+                        
+                        usuarioService.trasnferirNovoFormato(usuario, papel);
+                    }
+                }
+            }
+            
         } else {
             usuario = this.gerarUsuario(userInfo);
 
