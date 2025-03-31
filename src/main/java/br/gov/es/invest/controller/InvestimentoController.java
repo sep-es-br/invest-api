@@ -39,8 +39,8 @@ public class InvestimentoController {
 
     private final ObjetoService objetoService;
     private final UsuarioService usuarioService;
-    private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    private final TokenService tokenService;
     
     @PostMapping("filtrarValores")    
     public ResponseEntity<?> getAllTiraByFilter(
