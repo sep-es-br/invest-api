@@ -6,25 +6,38 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.ColorScaleFormatting;
+import org.apache.poi.ss.usermodel.ComparisonOperator;
+import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
+import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FontFormatting;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.PatternFormatting;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFConditionalFormattingThreshold;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.dto.RegistroDadoConsolidado;
@@ -38,6 +51,9 @@ public class RelatorioService {
     
     @Autowired
     private Neo4jClient neo4jClient;
+
+    @Autowired
+    private Neo4jOperations neo4jOperations;
 
     @Autowired
     private FonteOrcamentariaService fonteOrcamentariaService;
@@ -131,8 +147,11 @@ public class RelatorioService {
         int rowIndex = 0;
         
         this.createHeaderRowConsolidado(rowIndex++, dados, sheet);
-        this.totalizacaoConsolidado(rowIndex++, sheet, this.getTotalizacaoConsolidado(tipoDespesa, idsUnidade, idFonte, gnd, anoInicio, anoFim));
-        this.preencherComDadosConsolidado(rowIndex++, sheet, dados);
+        int totalIndex = rowIndex++;
+
+        rowIndex = this.preencherComDadosConsolidado(rowIndex++, sheet, dados);
+
+        this.totalizacaoConsolidado(totalIndex, rowIndex++, sheet);
                 
         return workbook;
     }
@@ -191,6 +210,14 @@ public class RelatorioService {
         Cell cell = row.createCell(index);
         cell.setCellStyle(style);
         cell.setCellValue(value);
+        
+
+    }
+
+    private void createCellFormula(int index, String value, XSSFCellStyle style, Row row){
+        Cell cell = row.createCell(index, CellType.FORMULA);
+        cell.setCellStyle(style);
+        cell.setCellFormula(value);
         
 
     }
@@ -277,11 +304,6 @@ public class RelatorioService {
         XSSFFont font = workbook.createFont();
         font.setBold(true);
 
-        XSSFColor headerColorPrevisto = getColor(179, 198, 231);
-        XSSFColor headerColorContratado = getColor(255, 229, 151);
-        XSSFColor headerColorAutorizado = getColor(255, 204, 255);
-        XSSFColor headerColorDif = getColor(231, 230, 230);
-
         XSSFCellStyle headerStyleUo = workbook.createCellStyle();
 
         headerStyleUo.setBorderBottom(BorderStyle.THIN);
@@ -290,27 +312,47 @@ public class RelatorioService {
         headerStyleUo.setBorderRight(BorderStyle.THIN);
         headerStyleUo.setAlignment(HorizontalAlignment.CENTER);
         headerStyleUo.setVerticalAlignment(VerticalAlignment.CENTER);
+        headerStyleUo.setWrapText(true);
         headerStyleUo.setFont(font);
         
         XSSFCellStyle headerStylePrevisto = headerStyleUo.copy();
         headerStylePrevisto.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        headerStylePrevisto.setFillForegroundColor(headerColorPrevisto);
+        headerStylePrevisto.setFillForegroundColor(getColor(179, 198, 231));
         
         XSSFCellStyle headerStyleContratado = headerStylePrevisto.copy();
-        headerStyleContratado.setFillForegroundColor(headerColorContratado);
+        headerStyleContratado.setFillForegroundColor(getColor(255, 229, 151));
         
         XSSFCellStyle headerStyleAutorizado = headerStylePrevisto.copy();
-        headerStyleAutorizado.setFillForegroundColor(headerColorAutorizado);
+        headerStyleAutorizado.setFillForegroundColor(getColor(255, 204, 255));
+        
+        XSSFCellStyle headerStyleEmpenhadoAnt = headerStylePrevisto.copy();
+        headerStyleEmpenhadoAnt.setFillForegroundColor(getColor(226, 239, 218));
+        
+        XSSFCellStyle headerStyleEmpenhado = headerStylePrevisto.copy();
+        headerStyleEmpenhado.setFillForegroundColor(getColor(198, 224, 180));
+        
+        XSSFCellStyle headerStylePago = headerStylePrevisto.copy();
+        headerStylePago.setFillForegroundColor(getColor(112, 173, 71));
+        
+        XSSFCellStyle headerStyleLiquidado = headerStylePrevisto.copy();
+        headerStyleLiquidado.setFillForegroundColor(getColor(169, 208, 142));
         
         XSSFCellStyle headerStyleDif = headerStylePrevisto.copy();
-        headerStyleDif.setFillForegroundColor(headerColorDif);
+        headerStyleDif.setFillForegroundColor(getColor(231, 230, 230));
+        
+        XSSFCellStyle headerStyleDifAnt = headerStylePrevisto.copy();
+        headerStyleDifAnt.setFillForegroundColor(getColor(231, 230, 230));
 
         this.createHeaderCell(colIndex++, "UO", headerStyleUo, pixelParaWidth(150) , row);
         this.createHeaderCell(colIndex++, "Previsto", headerStylePrevisto, pixelParaWidth(150), row);
         this.createHeaderCell(colIndex++, "Contratado", headerStyleContratado, pixelParaWidth(150), row);
         this.createHeaderCell(colIndex++, "Autorizado", headerStyleAutorizado, pixelParaWidth(150), row);
+        this.createHeaderCell(colIndex++, "Empenhado \n (Exercício Anterior)", headerStyleEmpenhadoAnt, pixelParaWidth(200), row);
+        this.createHeaderCell(colIndex++, "Empenhado", headerStyleEmpenhado, pixelParaWidth(200), row);
+        this.createHeaderCell(colIndex++, "Liquidado", headerStyleLiquidado, pixelParaWidth(200), row);
+        this.createHeaderCell(colIndex++, "Pago", headerStylePago, pixelParaWidth(200), row);
         this.createHeaderCell(colIndex++, "Autorizado - Contratado", headerStyleDif, pixelParaWidth(200), row);
-
+        this.createHeaderCell(colIndex++, "Autorizado - Empenhado \n (Ex. Ant.)", headerStyleDifAnt, pixelParaWidth(200), row);
 
         sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, colIndex - 1));
 
@@ -549,39 +591,56 @@ public class RelatorioService {
                     $tipoDespesa IN labels(conta)
                     AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
                     AND NOT EXISTS((obj)-[:EM]->(:Etapa))
-                
-                // Subconsulta para valores previstos e contratados
-                CALL {
-                    WITH obj
+
+                // Subconsulta para valores de custo
+                CALL (obj) {
                     MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                     WHERE 
                         ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
-                        AND (custo.anoExercicio >= $exercicioInicio AND custo.anoExercicio <= $exercicioFim)
+                        AND (custo.anoExercicio = $exercicio)
                         AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
                     RETURN
-                        SUM(indicada_por.previsto) AS totalPrevisto,
-                        SUM(indicada_por.contratado) AS totalContratado
+                        SUM(indicada_por.previsto) AS previsto,
+                        SUM(indicada_por.contratado) AS contratado
                 }
-                
-                // Subconsulta para valores autorizados
-                CALL {
-                    WITH conta
+
+                // Subconsulta para valores de execução
+                CALL(conta) {
                     MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
                     WHERE 
                         ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
-                        AND (exec.anoExercicio >= $exercicioInicio AND exec.anoExercicio <= $exercicioFim)
+                        AND (exec.anoExercicio = $exercicio)
                         AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
                     RETURN
-                        SUM(vinculada_por.autorizado) AS totalAutorizado
+                        SUM(vinculada_por.autorizado) AS autorizado,
+                        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS empenhado,
+                        sum(REDUCE(total=0,e IN vinculada_por.liquidado | total + e ))  AS liquidado,
+                        sum(REDUCE(total=0,e IN vinculada_por.pago | total + e ))  AS pago
                 }
-                
+
+                // Subconsulta para valores de execução do ano anterior
+                CALL (conta) {
+                    MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
+                    WHERE 
+                        ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                        AND (exec.anoExercicio = $exercicio - 1)
+                        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
+                    RETURN
+                        SUM(vinculada_por.autorizado) AS autorizadoAnt,
+                        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS empenhadoAnt
+                }
                 RETURN
                     unidade.codigo AS codUnidade,
-                    unidade.codigo + ' - ' + unidade.sigla AS unidadeOperacional,
-                    COALESCE(SUM(totalPrevisto), 0) AS previsto,
-                    COALESCE(SUM(totalContratado), 0) AS contratado,
-                    COALESCE(SUM(totalAutorizado), 0) AS autorizado,
-                    COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado
+                    unidade.codigo + ' - ' + unidade.sigla AS unidadeOrcamentaria,
+                    COALESCE(SUM(previsto), 0) AS previsto,
+                    COALESCE(SUM(contratado), 0) AS contratado,
+                    COALESCE(SUM(autorizado), 0) AS autorizado,
+                    COALESCE(SUM(empenhadoAnt), 0) AS empenhadoAnt,
+                    COALESCE(SUM(empenhado), 0) AS empenhado,
+                    COALESCE(SUM(liquidado), 0) AS liquidado,
+                    COALESCE(SUM(pago), 0) AS pago,
+                    COALESCE(SUM(autorizado), 0) - COALESCE(SUM(contratado), 0) AS difAutorizadoContratado,
+                    COALESCE(SUM(autorizadoAnt), 0) - COALESCE(SUM(empenhadoAnt), 0) AS difAutorizadoEmpenhadoAnt
                 ORDER BY codUnidade
                 """;
         
@@ -590,28 +649,15 @@ public class RelatorioService {
         params.put("idFonte", idFonte);
         params.put("gnd", gnd);
         params.put("tipoDespesa", tipoDespesa);
-        params.put("exercicioInicio", anoInicio);
-        params.put("exercicioFim", anoFim);
+        params.put("exercicio", anoInicio);
 
-        Collection<RegistroDadoConsolidado> list = neo4jClient.query(cypher)
-                                            .bindAll(params)
-                                            .fetchAs(RegistroDadoConsolidado.class)
-                                            .mappedBy(((typeSystem, record) -> 
-                                                RegistroDadoConsolidado.builder()
-                                                .unidadeOrcamentaria(record.get("unidadeOperacional").asString())
-                                                .previsto(record.get("previsto").asDouble())
-                                                .contratado(record.get("contratado").asDouble())
-                                                .autorizado(record.get("autorizado").asDouble())
-                                                .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())
-                                                .build()
-                                            ))
-                                            .all();
+        List<RegistroDadoConsolidado> list = neo4jOperations.findAll(cypher, params, RegistroDadoConsolidado.class);
 
-        return (List<RegistroDadoConsolidado>) list;
+        return list;
 
     }
 
-    private void totalizacaoConsolidado(int index, Sheet sheet, RegistroDadoConsolidado totalizacaoConsolidado) {
+    private void totalizacaoConsolidado(int indexTotal, int ultIndex, Sheet sheet) {
         
         XSSFWorkbook workbook = (XSSFWorkbook) sheet.getWorkbook();
 
@@ -637,56 +683,108 @@ public class RelatorioService {
 
         styleValor.setDataFormat(format.getFormat("\"R$\" #,##0.00;-\"R$\" #,##0.00;\"-\""));
 
-        Row row = sheet.createRow(index);
+        Row row = sheet.createRow(indexTotal);
 
         int colIndex = 0;
+        Function<Integer, String> gerarSum = col -> {
+            String letraCol = CellReference.convertNumToColString(col);
+            return String.format("SUM(%s%d:%s%d)",letraCol, indexTotal+2, letraCol, ultIndex);
+        };
 
         this.createCell(colIndex++, "Total", style, row);
-        this.createCell(colIndex++, totalizacaoConsolidado.getPrevisto(), styleValor, row);
-        this.createCell(colIndex++, totalizacaoConsolidado.getContratado(), styleValor, row);
-        this.createCell(colIndex++, totalizacaoConsolidado.getAutorizado(), styleValor, row);
-        this.createCell(colIndex++, totalizacaoConsolidado.getDifAutorizadoContratado(), styleValor, row);
+        for(int col = colIndex; col <= 9; col++){
+            this.createCellFormula(col, gerarSum.apply(col), styleValor, row);
+        }
 
 
     }
 
-    private void preencherComDadosConsolidado(int indexInicial, Sheet sheet, List<RegistroDadoConsolidado> dados) {
+    private int preencherComDadosConsolidado(int indexInicial, Sheet sheet, List<RegistroDadoConsolidado> dados) {
         
         XSSFWorkbook workbook = (XSSFWorkbook) sheet.getWorkbook();
 
         int rowIndex = indexInicial;
 
-        
-        XSSFCellStyle style = workbook.createCellStyle();
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderRight(BorderStyle.THIN);
+        XSSFCellStyle styleClaro = workbook.createCellStyle();
+        styleClaro.setBorderBottom(BorderStyle.THIN);
+        styleClaro.setBorderTop(BorderStyle.THIN);
+        styleClaro.setBorderLeft(BorderStyle.THIN);
+        styleClaro.setBorderRight(BorderStyle.THIN);
 
-        
-        XSSFCellStyle styleValor = style.copy();
-        styleValor.setAlignment(HorizontalAlignment.RIGHT);
+        XSSFCellStyle styleEscuro = styleClaro.copy();
+        styleEscuro.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        styleEscuro.setFillForegroundColor(getColor(217, 217, 217));
 
-        DataFormat format = workbook.createDataFormat();
-
-        styleValor.setDataFormat(format.getFormat("\"R$\" #,##0.00;-\"R$\" #,##0.00;\"-\""));
+        int colIndex = 0;
 
         for(RegistroDadoConsolidado registroDadoDetalhado : dados) {
 
-            int colIndex = 0;
+            colIndex = 0;
 
-            Row row = sheet.createRow(rowIndex++);            
-
-            this.createCell(colIndex++, registroDadoDetalhado.getUnidadeOrcamentaria(), style, row);
-            this.createCell(colIndex++, registroDadoDetalhado.getPrevisto(), styleValor, row);
-            this.createCell(colIndex++, registroDadoDetalhado.getContratado(), styleValor, row);
-            this.createCell(colIndex++, registroDadoDetalhado.getAutorizado(), styleValor, row);
-            this.createCell(colIndex++, registroDadoDetalhado.getDifAutorizadoContratado(), styleValor, row);
+            Row row = sheet.createRow(rowIndex++);    
             
+            XSSFCellStyle style = (rowIndex-1) % 2 == 0 ? styleClaro : styleEscuro;
+            
+            XSSFCellStyle styleValor = style.copy();
+            styleValor.setAlignment(HorizontalAlignment.RIGHT);
+            DataFormat format = workbook.createDataFormat();
+    
+            styleValor.setDataFormat(format.getFormat("\"R$\" #,##0.00;-\"R$\" #,##0.00;\"-\""));
 
+            this.createCell(colIndex++, registroDadoDetalhado.unidadeOrcamentaria(), style, row);
+            this.createCell(colIndex++, registroDadoDetalhado.previsto(), styleValor, row);
+            String contratadoRef = String.format("%s%d", CellReference.convertNumToColString(colIndex), rowIndex);
+            this.createCell(colIndex++, registroDadoDetalhado.contratado(), styleValor, row);
+            String autorizadoRef = String.format("%s%d", CellReference.convertNumToColString(colIndex), rowIndex);
+            this.createCell(colIndex++, registroDadoDetalhado.autorizado(), styleValor, row);
+            String empenhadoAntRef = String.format("%s%d", CellReference.convertNumToColString(colIndex), rowIndex);
+            this.createCell(colIndex++, registroDadoDetalhado.empenhadoAnt(), styleValor, row);
+            this.createCell(colIndex++, registroDadoDetalhado.empenhado(), styleValor, row);
+            this.createCell(colIndex++, registroDadoDetalhado.liquidado(), styleValor, row);
+            this.createCell(colIndex++, registroDadoDetalhado.pago(), styleValor, row);
+            this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, contratadoRef) , styleValor, row);
+            this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, empenhadoAntRef) , styleValor, row);
+            
         }
 
-        sheet.autoSizeColumn(0);
+        SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
+
+        ConditionalFormattingRule negStroke = sheetCF.createConditionalFormattingRule(ComparisonOperator.LT, "0");
+
+        FontFormatting stroke = negStroke.createFontFormatting();
+        stroke.setFontStyle(true, true);
+
+        ConditionalFormattingRule scaleRule = sheetCF.createConditionalFormattingColorScaleRule();
+        ColorScaleFormatting colorScale = scaleRule.getColorScaleFormatting();
+
+        colorScale.setColors(new XSSFColor[]{
+            getColor(248, 105, 107),
+            getColor(255, 235, 132),
+            getColor(99, 190, 123)
+        });
+
+        ConditionalFormattingThreshold[] thresholds = new ConditionalFormattingThreshold[3];
+
+        thresholds[0] = colorScale.createThreshold();
+        thresholds[0].setRangeType(ConditionalFormattingThreshold.RangeType.MIN);
+
+        thresholds[1] = colorScale.createThreshold();
+        thresholds[1].setRangeType(ConditionalFormattingThreshold.RangeType.NUMBER);
+        thresholds[1].setValue(0d);
+
+        thresholds[2] = colorScale.createThreshold();
+        thresholds[2].setRangeType(ConditionalFormattingThreshold.RangeType.MAX);
+
+        colorScale.setThresholds(thresholds);
+
+        CellRangeAddress[] range = new CellRangeAddress[]{ new CellRangeAddress(indexInicial, rowIndex - 1, colIndex-2, colIndex - 1)};
+
+        sheetCF.addConditionalFormatting(range, negStroke);
+
+        sheetCF.addConditionalFormatting(range, scaleRule);
+
+
+        return rowIndex;
 
     }
 

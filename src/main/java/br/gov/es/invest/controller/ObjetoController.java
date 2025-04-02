@@ -124,9 +124,10 @@ public class ObjetoController {
             }
             List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
 
-            List<ObjetoTiraDTO> objetosDTO = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1));
+            return ResponseEntity.ok(
+                service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1))
+            );
 
-            return ResponseEntity.ok(objetosDTO);
         } catch(JsonProcessingException e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
@@ -138,11 +139,11 @@ public class ObjetoController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<?> getById(@RequestParam String id, @RequestParam(required = false) boolean updateStatus) {
+    public ResponseEntity<?> getById(@RequestParam String id, @RequestParam(required = false, defaultValue="true") boolean updateStatus) {
 
         try{
 
-            Optional<Objeto> optObjeto = service.getById(id, true);
+            Optional<Objeto> optObjeto = service.getById(id, updateStatus);
 
             if(optObjeto.isEmpty()) {
                 return MensagemErroRest.asResponseEntity(
@@ -228,88 +229,6 @@ public class ObjetoController {
         return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get()));
 
     }
-
-    @GetMapping("/count")
-    public ResponseEntity<?> getAmmoutByFilter(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId,
-        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId, 
-        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
-    ) {
-        try{
-            
-            List<String> idsUo = null;
-            if(unidadeId == null && !podeVerUnidades) {
-
-                authToken = authToken.replace("Bearer ", "");
         
-                String sub = tokenService.validarToken(authToken);
-                        
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-                
-                
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
-
-                idsUo = unidades.stream().map(u -> u.getId()).toList();
-            } else if(unidadeId != null) {
-                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
-            }
-            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
-
-            // List<Objeto> objetos = service.getAllListByFilter(ano, nome, idsUo, idsPo, statusId, null, null);
-
-            return ResponseEntity.ok(0);
-        } catch(JsonProcessingException e){
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Erro desconhecido ao contar objetos", 
-                Collections.singletonList(e.getLocalizedMessage())
-            );
-        }
-        
-
-    }
-
-    
-
-    @GetMapping("/countEmProcessameto")
-    public ResponseEntity<?> getAmmoutByFilterEmProcessamento(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String unidadeId, @RequestParam(required = false) String etapaId,
-        @RequestParam Integer ano, @RequestParam(required = false) String idPo, @RequestParam(required = false) String statusId,
-        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
-    ) {
-        try{
-            
-            List<String> idsUo = null;
-            if(unidadeId == null && !podeVerUnidades) {
-
-                authToken = authToken.replace("Bearer ", "");
-        
-                String sub = tokenService.validarToken(authToken);
-                        
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-                
-                
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
-
-                idsUo = unidades.stream().map(u -> u.getId()).toList();
-            } else if(unidadeId != null) {
-                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
-            }
-            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
-
-
-            List<ObjetoTiraDTO> objetos = service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, null);
-
-            return ResponseEntity.ok(objetos.size());
-        } catch(JsonProcessingException e){
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
-            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Erro desconhecido ao contar objetos", 
-                Collections.singletonList(e.getLocalizedMessage())
-            );
-        }
-        
-
-    }
     
 }

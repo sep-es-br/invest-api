@@ -232,7 +232,7 @@ public class ObjetoService {
 
     }
 
-    public List<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
+    public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
          
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
@@ -315,9 +315,11 @@ public class ObjetoService {
                             """;
 
         
+        return new DataListResult<>(
+            neo4jOperations.findAll(cypherQuery, params, ObjetoTiraDTO.class),
+            (int) neo4jOperations.count(cypherCount, params)
+        );
 
-
-        return neo4jOperations.findAll(cypherQuery, params, ObjetoTiraDTO.class);
 
     }
 
@@ -436,10 +438,6 @@ public class ObjetoService {
 
     }
 
-    public Objeto getByCusto(Custo custo){
-        return repository.getByCusto(custo.getId());
-    }
-
     public Optional<Objeto> getById(String id, boolean updateStatus) {
         Optional<Objeto> optObjeto = repository.findById(id);
         
@@ -461,19 +459,6 @@ public class ObjetoService {
 
     public List<Objeto> getAllByIds(List<String> ids) {
         return repository.findAllById(ids);
-    }
-
-    public int countByFilter(String nome, String codUnidade, String codPO, String status, Integer exercicio) {
-
-        return repository.countByFilter(nome, codUnidade, codPO, status, exercicio);
-    }
-
-    public int countByInvestimentoFilter(String nome, List<String> codUnidade, List<String> codPO, Integer exercicio) {
-        return repository.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio);
-    }
-
-    public List<Status> findStatusCadastrados() {
-        return repository.findStatusCadastrados();
     }
 
     public Objeto removerObjeto(String objetoId) {
