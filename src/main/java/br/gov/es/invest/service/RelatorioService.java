@@ -16,12 +16,10 @@ import org.apache.poi.ss.usermodel.ColorScaleFormatting;
 import org.apache.poi.ss.usermodel.ComparisonOperator;
 import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
 import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontFormatting;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.PatternFormatting;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
@@ -29,16 +27,16 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFConditionalFormattingThreshold;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import br.gov.es.invest.dto.RegistroDadoConsolidado;
 import br.gov.es.invest.dto.RegistroDadoDetalhado;
@@ -57,6 +55,9 @@ public class RelatorioService {
 
     @Autowired
     private FonteOrcamentariaService fonteOrcamentariaService;
+
+    @Autowired
+    private InvestimentosBIService investimentosBIService;
 
 
     public RegistroDadoConsolidado cardsTotaisRelatorioConsolidado(
@@ -517,70 +518,6 @@ public class RelatorioService {
 
     }
 
-    private RegistroDadoConsolidado getTotalizacaoConsolidado(
-        String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
-    ) {
-        String cypher = """
-                            MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)
-                            WHERE 
-                                $tipoDespesa IN labels(conta)
-                                AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
-                                AND NOT EXISTS((obj)-[:EM]->(:Etapa))
-                            
-                            CALL {
-                                WITH obj
-                                MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
-                                WHERE 
-                                    ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
-                                    AND (custo.anoExercicio >= $exercicioInicio AND custo.anoExercicio <= $exercicioFim)
-                                    AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
-                                RETURN
-                                    SUM(indicada_por.previsto) AS totalPrevisto,
-                                    SUM(indicada_por.contratado) AS totalContratado
-                            }
-                            
-                            CALL {
-                                WITH conta
-                                MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
-                                WHERE 
-                                    ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
-                                    AND (exec.anoExercicio >= $exercicioInicio AND exec.anoExercicio <= $exercicioFim)
-                                    AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
-                                RETURN
-                                    SUM(vinculada_por.autorizado) AS totalAutorizado
-                            }
-                            
-                            RETURN
-                                COALESCE(SUM(totalPrevisto), 0) AS previsto,
-                                COALESCE(SUM(totalContratado), 0) AS contratado,
-                                COALESCE(SUM(totalAutorizado), 0) AS autorizado,
-                                COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado
-                            """;                         
-        
-        Map<String, Object> params = new HashMap<>();
-        params.put("idsUnidade", idsUnidade);
-        params.put("idFonte", idFonte);
-        params.put("gnd", gnd);
-        params.put("tipoDespesa", tipoDespesa);
-        params.put("exercicioInicio", anoInicio);
-        params.put("exercicioFim", anoFim);
-
-        RegistroDadoConsolidado list = neo4jClient.query(cypher)
-                                            .bindAll(params)
-                                            .fetchAs(RegistroDadoConsolidado.class)
-                                            .mappedBy(((typeSystem, record) -> 
-                                                RegistroDadoConsolidado.builder()
-                                                .previsto(record.get("previsto").asDouble())
-                                                .contratado(record.get("contratado").asDouble())
-                                                .autorizado(record.get("autorizado").asDouble())
-                                                .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())
-                                                .build()
-                                            ))
-                                            .first().get();
-
-        return list;
-    }
-
     private List<RegistroDadoConsolidado> getRegistroDadoConsolidados(
         String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
         ){
@@ -651,11 +588,40 @@ public class RelatorioService {
         params.put("tipoDespesa", tipoDespesa);
         params.put("exercicio", anoInicio);
 
-        List<RegistroDadoConsolidado> list = neo4jOperations.findAll(cypher, params, RegistroDadoConsolidado.class);
+
+        List<RegistroDadoConsolidado> list = (List<RegistroDadoConsolidado>) neo4jClient.query(cypher)
+                    .bindAll(params)
+                    .fetchAs(RegistroDadoConsolidado.class)
+                    .mappedBy((typeSystem, record) -> {
+                        
+                        Map<String, JsonNode> exec = investimentosBIService.getCardsTotais(null, anoInicio, record.get("codUnidade").asString(), null, null).get(0);
+                        Map<String, JsonNode> execAnt = investimentosBIService.getCardsTotais(null, anoInicio-1, record.get("codUnidade").asString(), null, null).get(0);
+
+                        return RegistroDadoConsolidado.builder()
+                        .unidadeOrcamentaria(record.get("unidadeOrcamentaria").asString())
+                        .previsto(record.get("previsto").asDouble())
+                        .contratado(record.get("contratado").asDouble())
+                        .autorizado(exec.get("autorizado").asDouble())
+                        .empenhadoAnt(execAnt.get("empenhado").asDouble())
+                        .empenhado(exec.get("empenhado").asDouble())
+                        .liquidado(exec.get("liquidado").asDouble())
+                        .pago(exec.get("pago").asDouble())
+                        .build();
+                    }).all();
 
         return list;
 
     }
+
+    // totaisCusto.previsto(), 
+    // totaisCusto.contratado(), 
+    // linhaResultado.get("orcado").asDouble(), 
+    // linhaResultado.get("autorizado").asDouble(), 
+    // linhaResultado.get("empenhado").asDouble(), 
+    // linhaResultado.get("liquidado").asDouble(), 
+    // linhaResultado.get("disponivel_sem_reserva").asDouble(), 
+    // linhaResultado.get("pago").asDouble()
+    // ));
 
     private void totalizacaoConsolidado(int indexTotal, int ultIndex, Sheet sheet) {
         
