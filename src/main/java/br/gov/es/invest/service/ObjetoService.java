@@ -1,34 +1,25 @@
 package br.gov.es.invest.service;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
-import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.OrdemItemDto;
-import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
-import br.gov.es.invest.model.Etapa;
 import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
@@ -152,9 +143,15 @@ public class ObjetoService {
                     ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
                     AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
                     AND ($idStatus IS NULL OR elementId(status) = $idStatus)
+
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
-                WHERE
-                    ($idsPo IS NULL OR elementId(plano) IN $idsPo)
+                WHERE $idsPo IS NULL OR elementId(plano) IN $idsPo
+
+
+                // Filtro decisivo para PO
+                WITH conta, obj, status, unidade, plano
+                WHERE $idsPo IS NULL OR NOT plano IS NULL
+
                 CALL(conta){
                     MATCH (conta)
                     OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vp:VINCULADA_POR]->(fonte:FonteOrcamentaria)
@@ -242,9 +239,15 @@ public class ObjetoService {
                     AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
                     AND ($idStatus IS NULL OR elementId(status) = $idStatus)
                     AND EXISTS((obj)-[:EM]->(:Etapa))
+
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
-                WHERE
-                    ($idsPo IS NULL OR elementId(plano) IN $idsPo)
+                WHERE $idsPo IS NULL OR elementId(plano) IN $idsPo
+
+
+                // Filtro decisivo para PO
+                WITH conta, obj, status, unidade, plano
+                WHERE $idsPo IS NULL OR NOT plano IS NULL
+
                 CALL(conta){
                     MATCH (conta)
                     OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vp:VINCULADA_POR]->(fonte:FonteOrcamentaria)
