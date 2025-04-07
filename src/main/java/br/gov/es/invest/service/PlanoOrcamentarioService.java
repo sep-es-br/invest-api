@@ -2,6 +2,7 @@ package br.gov.es.invest.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -35,9 +36,13 @@ public class PlanoOrcamentarioService {
         List<PlanoOrcamentario> planos = repository.findAll();
 
         for(PlanoOrcamentario plano : planos){
+            
             PlanoOrcamentario planoBi = planoOrcamentarioBIService.getPlanoPorCod(plano.getCodigo());
-
-            if(planoBi != null){
+            if(planoBi == null){
+                Logger.getGlobal().severe( String.format("plano cod. %s não encontrado", plano.getCodigo()));
+            } else {
+                Logger.getGlobal().info( String.format("%s: %s ==> %s", plano.getCodigo(), plano.getNome(), planoBi.getNome()));
+                
                 plano.setNome(planoBi.getNome());
             }
         }
