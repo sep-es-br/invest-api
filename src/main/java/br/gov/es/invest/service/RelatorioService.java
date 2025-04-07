@@ -613,16 +613,6 @@ public class RelatorioService {
 
     }
 
-    // totaisCusto.previsto(), 
-    // totaisCusto.contratado(), 
-    // linhaResultado.get("orcado").asDouble(), 
-    // linhaResultado.get("autorizado").asDouble(), 
-    // linhaResultado.get("empenhado").asDouble(), 
-    // linhaResultado.get("liquidado").asDouble(), 
-    // linhaResultado.get("disponivel_sem_reserva").asDouble(), 
-    // linhaResultado.get("pago").asDouble()
-    // ));
-
     private void totalizacaoConsolidado(int indexTotal, int ultIndex, Sheet sheet) {
         
         XSSFWorkbook workbook = (XSSFWorkbook) sheet.getWorkbook();

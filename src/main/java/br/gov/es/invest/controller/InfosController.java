@@ -8,17 +8,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,7 +31,6 @@ import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.AnoService;
-import br.gov.es.invest.service.CustoService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InfosService;
 import br.gov.es.invest.service.InvestimentosBIService;
@@ -115,7 +111,7 @@ public class InfosController {
                 }
                 List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
-                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);    
+                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo, gnd);    
               
                 ArrayList<String> codsUo = new ArrayList<>();
                 ArrayList<String> codsPo = new ArrayList<>();

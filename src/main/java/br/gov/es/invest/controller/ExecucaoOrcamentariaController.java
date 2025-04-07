@@ -22,6 +22,7 @@ import br.gov.es.invest.service.ExecucaoOrcamentariaService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
+import br.gov.es.invest.service.PlanoOrcamentarioService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,12 +35,14 @@ public class ExecucaoOrcamentariaController {
     private final InvestimentoService investimentoService;
     private final InvestimentosBIService investimentosBIService;
     private final FonteOrcamentariaService fonteOrcamentariaService;
+    private final PlanoOrcamentarioService planoOrcamentarioService;
 
     @GetMapping("/importarPentaho")
     public String importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
-
-        // return "rotina desativada temporariamente";
+        // atualiza o nome dos planosOrcamentario
+        planoOrcamentarioService.atualizarNomesComBi();
+        
         // se não receber o ano de Referencia, considera o ano corrente
         if(anoRef == null) {
             anoRef = LocalDate.now().getYear();

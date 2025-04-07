@@ -178,6 +178,27 @@ public class ObjetoController {
     }
 
 
+    @PostMapping("/countEmProcessameto")
+    public ResponseEntity<?> contarEmProcessamento(@RequestBody(required=false) ObjetoFiltroDTO filtro){
+
+        DataListResult<ObjetoTiraDTO> objetos = service.getAllListByFilterEmProcessamento(
+            filtro.exercicio(), 
+            filtro.nome(), 
+            filtro.unidades() == null ? null : filtro.unidades().stream().map(UnidadeOrcamentariaDTO::id).toList(), 
+            filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList(), 
+            filtro.status() == null ? null : filtro.status().id(), 
+            filtro.etapa() == null ? null : filtro.etapa().id(), 
+            null, 
+            null
+            );
+
+
+        return ResponseEntity.ok(objetos.ammount());
+
+
+    }
+
+
     @PostMapping("")
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         

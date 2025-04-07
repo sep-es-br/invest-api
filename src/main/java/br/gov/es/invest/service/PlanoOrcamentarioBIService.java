@@ -50,6 +50,33 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
         }
     }
 
+    public PlanoOrcamentario getPlanoPorCod(String codPo){
+       
+        try {
+            HashMap<String, String> params = new HashMap<>();
+            params.put("parampCodUo", "todas");
+            params.put("parampCodPo", codPo);
+
+
+            String url = buildEndpointUri(spoPath, planosTarget, params);
+            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+
+            List<PlanoOrcamentario> planos = dados.stream().map(
+                dado -> {
+                    PlanoOrcamentario plano = new PlanoOrcamentario();
+                    plano.setCodigo(dado.get("cod_po").asText());
+                    plano.setNome(dado.get("nome_po").asText());
+                    return plano;
+                }
+            ).toList();
+
+            return planos.isEmpty() ? null : planos.get(0) ;
+        } catch (Exception ex){
+            Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            return null;
+        }
+    }
+
 
 
 }

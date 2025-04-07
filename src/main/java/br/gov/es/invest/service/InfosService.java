@@ -68,25 +68,28 @@ public class InfosService {
         return Arrays.asList();
     }
 
-    public ValoresCusto getTotaisInvestimento(String nome, String idFonte, Integer exercicio, List<String> idUnidade, List<String> idPlano){
+    public ValoresCusto getTotaisInvestimento(String nome, String idFonte, Integer exercicio, List<String> idUnidade, List<String> idPlano, Integer gnd){
 
-        String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
-                        "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
-                        "WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                        "    AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)\r\n" + //
-                        "    AND ($idPlano IS NULL OR elementId(po) IN $idPlano)\r\n" + //
-                        "    AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
-                        "CALL (obj) {\r\n" + //
-                        "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
-                        "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
-                        "    RETURN \r\n" + //
-                        "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
-                        "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
-                        "} \r\n" + //
-                        "RETURN\r\n" + //
-                        "        sum(totalPrevisto) AS previsto,\r\n" + //
-                        "        sum(totalContratado) AS contratado";
+        String cypher = """
+                        MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
+                                (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
+                        WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))
+                            AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)
+                            AND ($idPlano IS NULL OR elementId(po) IN $idPlano)
+                            AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))
+                        CALL (obj) {
+                            MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
+                            WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                                AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)
+                                AND ($gnd IS NULL OR $gnd = indicada_por.gnd)
+                            RETURN 
+                                sum(indicada_por.previsto) AS totalPrevisto,
+                                sum(indicada_por.contratado) AS totalContratado 
+                        } 
+                        RETURN
+                                sum(totalPrevisto) AS previsto,
+                                sum(totalContratado) AS contratado
+                        """  ;
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("idUnidade", idUnidade);
@@ -94,6 +97,7 @@ public class InfosService {
         params.put("nome", nome);
         params.put("idFonte", idFonte);
         params.put("exercicio", exercicio);
+        params.put("gnd", gnd);
 
         return this.neo4jOperations.findOne(cypher, params, ValoresCusto.class).get();
 
