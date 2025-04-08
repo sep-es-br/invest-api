@@ -45,4 +45,8 @@ public class FonteOrcamentariaService {
  
     }
 
+    public Optional<FonteOrcamentaria> findById(String id){
+        return repository.findById(id);
+    }
+
 }

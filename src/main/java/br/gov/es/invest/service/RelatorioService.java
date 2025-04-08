@@ -59,7 +59,6 @@ public class RelatorioService {
     @Autowired
     private InvestimentosBIService investimentosBIService;
 
-
     public RegistroDadoConsolidado cardsTotaisRelatorioConsolidado(
         String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
@@ -589,13 +588,15 @@ public class RelatorioService {
         params.put("exercicio", anoInicio);
 
 
+        String codFonte = fonteOrcamentariaService.findById(idFonte).map(FonteOrcamentaria::getCodigo).orElse(null);
         List<RegistroDadoConsolidado> list = (List<RegistroDadoConsolidado>) neo4jClient.query(cypher)
                     .bindAll(params)
                     .fetchAs(RegistroDadoConsolidado.class)
                     .mappedBy((typeSystem, record) -> {
                         
-                        Map<String, JsonNode> exec = investimentosBIService.getCardsTotais(null, anoInicio, record.get("codUnidade").asString(), null, null).get(0);
-                        Map<String, JsonNode> execAnt = investimentosBIService.getCardsTotais(null, anoInicio-1, record.get("codUnidade").asString(), null, null).get(0);
+
+                        Map<String, JsonNode> exec = investimentosBIService.getCardsTotais(codFonte, anoInicio, record.get("codUnidade").asString(), null, gnd).get(0);
+                        Map<String, JsonNode> execAnt = investimentosBIService.getCardsTotais(codFonte, anoInicio-1, record.get("codUnidade").asString(), null, gnd).get(0);
 
                         return RegistroDadoConsolidado.builder()
                         .unidadeOrcamentaria(record.get("unidadeOrcamentaria").asString())
