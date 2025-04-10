@@ -30,15 +30,10 @@ public class TipoPlanoBIService {
     private final BiClient biClient;
     private final TipoPlanoService tipoPlanoService;
 
-    @Value("${pentahoBI.userId}")
-    public String pentahoUser;
-
-    @Value("${pentahoBI.password}")
-    public String pentahoPassw;
 
 
     public List<TipoPlano> findTiposPlano(String codPo) {
-        List<Map<String, JsonNode>> biList = biClient.findTiposPlano(codPo, obterAuthorizationHeader());
+        List<Map<String, JsonNode>> biList = biClient.findTiposPlano(codPo);
 
         return biList.stream()
                 .filter(map -> !map.get("tipo").asText().equals("ND"))
@@ -52,12 +47,5 @@ public class TipoPlanoBIService {
     }
     
     
-
-    private Map<String, Object> obterAuthorizationHeader() {
-        String notEncoded = pentahoUser + ":" + pentahoPassw;
-        String encodedAuth = "Basic " + Base64.getEncoder().encodeToString(notEncoded.getBytes());
-
-        return Map.of("Authorization", encodedAuth);
-    }
 
 }

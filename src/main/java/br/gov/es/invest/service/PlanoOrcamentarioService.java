@@ -1,11 +1,14 @@
 package br.gov.es.invest.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.PlanoOrcamentario;
@@ -16,6 +19,9 @@ public class PlanoOrcamentarioService {
 
     @Autowired
     private PlanoOrcamentarioRepository repository;
+
+    @Autowired
+    private Neo4jOperations neo4jOperations;
 
     @Autowired
     private PlanoOrcamentarioBIService planoOrcamentarioBIService;
@@ -38,6 +44,23 @@ public class PlanoOrcamentarioService {
             q -> q.first())
             .map(PlanoOrcamentario::getId)
             .orElse(null);
+    }
+
+    public Map<String, String> getIdsByCod(List<String> cods) {
+        
+        String cypher = """
+                UNWIND $codigos AS codigo
+                MATCH (p:PlanoOrcamentario {codigo: codigo})
+                RETURN p.codigo AS cod, elementId(p) AS id
+                """;
+        
+        List<CodIds> ids = neo4jOperations.findAll(cypher, Map.of("codigos", cods), CodIds.class);
+
+        return ids.stream()
+                .collect(Collectors.toMap(
+                    CodIds::cod,
+                    CodIds::id
+                ));
     }
 
     public void atualizarNomesComBi() {
@@ -70,5 +93,9 @@ public class PlanoOrcamentarioService {
 
 
     }
+
+}
+
+record CodIds(String cod, String id) {
 
 }
