@@ -27,6 +27,16 @@ public class UnidadeOrcamentariaService {
         return repository.getCodById(idUnidade);
     }
 
+    public String getIdByCod(String cod) {
+        
+        return repository.findBy(
+            Example.of( UnidadeOrcamentaria.builder().codigo(cod).build() ), 
+            q -> q.first()
+        ).map(UnidadeOrcamentaria::getId)
+        .orElse(null);
+        
+    }
+
     public UnidadeOrcamentaria findOrCreateByCod(UnidadeOrcamentaria unidade){
         
         UnidadeOrcamentaria probe = new UnidadeOrcamentaria();

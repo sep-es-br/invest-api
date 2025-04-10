@@ -108,7 +108,7 @@ public class RelatorioController {
         
         
         try{
-            String fileName = "relatório-consolidado-" + anoDe + "-" + anoAte + ".xlsx";
+            String fileName = "relatório-consolidado-" + anoDe + ".xlsx";
 
             List<String> idsUo = null;
             if(idsUnidade == null && !verTodasUnidades) {

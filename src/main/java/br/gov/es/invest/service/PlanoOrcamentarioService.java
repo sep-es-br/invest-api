@@ -32,6 +32,14 @@ public class PlanoOrcamentarioService {
         return repository.getCodById(idPlano);
     }
 
+    public String getIdByCod(String cod) {
+        return repository.findBy(
+            Example.of(PlanoOrcamentario.builder().codigo(cod).build()), 
+            q -> q.first())
+            .map(PlanoOrcamentario::getId)
+            .orElse(null);
+    }
+
     public void atualizarNomesComBi() {
         List<PlanoOrcamentario> planos = repository.findAll();
 

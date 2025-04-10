@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
     @Value("${pentahoBI.spo.planoOrcamentario}")
     private String planosTarget;
 
+    @Autowired
+    private PlanoOrcamentarioService planoOrcamentarioService;
+
     public List<PlanoOrcamentario> getPlanosPorUnidade(String codUnidade){
        
         try {
@@ -35,18 +40,17 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
             List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
             List<PlanoOrcamentario> planos = dados.stream().map(
-                dado -> {
-                    PlanoOrcamentario plano = new PlanoOrcamentario();
-                    plano.setCodigo(dado.get("cod_po").asText());
-                    plano.setNome(dado.get("nome_po").asText());
-                    return plano;
-                }
-            ).toList();
+                dado -> PlanoOrcamentario.builder()
+                        .id(planoOrcamentarioService.getIdByCod(dado.get("cod_po").asText()))
+                        .codigo(dado.get("cod_po").asText())
+                        .nome(dado.get("nome_po").asText())
+                        .build()
+            ).collect(Collectors.toList());
 
             return planos;
         } catch (Exception ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-            return Arrays.asList();
+            throw new RuntimeException(ex);
         }
     }
 
@@ -61,19 +65,17 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
             String url = buildEndpointUri(spoPath, planosTarget, params);
             List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
-            List<PlanoOrcamentario> planos = dados.stream().map(
-                dado -> {
-                    PlanoOrcamentario plano = new PlanoOrcamentario();
-                    plano.setCodigo(dado.get("cod_po").asText());
-                    plano.setNome(dado.get("nome_po").asText());
-                    return plano;
-                }
-            ).toList();
+            return dados.stream().map(
+                dado -> PlanoOrcamentario.builder()
+                        .id(planoOrcamentarioService.getIdByCod(dado.get("cod_po").asText()))
+                        .codigo(dado.get("cod_po").asText())
+                        .nome(dado.get("nome_po").asText())
+                        .build()
+            ).findFirst().orElse(null);
 
-            return planos.isEmpty() ? null : planos.get(0) ;
         } catch (Exception ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 
