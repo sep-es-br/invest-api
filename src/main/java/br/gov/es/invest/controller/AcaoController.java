@@ -46,6 +46,7 @@ public class AcaoController {
     private final AcaoService acaoService;
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
+    private final ObjetoService objetoService;
 
     @PostMapping("/executarAcao")
     public ResponseEntity<?> executarAcao(@RequestBody ExecutarAcaoDTO executarAcaoDTO, @RequestHeader("Authorization") String authToken) {
@@ -54,11 +55,15 @@ public class AcaoController {
         Parecer parecer = null;
 
         Objeto objeto = Objeto.parse(executarAcaoDTO.objeto());
+
+        objeto.setEmEtapa(objetoService.findById(objeto.getId()).getEmEtapa());
+
         if(executarAcaoDTO.parecer() != null){
             parecer = Parecer.parse(executarAcaoDTO.parecer());
         } else {
             apontamentos = executarAcaoDTO.apontamentos().stream().map(Apontamento::parse).toList();
         }
+
         Acao acao = Acao.parse(executarAcaoDTO.acao(), etapaService.findById(executarAcaoDTO.acao().proxEtapaId()).orElse(null)); 
 
         String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
