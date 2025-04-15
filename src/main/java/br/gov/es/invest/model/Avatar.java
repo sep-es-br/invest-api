@@ -29,6 +29,6 @@ public class Avatar extends Entidade{
     }
 
     public static Avatar parse(AvatarDTO dto) {
-        return Optional.ofNullable(dto).map(Avatar::parse).orElse(null);
+        return Optional.ofNullable(dto).map(Avatar::new).orElse(null);
     }
 }

@@ -159,7 +159,7 @@ public class PermissaoController {
         ), new ItemMenu(
             "Relatório", 
             "file-stats-report", 
-            true, 
+            isGestorMaster, 
             "/relatorio", 
             Arrays.asList(
                 new ItemMenu(
