@@ -67,6 +67,19 @@ public class PermissaoController {
         return pode == null ? null : new PodeDto(pode);
     }
 
+    @GetMapping("/isGestorMaster")
+    public Boolean isGestorMaster(@RequestHeader("Authorization") String authToken) {
+
+        authToken = authToken.replace("Bearer ", "");
+        
+        String sub = tokenService.validarToken(authToken);
+        
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        
+        return usuario == null ? false : testarFuncao(usuario.getRole(), "GESTOR_MASTER");
+    }
+    
+
     @GetMapping("")
     public PodeDto getPermissao(@RequestParam String path, @RequestHeader("Authorization") String authToken){
     
