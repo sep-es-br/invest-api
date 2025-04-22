@@ -10,10 +10,12 @@ import br.gov.es.invest.dto.EmStatusDTO;
 import br.gov.es.invest.utils.DateTimeUtils;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @RelationshipProperties
+@SuperBuilder
 public class EmStatus extends Entidade {
     
     @TargetNode

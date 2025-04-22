@@ -4,6 +4,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+
+import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,10 +18,12 @@ import org.neo4j.cypherdsl.core.Statement;
 import org.neo4j.cypherdsl.core.renderer.Configuration;
 import org.neo4j.cypherdsl.core.renderer.Dialect;
 import org.neo4j.cypherdsl.core.renderer.Renderer;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Status;
@@ -27,7 +34,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class StatusService {
-    
+
+    private final StatusRepository repository;
+
+    private final Neo4jClient neo4jClient;
+
     private Node statusNode = Cypher.node("Status").named("status");
 
     private final StatusRepository repository;
@@ -53,6 +64,7 @@ public class StatusService {
         return repository.findAllStatusObjeto();
     }
 
+
     public List<Status> findAll(){
         return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
@@ -71,35 +83,27 @@ public class StatusService {
     }
 
     public void aplicarStatus(Objeto objeto, Status status) {
+
+        Assert.notNull(objeto.getId(), "Objeto não está salvo no Banco");
+        Assert.notNull(status.getId(), "Status não está salvo no Banco");
         
-        Node objetoNode = Cypher.node("Objeto").named("objeto");
+        String cypher = """
+                MATCH (objeto:Objeto), (status:Status)
+                WHERE elementId(objeto) = $objetoId
+                    AND elementId(status) = $statusId
+                MERGE (objeto)-[:EM{
+                    timestamp: $timestamp
+                }]->(status)
+                """;
 
-        Statement cypher = Cypher.match(objetoNode)
-                                    .where(objetoNode.elementId().eq(Cypher.parameter("objetoId")))
-                                    .with(objetoNode)
-                                    .match(statusNode)
-                                    .where(statusNode.elementId().eq(Cypher.parameter("statusId")))
-                                    .with(objetoNode, statusNode)
-                                    .where(Cypher.not(Cypher.exists(objetoNode.relationshipTo(statusNode, "EM"))))
-                                    .merge(
-                                        objetoNode.relationshipTo(statusNode, "EM")
-                                        .withProperties(Map.of("timestamp", Cypher.parameter("timestamp"))))
-                                    .build();
+        Map<String, Object> params = new HashedMap<>();
+        params.put("objetoId", objeto.getId());
+        params.put("statusId", status.getId());
+        params.put("timestamp", ZonedDateTime.now());
 
-        Configuration config = Configuration.newConfig().withDialect(Dialect.NEO4J_5).build();
-        
-        Renderer renderer = Renderer.getRenderer(config);
-
-        Logger.getGlobal().log(Level.INFO, "cypher: {0}", new Object[]{renderer.render(cypher)});
-
-        
-        neo4jClient.query(renderer.render(cypher))
-                    .bindAll(Map.of(
-                        "objetoId", objeto.getId(), 
-                        "statusId", status.getId(),
-                        "timestamp", ZonedDateTime.now()
-                    )).run();
+        neo4jClient.query(cypher)
+                    .bindAll(params)
+                    .run();
 
     }
-
 }

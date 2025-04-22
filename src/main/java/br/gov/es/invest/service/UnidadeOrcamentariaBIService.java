@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,21 +24,25 @@ public class UnidadeOrcamentariaBIService extends PentahoBIService {
     @Value("${pentahoBI.spo.unidadesOrcamentarias}")
     private String unidadesTarget;
 
+    @Autowired
+    private UnidadeOrcamentariaService unidadeOrcamentariaService;
+
     public List<UnidadeOrcamentaria> getTodasUnidades(){
        
         try {
             String url = buildEndpointUri(spoPath, unidadesTarget, null);
             List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
-            List<UnidadeOrcamentaria> unidades = dados.stream().map(
-                dado -> {
-                    UnidadeOrcamentaria unidade = new UnidadeOrcamentaria();
-                    unidade.setCodigo(dado.get("cod_uo").asText());
-                    unidade.setSigla(dado.get("sigla_uo").asText());
-                    unidade.setNome(dado.get("nome_uo").asText());
-                    return unidade;
-                }
-            ).toList();
+            List<UnidadeOrcamentaria> unidades = dados.stream()
+            .filter( dado -> !dado.get("cod_uo").asText().startsWith("0") &&  !dado.get("cod_uo").asText().startsWith("8"))
+            .map(
+                dado -> UnidadeOrcamentaria.builder()
+                        .id(unidadeOrcamentariaService.getIdByCod(dado.get("cod_uo").asText()))
+                        .codigo(dado.get("cod_uo").asText())
+                        .sigla(dado.get("sigla_uo").asText())
+                        .nome(dado.get("nome_uo").asText())
+                        .build()
+            ).collect(Collectors.toList());
 
             return unidades;
         } catch (Exception ex){

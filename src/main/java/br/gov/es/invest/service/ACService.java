@@ -26,11 +26,14 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.dto.acessocidadaoapi.OrganizacaoACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.SetorACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.TokenResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
 import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
 import net.minidev.json.JSONObject;
 
 @Service
@@ -93,9 +96,7 @@ public class ACService {
     return null;
   }
 
-  public List<Orgao> getOrgaos(){
-
-    String token = getClientToken();
+  public List<Orgao> getOrgaos(String token){
 
     HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -127,7 +128,140 @@ public class ACService {
     return null;
   }
 
+  public List<Orgao> getOrgaos(){
+
+    String token = getClientToken();
+
+    return this.getOrgaos(token);
+  }
   
+  public List<PapelACResponseDto> getPapeisBySub(String sub, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.webApiUrl + "/agentepublico/" + sub + "/papeis"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          List<PapelACResponseDto> papeisResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<PapelACResponseDto>>(){});
+          return papeisResponse;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public PapelACResponseDto getPapelByGuid(String guid, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.webApiUrl + "/papel/" + guid))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          PapelACResponseDto papelResponse = new JsonMapper().readValue(response.body(), new TypeReference<PapelACResponseDto>(){});
+          return papelResponse;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public UnidadeACResponseDto getUnidadeInfoByGuid(String guid, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.organogramaUrl + "/unidades/" + guid + "/info"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          UnidadeACResponseDto resp = new JsonMapper().readValue(response.body(), new TypeReference<UnidadeACResponseDto>(){});
+          return resp;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public OrganizacaoACResponseDto getOrgaoInfoByGuid(String guid, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.organogramaUrl + "/organizacoes/" + guid + "/info"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          OrganizacaoACResponseDto resp = new JsonMapper().readValue(response.body(), new TypeReference<OrganizacaoACResponseDto>(){});
+          return resp;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
 
   public List<SetorDto> getSetores(String unidadeGuid){
 
@@ -150,8 +284,8 @@ public class ACService {
           List<SetorACResponseDto> setoresResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<SetorACResponseDto>>(){});
           return setoresResponse.stream().map(setorResp -> new SetorDto(setorResp)).toList();
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
     } catch (Exception e) {

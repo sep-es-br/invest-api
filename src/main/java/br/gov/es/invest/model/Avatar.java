@@ -1,16 +1,20 @@
 package br.gov.es.invest.model;
 
+import java.util.Optional;
+
 import org.springframework.data.neo4j.core.schema.Node;
 
 import br.gov.es.invest.dto.AvatarDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Avatar extends Entidade{
     
     private String blob;
@@ -20,7 +24,11 @@ public class Avatar extends Entidade{
     }
 
     public Avatar(AvatarDTO dto) {
-        this.setId(dto.getId());
-        this.blob = dto.getBlob();
+        this.setId(dto.id());
+        this.blob = dto.blob();
+    }
+
+    public static Avatar parse(AvatarDTO dto) {
+        return Optional.ofNullable(dto).map(Avatar::new).orElse(null);
     }
 }

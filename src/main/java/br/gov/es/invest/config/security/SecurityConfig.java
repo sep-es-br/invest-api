@@ -1,5 +1,6 @@
 package br.gov.es.invest.config.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,25 +22,27 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final SecurityFilter securityFilter;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+        private final ClientRegistrationRepository clientRegistrationRepository;
+        private final SecurityFilter securityFilter;
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        @Value("${frontend.host}")
+        private String frontendUrl;
+
+        @Bean
+        SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(authConfig -> {
-                    authConfig.requestMatchers(HttpMethod.GET,
-                            "/swagger-ui.html",
-                            "/swagger-ui/*",
-                            "/v3/*",
-                            "/v3/api-docs/*",
-                            "/signin/*",
-                            "/acesso-cidadao-response.html",
-                            "*/importarPentaho").permitAll();
-                     authConfig.anyRequest().authenticated();
+                        authConfig.requestMatchers(HttpMethod.GET,
+                                "/swagger-ui.html",
+                                "/swagger-ui/*",
+                                "/v3/*",
+                                "/v3/api-docs/*",
+                                "/signin/*",
+                                "/acesso-cidadao-response.html",
+                                "*/importarPentaho").permitAll();
+                        authConfig.anyRequest().authenticated();
                 })
                 .oauth2Login(oAuth2LoginConfig ->
                         oAuth2LoginConfig.authorizationEndpoint(authEndpointConfig ->
@@ -47,20 +50,25 @@ public class SecurityConfig {
                                         clientRegistrationRepository, "/oauth2/authorization")))
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(Customizer.withDefaults())
                 .exceptionHandling(Customizer.withDefaults())
                 .build();
-    }
+        }
 
-     @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowCredentials(true);
-            }
-        };
-    }
+        @Bean
+        public WebMvcConfigurer corsConfigurer() {
+                return new WebMvcConfigurer() {
+                        @Override
+                        public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
+                                registry.addMapping("/**").allowedOrigins(frontendUrl)
+                                                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                                                .allowedHeaders("*")
+                                                .allowCredentials(true)
+                                                .exposedHeaders("Content-Disposition");
+                        }
+                };
+        }
+    
+
+
 }

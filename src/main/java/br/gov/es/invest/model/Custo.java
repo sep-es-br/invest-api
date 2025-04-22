@@ -12,11 +12,13 @@ import br.gov.es.invest.dto.CustoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Custo extends Entidade implements Serializable {
      
     private Integer anoExercicio;
@@ -25,9 +27,9 @@ public class Custo extends Entidade implements Serializable {
     private Set<IndicadaPor> indicadaPor;
 
     public Custo(CustoDTO dto) {
-        this.setId(dto.getId());
-        this.anoExercicio = dto.getAnoExercicio();
-        this.indicadaPor = dto.getIndicadaPor().stream().map(indicadaPorDto -> new IndicadaPor(indicadaPorDto)).collect(Collectors.toSet());
+        this.setId(dto.id());
+        this.anoExercicio = dto.anoExercicio();
+        this.indicadaPor = dto.indicadaPor().stream().map(IndicadaPor::parse).collect(Collectors.toSet());
     }
 
 }

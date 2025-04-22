@@ -18,6 +18,11 @@ public class TipoPlanoService {
     @Autowired
     private TipoPlanoRepository repository;
 
+    public String getIdBySigla(String sigla) {
+        return repository.findBy(Example.of( TipoPlano.builder().sigla(sigla).build() ), q -> q.first())
+                .map(TipoPlano::getId)
+                .orElse(null);
+    }
 
     public List<TipoPlano> findAll(){
         
