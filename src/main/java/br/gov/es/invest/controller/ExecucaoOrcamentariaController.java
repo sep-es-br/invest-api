@@ -44,7 +44,6 @@ public class ExecucaoOrcamentariaController {
     @GetMapping("/importarPentaho")
     public ResponseEntity<?> importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
-        try {
             // atualiza o nome dos planosOrcamentario
             planoOrcamentarioService.atualizarNomesComBi();
             
@@ -230,13 +229,11 @@ public class ExecucaoOrcamentariaController {
             valores.setGnd(Integer.parseInt(codGnd));
 
 
-            UUID uuid = UUID.randomUUID();
-            Logger.getGlobal().log(Level.SEVERE, uuid + ": " + e.getLocalizedMessage(), e);
-            return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, uuid + ": " + e.getLocalizedMessage(), null);
+            
 
         }
 
         
-
+        return ResponseEntity.ok("Sucesso");
     }
 }

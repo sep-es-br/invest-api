@@ -41,10 +41,6 @@ public class StatusService {
 
     private Node statusNode = Cypher.node("Status").named("status");
 
-    private final StatusRepository repository;
-
-    private final Neo4jClient neo4jClient;
-
     private final ObjetoService objetoService;
 
 
