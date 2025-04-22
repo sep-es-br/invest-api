@@ -22,4 +22,11 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
             "WHERE elementId(unidade) = $idUnidade\r\n" + //
             "RETURN toString(unidade.codigo)")
     public String getCodById(String idUnidade);
+
+    @Query("""
+            MATCH (unidade:UnidadeOrcamentaria)
+            WHERE elementId(unidade) IN $ids
+            RETURN unidade.codigo
+            """)
+    public List<String> getCodsById(List<String> ids);
 }

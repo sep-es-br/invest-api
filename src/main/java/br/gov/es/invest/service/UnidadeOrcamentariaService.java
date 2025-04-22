@@ -27,6 +27,10 @@ public class UnidadeOrcamentariaService {
         return repository.getCodById(idUnidade);
     }
 
+    public List<String> getCodsByIds(List<String> ids){
+        return repository.getCodsById(ids);
+    }
+
     public String getIdByCod(String cod) {
         
         return repository.findBy(
