@@ -3,15 +3,9 @@ package br.gov.es.invest.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Logger;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,7 +26,6 @@ import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/permissao")
 @RequiredArgsConstructor
@@ -47,26 +40,7 @@ public class PermissaoController {
     private final GrupoService grupoService;
 
     private final TokenService tokenService;
-
-    @PutMapping("/acessoTeste")
-    public void testeDeAcesso(@RequestBody Map<String, String> map) {
-
-        for(Entry<String, String> entry : map.entrySet()){
-            Logger.getGlobal().info(entry.getKey() + " : " + entry.getValue());
-        }
-
-        System.out.println();
-
-    }
     
-
-
-    @GetMapping("/grupoTemAcesso")
-    public boolean checarAcesso(@RequestParam String grupoId,@RequestParam String path){
-        
-        return moduloService.checarAcesso(grupoId, path);
-        
-    }
 
     @GetMapping("/usuarioTemAcesso")
     public boolean checarAcessoUsuario(@RequestParam String path, @RequestHeader("Authorization") String authToken){
@@ -92,6 +66,19 @@ public class PermissaoController {
 
         return pode == null ? null : new PodeDto(pode);
     }
+
+    @GetMapping("/isGestorMaster")
+    public Boolean isGestorMaster(@RequestHeader("Authorization") String authToken) {
+
+        authToken = authToken.replace("Bearer ", "");
+        
+        String sub = tokenService.validarToken(authToken);
+        
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        
+        return usuario == null ? false : testarFuncao(usuario.getRole(), "GESTOR_MASTER");
+    }
+    
 
     @GetMapping("")
     public PodeDto getPermissao(@RequestParam String path, @RequestHeader("Authorization") String authToken){
@@ -181,6 +168,26 @@ public class PermissaoController {
                 null
             )
 
+            )
+        ), new ItemMenu(
+            "Relatório", 
+            "file-stats-report", 
+            isGestorMaster, 
+            "/relatorio", 
+            Arrays.asList(
+                new ItemMenu(
+                    "Consolidado", 
+                    null, 
+                    true, 
+                    "/consolidado", 
+                    null
+                ), new ItemMenu(
+                    "Detalhado", 
+                    null, 
+                    true, 
+                    "/detalhado", 
+                    null
+                )
             )
         ), new ItemMenu(
             null ,

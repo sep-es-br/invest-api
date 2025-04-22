@@ -39,9 +39,7 @@ public class InvestimentoTiraDTO {
         UnidadeOrcamentaria unidadeOrcamentaria = investimento.getUnidadeOrcamentariaImplementadora();
         this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
-        this.objetos = objetos.stream().map(objeto -> {
-            return new ObjetoTiraDTO(objeto);
-        }).collect(Collectors.toList());
+        this.objetos = objetos.stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList());
 
         this.totalPrevisto = 0d;
         this.totalContratado = 0d;
@@ -50,11 +48,11 @@ public class InvestimentoTiraDTO {
         this.totalDisponivel = 0d;
 
         this.objetos.forEach(obj -> {
-            this.totalPrevisto += obj.getTotalPrevisto();
-            this.totalContratado += obj.getTotalOrcado();
-            this.totalOrcado += obj.getTotalOrcado();
-            this.totalAutorizado += obj.getTotalAutorizado();
-            this.totalDisponivel += obj.getTotalDisponivel();
+            this.totalPrevisto += obj.totalPrevisto();
+            this.totalContratado += obj.totalContratado();
+            this.totalOrcado += obj.totalOrcado();
+            this.totalAutorizado += obj.totalAutorizado();
+            this.totalDisponivel += obj.totalDisponivel();
         });
 
     }

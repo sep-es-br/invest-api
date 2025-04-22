@@ -5,17 +5,18 @@ import java.time.ZonedDateTime;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
-import br.gov.es.invest.dto.ApontamentoDTO;
 import br.gov.es.invest.dto.ParecerDTO;
 import br.gov.es.invest.utils.DateTimeUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Parecer extends Entidade {
     
     private ZonedDateTime timestamp;

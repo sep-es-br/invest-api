@@ -8,16 +8,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -32,7 +31,6 @@ import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.AnoService;
-import br.gov.es.invest.service.CustoService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InfosService;
 import br.gov.es.invest.service.InvestimentosBIService;
@@ -43,21 +41,16 @@ import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/infos")
 @RequiredArgsConstructor
 public class InfosController {
-
-    @Value("${frontend.host}")
-    private String frontHost;
 
     private final InvestimentosBIService investimentosBIService;
 
     private final InfosService service;
     private final AnoService anoService;
     private final ACService aCService;
-    private final CustoService custoService;
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
     private final FonteOrcamentariaService fonteService;
@@ -118,9 +111,8 @@ public class InfosController {
                 }
                 List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
 
-                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);    
-
-    
+                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo, gnd);    
+              
                 ArrayList<String> codsUo = new ArrayList<>();
                 ArrayList<String> codsPo = new ArrayList<>();
 
@@ -135,6 +127,7 @@ public class InfosController {
                     }
                 String codUo = idsUo == null ? null : String.join(",", codsUo) ;
                 String codPo = idsPo == null ? null : String.join(",", codsPo);
+
                 String codFonte = fonteService.getCodById(idFonte);
     
                 codFonte = codFonte == null ? null : String.valueOf(Integer.parseInt(codFonte)); 
@@ -161,7 +154,7 @@ public class InfosController {
                     linhaResultado.get("disponivel_sem_reserva").asDouble(), 
                     linhaResultado.get("pago").asDouble()
                     ));
-            } catch (Exception ex) {
+            } catch (JsonProcessingException | NumberFormatException ex) {
                 Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                 return MensagemErroRest.asResponseEntity(
                     HttpStatus.INTERNAL_SERVER_ERROR, 

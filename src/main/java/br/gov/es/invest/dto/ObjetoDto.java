@@ -1,8 +1,13 @@
 package br.gov.es.invest.dto;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import br.gov.es.invest.model.Conta;
+import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
@@ -44,8 +49,11 @@ public record ObjetoDto(
             model.getTiposPlano() == null ? null : model.getTiposPlano().stream().map(tipo -> new TipoPlanoDto(tipo)).toList(),
             model.getContrato(),
             model.getAreaTematica() == null ? null : new AreaTematicaDto(model.getAreaTematica()),
-            model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList(),
-            model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
+
+            Optional.ofNullable(model.getCustosEstimadores()).orElse(new ArrayList<Custo>()).stream()
+                    .sorted(Comparator.comparing(Custo::getAnoExercicio)).map(CustoDTO::parse).toList(),
+
+            UsuarioDto.parse(model.getResponsavel()),
             new ContaDto(model.getConta()),
             model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList(),
             model.getPareceres() == null ? null : model.getPareceres().stream().map(ParecerDTO::parse).toList(),

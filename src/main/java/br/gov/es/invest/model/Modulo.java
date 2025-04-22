@@ -12,11 +12,13 @@ import br.gov.es.invest.dto.ModuloDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Node
+@SuperBuilder
 public class Modulo extends Entidade {
     
     private String nome;

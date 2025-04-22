@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Campo extends Entidade {
 
     public String campoId;

@@ -1,7 +1,6 @@
 package br.gov.es.invest.model;
 
 import java.io.Serializable;
-import java.security.cert.CertPath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,11 +14,13 @@ import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Objeto extends Entidade implements Serializable {
     
     private String nome;
