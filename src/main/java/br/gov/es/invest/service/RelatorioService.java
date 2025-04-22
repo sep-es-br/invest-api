@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -57,43 +58,48 @@ public class RelatorioService {
     private FonteOrcamentariaService fonteOrcamentariaService;
 
     @Autowired
+    private UnidadeOrcamentariaService unidadeOrcamentariaService;
+
+    @Autowired
     private InvestimentosBIService investimentosBIService;
 
     public RegistroDadoConsolidado cardsTotaisRelatorioConsolidado(
         String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
 
-        String cypher = "match (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
-                        "where \r\n" + //
-                        "    $tipoDespesa in labels(conta)\r\n" + //
-                        "AND ($idsUnidade is null or elementId(unidade) in $idsUnidade)\r\n" + //
-                        "AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                        "CALL(obj) {\r\n" + //
-                        "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
-                        "        AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio )\r\n" + //
-                        "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
-                        "    RETURN\r\n" + //
-                        "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
-                        "        sum(indicada_por.contratado) AS totalContratado\r\n" + //
-                        "}\r\n" + //
-                        "CALL(conta) {\r\n" + //
-                        "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
-                        "        AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio )\r\n" + //
-                        "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
-                        "    RETURN\r\n" + //
-                        "        sum(vinculada_por.autorizado) AS totalAutorizado\r\n" + //
-                        "}\r\n" + //
-                        "WITH\r\n" + //
-                        "    SUM(totalPrevisto) as previsto,\r\n" + //
-                        "    SUM(totalContratado) as contratado,\r\n" + //
-                        "    totalAutorizado as autorizado\r\n" + //
-                        "RETURN\r\n" + //
-                        "    SUM(previsto) as previsto,\r\n" + //
-                        "    SUM(contratado) as contratado,\r\n" + //
-                        "    SUM(autorizado) as autorizado,\r\n" + //
-                        "    SUM(autorizado) - SUM(contratado) as difAutorizadoContratado\r\n";
+        String cypher = """
+                        match (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)
+                        where 
+                            $tipoDespesa in labels(conta)
+                        AND ($idsUnidade is null or elementId(unidade) in $idsUnidade)
+                        AND NOT EXISTS((obj)-[:EM]->(:Etapa))
+                        CALL(obj) {
+                            MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
+                            WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                                AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio )
+                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                            RETURN
+                                sum(indicada_por.previsto) AS totalPrevisto,
+                                sum(indicada_por.contratado) AS totalContratado
+                        }\r
+                        CALL(conta) {
+                            MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r
+                            WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                                AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio )
+                                AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
+                            RETURN
+                                sum(vinculada_por.autorizado) AS totalAutorizado
+                        }\r
+                        WITH
+                            SUM(totalPrevisto) as previsto,
+                            SUM(totalContratado) as contratado,
+                            totalAutorizado as autorizado
+                        RETURN
+                            SUM(previsto) as previsto,
+                            SUM(contratado) as contratado,
+                            SUM(autorizado) as autorizado,
+                            SUM(autorizado) - SUM(contratado) as difAutorizadoContratado
+                        """;
         
         Map<String, Object> params = new HashMap<>();
         params.put("tipoDespesa", tipoDespesa);
@@ -103,16 +109,20 @@ public class RelatorioService {
         params.put("exercicioInicio", anoInicio);
         params.put("exercicioFim", anoFim);
 
+        String codFonte = fonteOrcamentariaService.findById(idFonte).map(FonteOrcamentaria::getCodigo).orElse(null);
+        List<String> UoCods = Optional.ofNullable(idsUnidade).map(unidadeOrcamentariaService::getCodsByIds).orElse(null);
+        String codsList = Optional.ofNullable(UoCods).map(cods -> String.join(", ", cods) ).orElse(null);
+        Map<String, JsonNode> exec = investimentosBIService.getCardsTotais(codFonte, anoInicio, codsList, null, gnd).get(0);
+
         RegistroDadoConsolidado result = neo4jClient.query(cypher)
                                             .bindAll(params)
                                             .fetchAs(RegistroDadoConsolidado.class)
-                                            .mappedBy((typeSystem, record) -> RegistroDadoConsolidado.builder()
+                                            .mappedBy((typeSystem, record) ->  RegistroDadoConsolidado.builder()
                                                                                 .previsto(record.get("previsto").asDouble())
                                                                                 .contratado(record.get("contratado").asDouble())
-                                                                                .autorizado(record.get("autorizado").asDouble())
-                                                                                .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble() )
-                                                                                .build()
-                                                                                )
+                                                                                .autorizado(exec.get("autorizado").asDouble())
+                                                                                .difAutorizadoContratado(exec.get("autorizado").asDouble() - record.get("difAutorizadoContratado").asDouble() )
+                                                                                .build())
                                             .first().get();      
 
         return result;
