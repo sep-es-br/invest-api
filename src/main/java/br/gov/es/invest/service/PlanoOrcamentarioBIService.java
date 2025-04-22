@@ -37,6 +37,7 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
 
     public List<PlanoOrcamentario> getPlanosPorUnidade(String codUnidade){
        
+
         HashMap<String, String> params = new HashMap<>();
         params.put("parampCodUo", codUnidade);
         params.put("parampCodPo", "todos");
@@ -69,6 +70,7 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
                     .nome(dado.get("nome_po").asText())
                     .build()
         ).findFirst().orElse(null);
+
 
     }
 

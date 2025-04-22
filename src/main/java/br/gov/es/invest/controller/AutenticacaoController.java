@@ -11,6 +11,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import br.gov.es.invest.dto.UsuarioDto;
 import br.gov.es.invest.service.AutenticacaoService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController

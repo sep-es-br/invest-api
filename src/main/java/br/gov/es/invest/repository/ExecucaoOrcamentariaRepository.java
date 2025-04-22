@@ -19,4 +19,9 @@ public interface ExecucaoOrcamentariaRepository extends Neo4jRepository<Execucao
             "RETURN DISTINCT execucao.anoExercicio")
     public Set<Integer> getAnosExercicio();
 
+    @Query("MATCH (exec:ExecucaoOrcamentaria)-[vinculada:VINCULADA_POR]->(fonte:FonteOrcamentaria)\r\n" + //
+                "WHERE exec.anoExercicio = $ano\r\n" + //
+                "SET vinculada.novo = $novo")
+    public void setaTudoNovo(Integer ano, boolean novo);
+
 }

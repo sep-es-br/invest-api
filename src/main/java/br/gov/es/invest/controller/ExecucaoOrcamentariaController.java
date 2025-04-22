@@ -60,19 +60,25 @@ public class ExecucaoOrcamentariaController {
 
             // processa os dados
 
-            // primeiro o mais facil, dados por ano
-            for(Map<String, JsonNode> dado : dadosPorAno){
-                // guarda valores nas variaveis
-                String codPo = dado.get("cod_po").asText();
-                String codUo = dado.get("cod_uo").asText();
-                int ano = dado.get("ano").asInt();
-                String codFonte = dado.get("cod_fonte").asText();
-                String nomeFonte = dado.get("nome_fonte").asText();
-                Integer codTipoFonte = dado.get("tipo_fonte").asInt();
-                double orcado = dado.get("orcado").asDouble();
-                double autorizado = dado.get("autorizado").asDouble();
-                double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
-                String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
+
+        // seta tudo como sujo
+        service.setaTudoNovo(anoRef, false);
+        service.setaTudoNovo(anoRef+1, false);
+       
+
+        // primeiro o mais facil, dados por ano
+        for(Map<String, JsonNode> dado : dadosPorAno){
+            // guarda valores nas variaveis
+            String codPo = dado.get("cod_po").asText();
+            String codUo = dado.get("cod_uo").asText();
+            int ano = dado.get("ano").asInt();
+            String codFonte = dado.get("cod_fonte").asText();
+            String nomeFonte = dado.get("nome_fonte").asText();
+            Integer codTipoFonte = dado.get("tipo_fonte").asInt();
+            double orcado = dado.get("orcado").asDouble();
+            double autorizado = dado.get("autorizado").asDouble();
+            double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
+            String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
                 Logger.getGlobal().log(Level.INFO, "consumindo: {0} - {1} em {2}", new Object[]{codUo, codPo, ano});
 
@@ -118,36 +124,52 @@ public class ExecucaoOrcamentariaController {
 
                     valores.setFonteOrcamentaria(fonteOrcamentaria);
 
-                    execucao.getVinculadaPor().add(valores);
-                } else {
-                    valores = valoresList.get(0);
-                }
-                
-                valores.setOrcado(orcado);
-                valores.setAutorizado(autorizado);
-                valores.setDispSemReserva(dispSemReserva);
-                valores.setGnd(Integer.parseInt(codGnd));
+
+                execucao.getVinculadaPor().add(valores);
+            } else {
+                valores = valoresList.get(0);
+            }
+
+            // se não for novo, limpa os valores antigos
+            if(!valores.isNovo()){
+                valores.setOrcado(0);
+                valores.setAutorizado(0);
+                valores.setDispSemReserva(0);
+                valores.setNovo(true);
+            }
+            
+            valores.setOrcado(valores.getOrcado() + orcado);
+            valores.setAutorizado(valores.getAutorizado() + autorizado);
+            valores.setDispSemReserva(valores.getDispSemReserva() + dispSemReserva);
+            valores.setGnd(Integer.parseInt(codGnd));
 
                 service.save(execucao);
             }
 
-            // agora começa a brincadeira
-            for(Map<String, JsonNode> dado : dadosPorMes) {
-                int ano = dado.get("ano").asInt();
-                int liquidado = dado.get("liquidado").asInt();
-                int empenhado = dado.get("empenhado").asInt();
-                String codFonte = dado.get("cod_fonte").asText();
-                int mes = dado.get("mes").asInt();
-                String codUo = dado.get("cod_uo").asText();
-                String codPo = dado.get("cod_po").asText();
-                int pago = dado.get("pago").asInt();
-                String nomeFonte = dado.get("nome_fonte").asText();
-                Integer codTipoFonte = dado.get("tipo_fonte").asInt();
-                String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
-                Logger.getGlobal().log(Level.INFO, "consumindo: unidade: {0} - {1} em {2}/{3}", new Object[]{codUo, codPo, String.format("%02d", mes), ano});
-                
-                FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
+        
+        // seta tudo como sujo
+        service.setaTudoNovo(anoRef-1, false);
+        service.setaTudoNovo(anoRef, false);
+
+        // agora começa a brincadeira
+        for(Map<String, JsonNode> dado : dadosPorMes) {
+            int ano = dado.get("ano").asInt();
+            int liquidado = dado.get("liquidado").asInt();
+            int empenhado = dado.get("empenhado").asInt();
+            String codFonte = dado.get("cod_fonte").asText();
+            int mes = dado.get("mes").asInt();
+            String codUo = dado.get("cod_uo").asText();
+            String codPo = dado.get("cod_po").asText();
+            int pago = dado.get("pago").asInt();
+            String nomeFonte = dado.get("nome_fonte").asText();
+            Integer codTipoFonte = dado.get("tipo_fonte").asInt();
+            String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
+
+            Logger.getGlobal().info("consumindo: unidade: " + codUo + " - " + codPo + " em " + String.format("%02d", mes) + "/" + ano);
+            
+            FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
+
 
                 
                 // retorna o investimento no banco
@@ -195,27 +217,18 @@ public class ExecucaoOrcamentariaController {
 
                 // garantir que os campos tem os 12 espaços
 
-                if(valores.getLiquidado().length == 0)
-                    valores.setLiquidado(new double[12]);
-
-                if(valores.getEmpenhado().length == 0)
-                    valores.setEmpenhado(new double[12]);
-                
-                if(valores.getPago().length == 0)
-                    valores.setPago(new double[12]);
-                
-                valores.getLiquidado()[mes-1] = (double) liquidado;
-                valores.getEmpenhado()[mes-1] = (double) empenhado;            
-                valores.getPago()[mes-1] = (double) pago;
-                valores.setGnd(Integer.parseInt(codGnd));
-
-                service.save(execucao);
-
+            if(!valores.isNovo()){
+                valores.setLiquidado(new double[12]);
+                valores.setEmpenhado(new double[12]);
+                valores.setPago(new double[12]);
+                valores.setNovo(true);
             }
+            
+            valores.getLiquidado()[mes-1] += (double) liquidado;
+            valores.getEmpenhado()[mes-1] += (double) empenhado;            
+            valores.getPago()[mes-1] += (double) pago;
+            valores.setGnd(Integer.parseInt(codGnd));
 
-            Logger.getGlobal().info("Migração do Sigefes concluida");
-            return ResponseEntity.ok("sucesso");
-        } catch (Exception e) {
 
             UUID uuid = UUID.randomUUID();
             Logger.getGlobal().log(Level.SEVERE, uuid + ": " + e.getLocalizedMessage(), e);

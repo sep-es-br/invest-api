@@ -367,7 +367,7 @@ public class ObjetoService {
 
         // }
 
-        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe));
+        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe, matcher));
 
         if(statusId != null) {
             objetoFiltrado = objetoFiltrado.stream()
@@ -419,7 +419,7 @@ public class ObjetoService {
             }
         }
 
-        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe));
+        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe, matcher));
 
         for(Objeto objeto : objetoFiltrado) {
             objeto.filtrar(anoExercicio, fonteId);

@@ -44,7 +44,6 @@ public class InvestimentoService {
             Pageable pageable
         ) {
 
-        String cypherBase = """
                             MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto),
                                     (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
                             WHERE ($idPo IS NULL OR elementId(po) IN $idPo)
@@ -98,10 +97,12 @@ public class InvestimentoService {
                             "\n";
         
         String cypherCount = cypherBase + 
+
                 """
                 RETURN
-                    COUNT(inv)
+                    COUNT(DISTINCT inv)
                 """ ;
+
 
 
 

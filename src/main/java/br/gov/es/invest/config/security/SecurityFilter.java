@@ -111,9 +111,9 @@ public class SecurityFilter extends OncePerRequestFilter {
                 erros.add("Por favor, faça o login novamente.");
                 if (LocalDateTime.now().isAfter(expiresAt))
                     erros.add("Token expirado em " + expiresAt);
-                
+
                 enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
-                
+
                 return;
             }
         }
