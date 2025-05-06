@@ -232,20 +232,13 @@ public class ObjetoService {
     public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
          
         String cypherBase = """
-                MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto),
+                MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
                     (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)
                 WHERE
-                    ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome)) AND
-                    ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade) AND
-                    EXISTS((obj)-[:EM]->(:Etapa))
-                WITH obj, conta, unidade
-                MATCH (obj)-[em:EM]->(status:Status)
-                WITH obj, conta, unidade, em, status
-                ORDER BY em.timestamp DESC
-                WITH obj, conta, unidade, collect({rel: em, status: status})[0] AS latest
-                WITH obj, conta, unidade, latest.rel AS emStatus, latest.status AS status
-                WHERE $idStatus IS NULL OR elementId(status) = $idStatus
-                WITH obj, conta, unidade, status, emStatus
+                    ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
+                     AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
+                     AND ($idStatus IS NULL OR elementId(status) = $idStatus)
+                     AND EXISTS((obj)-[:EM]->(:Etapa))
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR elementId(plano) IN $idsPo
