@@ -139,30 +139,32 @@ public class AutenticacaoService {
             Optional<Papel> optPapel = papelRepository.findBy(Example.of(papelProbe), q -> q.first());
 
             if(optPapel.isPresent()) {
-                return !grupoService.getGruposByPapel(optPapel.get().getId()).isEmpty();
+                
+                if(!grupoService.getGruposByPapel(optPapel.get().getId()).isEmpty()) return true;
+                
+                papelDoUser = optPapel.get();
+            }
+            Setor setorDoUser = papelDoUser.getSetor();
+
+            Optional<Setor> optSetor = setorService.findByGuid(setorDoUser.getGuid());
+
+            if(optSetor.isPresent()) {
+                return !grupoService.getGruposBySetor(optSetor.get().getId()).isEmpty();
             } else {
-                Setor setorDoUser = papelDoUser.getSetor();
 
-                Optional<Setor> optSetor = setorService.findByGuid(setorDoUser.getGuid());
+                Orgao orgaoDoUser = setorDoUser.getOrgao();
 
-                if(optSetor.isPresent()) {
-                    return !grupoService.getGruposBySetor(optSetor.get().getId()).isEmpty();
+                Optional<Orgao> optOrgao = orgaoService.findByGuid(orgaoDoUser.getGuid());
+
+                if(optOrgao.isPresent()) {
+                    return !grupoService.getGruposByOrgao(optOrgao.get().getId()).isEmpty();
                 } else {
-
-                    Orgao orgaoDoUser = setorDoUser.getOrgao();
-
-                    Optional<Orgao> optOrgao = orgaoService.findByGuid(orgaoDoUser.getGuid());
-
-                    if(optOrgao.isPresent()) {
-                        return !grupoService.getGruposByOrgao(optOrgao.get().getId()).isEmpty();
-                    } else {
-                        return false;
-                    }
-
+                    return false;
                 }
 
-
             }
+
+
 
 
         }
