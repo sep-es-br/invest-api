@@ -24,6 +24,7 @@ import br.gov.es.invest.service.AcaoService;
 import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
+import br.gov.es.invest.service.ObjetoService;
 import lombok.RequiredArgsConstructor;
 
 
