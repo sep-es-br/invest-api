@@ -41,9 +41,6 @@ public class StatusService {
 
     private Node statusNode = Cypher.node("Status").named("status");
 
-    private final ObjetoService objetoService;
-
-
 
     public Status findOrCreate(Status status) {
         
