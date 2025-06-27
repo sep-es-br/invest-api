@@ -20,19 +20,7 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, String> {
             "SET usuario.ACToken = $newACToken \r\n" + //
             "RETURN usuario")
     public Optional<Usuario> setNewACToken(String sub, String newACToken);
-
-    @Query("MATCH (usuario:Usuario)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-                "WHERE elementId(grupo) = $grupoId\r\n" + //
-                "OPTIONAL MATCH (usuario)-[possui:POSSUI]->(avatar:Avatar)\r\n" + //
-                "RETURN usuario, collect(possui), collect(avatar)")
-    public List<Usuario> getByGrupo(String grupoId);
-
     
-    @Query("MATCH (u:Usuario)-[:POSSUI]->(p:Papel)\r\n" + //
-                "WHERE p.guid = $guidPapel\r\n" + //
-                "RETURN u LIMIT 1")
-    public Usuario getUserCruByPapel(String guidPapel);
-
     @Query("MATCH (g:Grupo)<-[oldR:MEMBRO_DE]-(u:Usuario)-[:POSSUI]->(papel:Papel)\r\n" + //
                 "WHERE elementId(u) = $userId\r\n" + //
                 "    AND elementId(papel) = $papelId\r\n" + //

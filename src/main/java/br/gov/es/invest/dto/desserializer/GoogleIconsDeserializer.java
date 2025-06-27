@@ -30,7 +30,7 @@ public class GoogleIconsDeserializer extends StdDeserializer<List<String>>{
 
     @Override
     public List<String> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-        // TODO Auto-generated method stub
+       
         
         ArrayList<String> iconesDisponiveis = new ArrayList<>();
 
