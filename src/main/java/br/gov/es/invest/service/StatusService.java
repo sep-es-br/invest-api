@@ -41,6 +41,7 @@ public class StatusService {
 
     private Node statusNode = Cypher.node("Status").named("status");
 
+
     public Status findOrCreate(Status status) {
         
         Status statusProbe = new Status();

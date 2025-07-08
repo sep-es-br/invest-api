@@ -257,7 +257,7 @@ public class AutenticacaoService {
 
                 PapelACResponseDto papelAc = acService.getPapelByGuid(papelNoBanco.getGuid(), clientToken);
                 if(papelAc != null && papelAc.Prioritario()){
-                    Papel papelValido = Papel.parse(papelAc);
+                    Papel papelValido = Papel.parse(papelAc, papelNoBanco.getSetor());
                     papelValido.setId(papelNoBanco.getId());
                     papelRepository.save(papelValido);
                     papeisValidos.add(papelAc);

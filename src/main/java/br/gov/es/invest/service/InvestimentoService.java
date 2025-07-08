@@ -43,6 +43,7 @@ public class InvestimentoService {
             Integer exercicio, String idFonte, Integer gnd, List<OrdemItemDto> ordem,
             Pageable pageable
         ) {
+
             String cypherBase = """
                             MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto),
                                     (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
