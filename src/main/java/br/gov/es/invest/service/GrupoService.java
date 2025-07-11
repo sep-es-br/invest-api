@@ -90,52 +90,54 @@ public class GrupoService {
 
 
     public List<MembroGrupo> getListaMembros(String grupoId) {
-        String cypher = "MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)\r\n" + //
-                        "WHERE elementId(g) = $grupoId\r\n" + //
-                        "RETURN {\r\n" + //
-                        "    id: elementId(orgao),\r\n" + //
-                        "    icone: 'todos',\r\n" + //
-                        "    nomeCompleto: 'Todos',\r\n" + //
-                        "    papel: 'Todos',\r\n" + //
-                        "    setor: 'Todos',\r\n" + //
-                        "    orgao: orgao.sigla + ' - ' + orgao.nome\r\n" + //
-                        "} AS membros\r\n" + //
-                        "UNION\r\n" + //
-                        "MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)-[:MEMBRO_DE]->(g:Grupo)\r\n" + //
-                        "WHERE elementId(g) = $grupoId\r\n" + //
-                        "RETURN {\r\n" + //
-                        "    id: elementId(setor),\r\n" + //
-                        "    icone: 'todos',\r\n" + //
-                        "    nomeCompleto: 'Todos',\r\n" + //
-                        "    papel: 'Todos',\r\n" + //
-                        "    setor: setor.sigla,\r\n" + //
-                        "    orgao: orgao.sigla + ' - ' + orgao.nome\r\n" + //
-                        "} AS membros\r\n" + //
-                        "UNION\r\n" + //
-                        "MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)-[:MEMBRO_DE]->(g:Grupo),\r\n" + //
-                        "        (papel)<-[:POSSUI]-(agente:Agente)\r\n" + //
-                        "WHERE elementId(g) = $grupoId\r\n" + //
-                        "OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)\r\n" + //
-                        "RETURN {\r\n" + //
-                        "    id: elementId(papel),\r\n" + //
-                        "    icone: avatar.blob,\r\n" + //
-                        "    nomeCompleto: agente.nomeCompleto,\r\n" + //
-                        "    papel: papel.nome,\r\n" + //
-                        "    setor: setor.sigla,\r\n" + //
-                        "    orgao: orgao.sigla + ' - ' + orgao.nome\r\n" + //
-                        "} AS membros\r\n" + //
-                        "UNION\r\n" + //
-                        "MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:MEMBRO_DE]-(agente:Agente)-[:MEMBRO_DE]->(g:Grupo)\r\n" + //
-                        "WHERE elementId(g) = $grupoId\r\n" + //
-                        "OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)\r\n" + //
-                        "RETURN {\r\n" + //
-                        "    id: elementId(agente),\r\n" + //
-                        "    icone: avatar.blob,\r\n" + //
-                        "    nomeCompleto: agente.nomeCompleto,\r\n" + //
-                        "    papel: agente.papel,\r\n" + //
-                        "    setor: setor.sigla,\r\n" + //
-                        "    orgao: orgao.sigla + ' - ' + orgao.nome\r\n" + //
-                        "} AS membros";
+        String cypher = """
+            MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)
+            WHERE elementId(g) = $grupoId
+            RETURN {
+                id: elementId(orgao),
+                icone: 'todos',
+                nomeCompleto: 'Todos',
+                papel: 'Todos',
+                setor: 'Todos',
+                orgao: orgao.sigla + ' - ' + orgao.nome
+            } AS membros
+            UNION
+            MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)-[:MEMBRO_DE]->(g:Grupo)
+            WHERE elementId(g) = $grupoId
+            RETURN {
+                id: elementId(setor),
+                icone: 'todos',
+                nomeCompleto: 'Todos',
+                papel: 'Todos',
+                setor: setor.sigla,
+                orgao: orgao.sigla + ' - ' + orgao.nome
+            } AS membros
+            UNION
+            MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)-[:MEMBRO_DE]->(g:Grupo),
+                    (papel)<-[:POSSUI]-(agente:Agente)
+            WHERE elementId(g) = $grupoId
+            OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
+            RETURN {
+                id: elementId(papel),
+                icone: avatar.blob,
+                nomeCompleto: agente.nomeCompleto,
+                papel: papel.nome,
+                setor: setor.sigla,
+                orgao: orgao.sigla + ' - ' + orgao.nome
+            } AS membros
+            UNION
+            MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:MEMBRO_DE]-(agente:Agente)-[:MEMBRO_DE]->(g:Grupo)
+            WHERE elementId(g) = $grupoId
+            OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
+            RETURN {
+                id: elementId(agente),
+                icone: avatar.blob,
+                nomeCompleto: agente.nomeCompleto,
+                papel: agente.papel,
+                setor: setor.sigla,
+                orgao: orgao.sigla + ' - ' + orgao.nome
+            } AS membros
+             """;
         
         HashMap<String, Object> params = new HashMap<>();
         params.put("grupoId", grupoId);

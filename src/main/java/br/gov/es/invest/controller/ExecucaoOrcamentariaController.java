@@ -28,6 +28,12 @@ import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -35,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExecucaoOrcamentariaController {
     
+    private static final Logger LOGGER = Logger.getGlobal();
     
     private final ExecucaoOrcamentariaService service;
     private final InvestimentoService investimentoService;
@@ -45,6 +52,14 @@ public class ExecucaoOrcamentariaController {
     @GetMapping("/importarPentaho")
     public ResponseEntity<?> importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
+        ByteArrayOutputStream logOut = new ByteArrayOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(logOut, StandardCharsets.UTF_8);
+        PrintWriter pw = new PrintWriter(writer, true);
+        StreamHandler memHandler = new StreamHandler(logOut, new SimpleFormatter());
+        
+        LOGGER.addHandler(memHandler);
+        LOGGER.setLevel(Level.INFO);
+        
         try {
             // atualiza o nome dos planosOrcamentario
             planoOrcamentarioService.atualizarNomesComBi();
@@ -77,7 +92,7 @@ public class ExecucaoOrcamentariaController {
                 double dispSemReserva = dado.get("disponivel_sem_reserva").asDouble();
                 String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
-                Logger.getGlobal().log(Level.INFO, "consumindo: {0} - {1} em {2}", new Object[]{codUo, codPo, ano});
+                LOGGER.log(Level.INFO, "consumindo: {0} - {1} em {2}", new Object[]{codUo, codPo, ano});
 
                 FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
@@ -160,7 +175,7 @@ public class ExecucaoOrcamentariaController {
                 Integer codTipoFonte = dado.get("tipo_fonte").asInt();
                 String codGnd = dado.get("COD_GRUPO_DESPESA").asText();
 
-                Logger.getGlobal().log(Level.INFO, "consumindo: unidade: {0} - {1} em {2}/{3}", new Object[]{codUo, codPo, String.format("%02d", mes), ano});
+                LOGGER.log(Level.INFO, "consumindo: unidade: {0} - {1} em {2}/{3}", new Object[]{codUo, codPo, String.format("%02d", mes), ano});
                 
                 FonteOrcamentaria fonteOrcamentaria = fonteOrcamentariaService.findByCod(String.format("%09d", codTipoFonte));
 
@@ -171,6 +186,8 @@ public class ExecucaoOrcamentariaController {
                 // se não existir no banco passa pro proximo e nem perde tempo;
                 if(optInvestimento.isEmpty()) continue;
 
+                
+                
                 Investimento investimento = optInvestimento.get();
                 List<ExecucaoOrcamentaria> execs = investimento.getExecucoesOrcamentaria().stream()
                     .filter(exec -> {
@@ -226,10 +243,19 @@ public class ExecucaoOrcamentariaController {
 
             }
 
-            Logger.getGlobal().info("Migração do Sigefes concluida");
-            return ResponseEntity.ok("sucesso");
+            LOGGER.info("Migração do Sigefes concluida");
+            
+            memHandler.flush();
+            
+            LOGGER.removeHandler(memHandler);
+            memHandler.close();
+            
+            return ResponseEntity.ok(logOut.toString(StandardCharsets.UTF_8));
         } catch (Exception e) {
-
+            
+            LOGGER.removeHandler(memHandler);
+            memHandler.close();
+            
             UUID uuid = UUID.randomUUID();
             Logger.getGlobal().log(Level.SEVERE, uuid + ": " + e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, uuid + ": " + e.getLocalizedMessage(), null);
