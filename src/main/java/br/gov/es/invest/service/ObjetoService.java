@@ -236,9 +236,9 @@ public class ObjetoService {
                     (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)
                 WHERE
                     ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
-                    AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
-                    AND ($idStatus IS NULL OR elementId(status) = $idStatus)
-                    AND EXISTS((obj)-[:EM]->(:Etapa))
+                     AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
+                     AND ($idStatus IS NULL OR elementId(status) = $idStatus)
+                     AND EXISTS((obj)-[:EM]->(:Etapa))
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR elementId(plano) IN $idsPo

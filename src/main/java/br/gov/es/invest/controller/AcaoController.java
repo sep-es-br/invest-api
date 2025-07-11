@@ -22,6 +22,7 @@ import br.gov.es.invest.model.Parecer;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.AcaoService;
 import br.gov.es.invest.service.EtapaService;
+import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.service.ObjetoService;

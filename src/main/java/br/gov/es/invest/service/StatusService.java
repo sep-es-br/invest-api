@@ -83,10 +83,13 @@ public class StatusService {
         String cypher = """
                 MATCH (objeto:Objeto), (status:Status)
                 WHERE elementId(objeto) = $objetoId
-                    AND elementId(status) = $statusId
-                MERGE (objeto)-[:EM{
-                    timestamp: $timestamp
-                }]->(status)
+                AND elementId(status) = $statusId
+
+                OPTIONAL MATCH (objeto)-[oldRel:EM]->(:Status)
+                DELETE oldRel
+
+                MERGE (objeto)-[rel:EM]->(status)
+                SET rel.timestamp = $timestamp
                 """;
 
         Map<String, Object> params = new HashedMap<>();

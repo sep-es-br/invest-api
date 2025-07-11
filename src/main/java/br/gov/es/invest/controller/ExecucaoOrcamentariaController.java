@@ -260,9 +260,10 @@ public class ExecucaoOrcamentariaController {
             Logger.getGlobal().log(Level.SEVERE, uuid + ": " + e.getLocalizedMessage(), e);
             return MensagemErroRest.asResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, uuid + ": " + e.getLocalizedMessage(), null);
 
+
         }
 
         
-
+        return ResponseEntity.ok("Sucesso");
     }
 }
