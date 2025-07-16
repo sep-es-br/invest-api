@@ -1,7 +1,6 @@
 package br.gov.es.invest.service;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import br.gov.es.invest.model.FonteOrcamentaria;
-import br.gov.es.invest.model.PlanoOrcamentario;
 
 @Service
 public class FonteOrcamentariaBIService extends PentahoBIService {
@@ -28,7 +26,8 @@ public class FonteOrcamentariaBIService extends PentahoBIService {
        
         try {
             String url = buildEndpointUri(spoPath, targetFonteOrcamentaria, null);
-            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+            List<Map<String, JsonNode>> dados = extractDataFromResponse(getMock("fontesOrcamentarias.result.txt"));
+            // List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
             List<FonteOrcamentaria> fontes = dados.stream().map(
                 dado -> {

@@ -90,7 +90,8 @@ public class InvestimentosBIService extends PentahoBIService {
         String url = buildEndpointUri(spoPath, targetCardsTotais, paramsMap);
 
         try {
-            return extractDataFromResponse(doRequest(url));
+            // return extractDataFromResponse(doRequest(url));
+            return extractDataFromResponse(getMock("cardsTotais.result.txt"));
         } catch (Exception ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
             throw new RuntimeException(ex);
@@ -108,7 +109,8 @@ public class InvestimentosBIService extends PentahoBIService {
         String url = buildEndpointUri(spoPath, targetValorMes, paramsMap);
 
         try {
-            return extractDataFromResponse(doRequest(url));
+            // return extractDataFromResponse(doRequest(url));
+            return extractDataFromResponse(getMock("valorMes.result.txt"));
         } catch (Exception ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
             return Arrays.asList();
@@ -127,7 +129,8 @@ public class InvestimentosBIService extends PentahoBIService {
         String url = buildEndpointUri(spoPath, targetValorAno, paramsMap);
 
         try {
-            return extractDataFromResponse(doRequest(url));
+            // return extractDataFromResponse(doRequest(url));
+            return extractDataFromResponse(getMock("valorAno.result.txt"));
         } catch (Exception ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
             return Arrays.asList();

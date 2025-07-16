@@ -1,7 +1,6 @@
 package br.gov.es.invest.service;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -31,7 +30,9 @@ public class UnidadeOrcamentariaBIService extends PentahoBIService {
        
         try {
             String url = buildEndpointUri(spoPath, unidadesTarget, null);
-            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+                        
+            List<Map<String, JsonNode>> dados = extractDataFromResponse(getMock("unidadesOrcamentarias.result.txt"));
+            // List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
 
             List<UnidadeOrcamentaria> unidades = dados.stream()
             .filter( dado -> !dado.get("cod_uo").asText().startsWith("0") &&  !dado.get("cod_uo").asText().startsWith("8"))

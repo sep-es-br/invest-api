@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import br.gov.es.invest.biClient.BiClient;
+import br.gov.es.invest.feignClient.BiClient;
 import br.gov.es.invest.model.PlanoOrcamentario;
 
 @Service
@@ -42,17 +42,28 @@ public class PlanoOrcamentarioBIService extends PentahoBIService{
         params.put("parampCodUo", codUnidade);
         params.put("parampCodPo", "todos");
 
-        List<Map<String, JsonNode>> dados = biClient.doQuery(resource, params);
+        // List<Map<String, JsonNode>> dados = biClient.doQuery(resource, params);
 
+        try{
 
-        List<PlanoOrcamentario> planos = dados.stream().map(
-            dado -> PlanoOrcamentario.builder()
-                    .codigo(dado.get("cod_po").asText())
-                    .nome(dado.get("nome_po").asText())
-                    .build()
-        ).collect(Collectors.toList());
-        return planos;
-        
+            String url = buildEndpointUri(spoPath, planosTarget, params);
+            List<Map<String, JsonNode>> dados = extractDataFromResponse(getMock("planosOrcamentarios.result.txt"));
+            // List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+
+            List<PlanoOrcamentario> planos = dados.stream().map(
+                dado -> {
+                    PlanoOrcamentario plano = new PlanoOrcamentario();
+                    plano.setCodigo(dado.get("cod_po").asText());
+                    plano.setNome(dado.get("nome_po").asText());
+                    return plano;
+                }
+            ).toList();
+
+            return planos;
+        } catch (Exception ex){
+            Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            return Arrays.asList();
+        }
     }
 
     public PlanoOrcamentario getPlanoPorCod(String codPo){

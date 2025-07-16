@@ -598,7 +598,7 @@ public class RelatorioService {
         params.put("exercicio", anoInicio);
 
 
-        String codFonte = fonteOrcamentariaService.findById(idFonte).map(FonteOrcamentaria::getCodigo).orElse(null);
+        String codFonte = fonteOrcamentariaService.getCodById(idFonte);
         List<RegistroDadoConsolidado> list = (List<RegistroDadoConsolidado>) neo4jClient.query(cypher)
                     .bindAll(params)
                     .fetchAs(RegistroDadoConsolidado.class)
