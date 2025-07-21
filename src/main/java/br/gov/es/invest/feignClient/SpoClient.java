@@ -4,17 +4,13 @@
  */
 package br.gov.es.invest.feignClient;
 
-import br.gov.es.invest.config.feign.pentahoInterceptorConfig;
-import br.gov.es.invest.feignClient.dto.ParticipeProposalListRequestDto;
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.List;
-import java.util.Map;
-import net.minidev.json.JSONObject;
+import br.gov.es.invest.feignClient.dto.PageResponseDto;
+import br.gov.es.invest.feignClient.dto.PropostaRequest;
+import br.gov.es.invest.feignClient.dto.PropostaResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -26,7 +22,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 )
 public interface SpoClient {
     
-    @PostMapping("/integration/spo/proposalsList")
-    public feign.Response findListagemPropostas(@RequestBody ParticipeProposalListRequestDto request);
+    static final String SPO_ENDPOINT_BASE = "/integration/spo";
+    
+    @PostMapping(SpoClient.SPO_ENDPOINT_BASE + "/proposalsList")
+    public PageResponseDto<PropostaResponse> findListagemPropostas(@RequestBody PropostaRequest request);
+    
+    @GetMapping(SpoClient.SPO_ENDPOINT_BASE + "/lastConferenceId")
+    public LastConferenceIdResp getLastConferenceId();     
+    
+    record LastConferenceIdResp(Long id) {}
+    
+    
+    
+    
+    
      
 }

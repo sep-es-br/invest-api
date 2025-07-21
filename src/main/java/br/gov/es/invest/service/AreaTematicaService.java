@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.AreaTematica;
 import br.gov.es.invest.repository.AreaTematicaRepository;
+import java.util.Optional;
 
 @Service
 public class AreaTematicaService {
@@ -18,6 +19,10 @@ public class AreaTematicaService {
     public List<AreaTematica> findAll() {
 
         return repository.findAll();
+    }
+    
+    public Optional<AreaTematica> findById(String id){
+        return repository.findById(id);
     }
     
 }
