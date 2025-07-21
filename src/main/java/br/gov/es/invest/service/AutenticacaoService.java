@@ -227,10 +227,10 @@ public class AutenticacaoService {
             List<PapelACResponseDto> papeisDoUser = acService.getPapeisBySub(user.getSub(), clientToken);
             
             List<PapelACResponseDto> papeisComNome = papeisDoUser.stream().filter(papelac -> papelac.Nome().equals(user.getPapel())).toList();
-            if(papeisComNome.size() > 0){
-                List<Papel> papeisPrioritário = papeisComNome.stream().filter(p -> p.Prioritario()).map(Papel::parse).toList();
+            if(!papeisComNome.isEmpty()){
+                List<Papel> papeisPrioritário = papeisComNome.stream().map(Papel::parse).toList();
 
-                if(papeisPrioritário.size() > 0) {
+                if(!papeisPrioritário.isEmpty()) {
                     papeisValidos.add(papeisComNome.get(0));
                 }
 
@@ -256,7 +256,7 @@ public class AutenticacaoService {
                 Papel papelNoBanco = user.getPapeis().get(0);
 
                 PapelACResponseDto papelAc = acService.getPapelByGuid(papelNoBanco.getGuid(), clientToken);
-                if(papelAc != null && papelAc.Prioritario()){
+                if(papelAc != null){
                     Papel papelValido = Papel.parse(papelAc, papelNoBanco.getSetor());
                     papelValido.setId(papelNoBanco.getId());
                     papelRepository.save(papelValido);
@@ -267,8 +267,8 @@ public class AutenticacaoService {
                 
                 for(Papel papel : user.getPapeis()){
                     PapelACResponseDto papelAc = acService.getPapelByGuid(papel.getGuid(), clientToken);
-                    if(papelAc != null && papelAc.Prioritario()){
-                        Papel papelValido = Papel.parse(papelAc);
+                    if(papelAc != null){
+                        Papel papelValido = Papel.parse(papelAc, papel.getSetor());
                         papelValido.setId(papel.getId());
                         papelRepository.save(papelValido);
                         papeisValidos.add(papelAc);
