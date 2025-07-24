@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import br.gov.es.invest.model.AreaTematica;
 import br.gov.es.invest.repository.AreaTematicaRepository;
 import java.util.Optional;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class AreaTematicaService {
@@ -18,7 +19,7 @@ public class AreaTematicaService {
 
     public List<AreaTematica> findAll() {
 
-        return repository.findAll();
+        return repository.findAll(Sort.by(Sort.Order.asc("nome")));
     }
     
     public Optional<AreaTematica> findById(String id){
