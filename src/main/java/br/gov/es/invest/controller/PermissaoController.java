@@ -168,7 +168,7 @@ public class PermissaoController {
                    null
                ),
                 new ItemMenu(
-                   "Propostas de Audiencia Publica", 
+                   "Propostas de Audiência Pública", 
                    null, 
                    isGestorMaster || moduloService.checarAcessoUsuario("carteiraaudiencias", usuario.getId()), 
                    "/audiencia-publica", 
