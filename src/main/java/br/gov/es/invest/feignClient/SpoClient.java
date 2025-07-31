@@ -4,6 +4,7 @@
  */
 package br.gov.es.invest.feignClient;
 
+import br.gov.es.invest.config.feign.ParticipeInterceptorConfig;
 import br.gov.es.invest.feignClient.dto.PageResponseDto;
 import br.gov.es.invest.feignClient.dto.PropostaRequest;
 import br.gov.es.invest.feignClient.dto.PropostaResponse;
@@ -18,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
  */
 @FeignClient(
     name="spoClient", 
-    url="${participe.apiUrl}"
+    url="${participe.apiUrl}",
+    configuration = ParticipeInterceptorConfig.class
 )
 public interface SpoClient {
     
