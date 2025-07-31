@@ -214,7 +214,7 @@ public class ContaService {
 
     public DataListResult<DadoConsolidadoDTO> getDadosConsolidados (
         String tipoDespesa, Integer gnd, Integer exercicioInicio, Integer exercicioFim, String idFonte,
-        Pageable pageable, List<String> idsUnidade
+        Pageable pageable, List<Long> idsUnidade
     ) {
 
 

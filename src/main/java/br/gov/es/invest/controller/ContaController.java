@@ -70,7 +70,7 @@ public class ContaController {
     @GetMapping("{tipoDespesa}/dadosDetalhados/{exercicio}")
     public ResponseEntity<?> getDadosDetalhados (
         @PathVariable String tipoDespesa, @PathVariable Integer exercicio, 
-        @RequestParam(required=false) Integer gnd, @RequestParam(required=false) String idFonte, @RequestParam Integer pag,
+        @RequestParam(required=false) Integer gnd, @RequestParam(required=false) Long idFonte, @RequestParam Integer pag,
         @RequestParam Integer pagSize, @RequestParam(required=false) String idsUnidade, @RequestParam(required=false) String idsPlanos
     ){
         

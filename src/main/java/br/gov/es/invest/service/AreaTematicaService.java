@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.AreaTematica;
 import br.gov.es.invest.repository.AreaTematicaRepository;
+import java.util.Optional;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class AreaTematicaService {

@@ -56,14 +56,14 @@ public class AutenticacaoService {
         String token = tokenService.gerarToken(userInfo, accessToken);
 
         
-        Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());
+        Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());;
         
         Usuario usuario;
 
         if(optUsuario.isPresent()){
             usuario = optUsuario.get();
 
-            if(!userInfo.role().contains("GESTOR_MASTER")){
+            if(userInfo.role().contains("GESTOR_MASTER")){
                 if(!validarPapel(usuario)) throw new PapelInvalidoException("Papel não existe ou não é prioritário; usuario-sub: " + usuario.getSub());
             } else if(usuario.getPapeis() == null || usuario.getPapeis().isEmpty()){
                 final String papelBanco = usuario.getPapel();
