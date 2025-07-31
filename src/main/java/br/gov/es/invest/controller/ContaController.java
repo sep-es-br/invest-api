@@ -39,8 +39,8 @@ public class ContaController {
     
     @GetMapping("/contaTira")
     public ResponseEntity<?> getAllTiraByFilter(
-            @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-            @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
+            @RequestParam(required = false) String nome, @RequestParam(required = false) Long codUnidade, @RequestParam(required = false) Long codPO,
+            @RequestParam Integer exercicio, @RequestParam(required = false) Long idFonte, @RequestParam int numPag, @RequestParam int qtPorPag
         ) {
             try {
 
@@ -76,11 +76,11 @@ public class ContaController {
         
         try {
             
-            List<String> idsUnidadeList = idsUnidade == null ? null
-                    : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+            List<Long> idsUnidadeList = idsUnidade == null ? null
+                    : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<Long>>(){});
 
-            List<String> idsPlanosList = idsPlanos == null ? null
-            : new ObjectMapper().readValue(idsPlanos, new TypeReference<List<String>>(){});
+            List<Long> idsPlanosList = idsPlanos == null ? null
+            : new ObjectMapper().readValue(idsPlanos, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
                 service.getDadosDetalhados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList, idsPlanosList)
@@ -106,8 +106,8 @@ public class ContaController {
         
         try {
             
-            List<String> idsUnidadeList = idsUnidade == null ? null
-                    : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+            List<Long> idsUnidadeList = idsUnidade == null ? null
+                    : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
                 service.getDadosConsolidados(tipoDespesa, gnd, exercicioInicio, exercicioFim, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList)
@@ -126,8 +126,8 @@ public class ContaController {
 
     @GetMapping("/count")
     public ResponseEntity<Integer> getAmmoutByFilter(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String codUnidade, @RequestParam(required = false) String codPO,
-        @RequestParam Integer exercicio, @RequestParam(required = false) String idFonte
+        @RequestParam(required = false) String nome, @RequestParam(required = false) Long codUnidade, @RequestParam(required = false) Long codPO,
+        @RequestParam Integer exercicio, @RequestParam(required = false) Long idFonte
     ) {
         return ResponseEntity.ok(service.countByFilter(nome, codUnidade, codPO, exercicio, idFonte));
     }

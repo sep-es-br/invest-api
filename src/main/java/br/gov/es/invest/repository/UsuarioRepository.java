@@ -8,12 +8,12 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.Usuario;
 
-public interface UsuarioRepository extends Neo4jRepository<Usuario, String> {
+public interface UsuarioRepository extends Neo4jRepository<Usuario, Long> {
     
     @Query("MATCH (usuario:Usuario)\r\n" + //
                 "WHERE usuario.sub = $sub\r\n" + //
-                "RETURN elementId(usuario)")
-    public Optional<String> getIdBySub(String sub);
+                "RETURN id(usuario)")
+    public Optional<Long> getIdBySub(String sub);
 
     @Query("MATCH (usuario:Usuario) \r\n" + //
             "WHERE usuario.sub = $sub \r\n" + //
@@ -22,10 +22,10 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, String> {
     public Optional<Usuario> setNewACToken(String sub, String newACToken);
     
     @Query("MATCH (g:Grupo)<-[oldR:MEMBRO_DE]-(u:Usuario)-[:POSSUI]->(papel:Papel)\r\n" + //
-                "WHERE elementId(u) = $userId\r\n" + //
-                "    AND elementId(papel) = $papelId\r\n" + //
+                "WHERE id(u) = $userId\r\n" + //
+                "    AND id(papel) = $papelId\r\n" + //
                 "MERGE (papel)-[:MEMBRO_DE]->(g)\r\n" + //
                 "DELETE oldR")
-    public void transferirGrupo(String userId, String papelId);
+    public void transferirGrupo(Long userId, Long papelId);
 
 }

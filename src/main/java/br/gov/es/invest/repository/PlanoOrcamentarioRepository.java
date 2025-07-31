@@ -7,13 +7,13 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.PlanoOrcamentario;
 
-public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcamentario, String> {
+public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcamentario, Long> {
     
     @Query("MATCH (plano:PlanoOrcamentario) RETURN plano ORDER BY plano.codigo")
     public List<PlanoOrcamentario> getAllSimples();
     
     @Query("MATCH (plano:PlanoOrcamentario)\r\n" + //
-            "WHERE elementId(plano) = $idPlano\r\n" + //
+            "WHERE id(plano) = $idPlano\r\n" + //
             "RETURN toString(plano.codigo)")
-    public String getCodById(String idPlano);
+    public String getCodById(Long idPlano);
 }

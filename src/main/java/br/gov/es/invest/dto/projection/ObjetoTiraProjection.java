@@ -8,7 +8,7 @@ import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.EmStatus;
 
 public interface ObjetoTiraProjection {
-    public String getId();
+    public Long getId();
     public String getNome();
     public String getTipo();
     public EmStatus getEmStatus();

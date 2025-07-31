@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.EmEtapa;
 
 public record EmEtapaDTO(
-    String id,
+    Long id,
     EtapaDTO etapa,
     String atividade,
     boolean devolvido

@@ -42,7 +42,7 @@ public class GrupoController {
     private final SetorService setorService;
 
     @GetMapping("")
-    public ResponseEntity<?> findById(@RequestParam(required = false) String grupoId, @RequestParam(required = false) String nome) {
+    public ResponseEntity<?> findById(@RequestParam(required = false) Long grupoId, @RequestParam(required = false) String nome) {
 
         if(grupoId != null) {
 
@@ -82,7 +82,7 @@ public class GrupoController {
     }
 
     @GetMapping("/quantidadeMembros")
-    public int getMethodName(@RequestParam String grupoId) {
+    public int getMethodName(@RequestParam Long grupoId) {
         return service.quantidadeDeMembros(grupoId);
     }
     
@@ -99,7 +99,7 @@ public class GrupoController {
 
     @GetMapping("/byUsuario")
     public List<GrupoDTO> findByUsuario(
-            @RequestParam String usuarioId
+            @RequestParam Long usuarioId
         ) {
         
             return service.getGruposDoUsuario(usuarioId).stream().map(GrupoDTO::parse).toList();
@@ -126,12 +126,12 @@ public class GrupoController {
     }
     
     @DeleteMapping("/")
-    public GrupoDTO deleteGrupo(@RequestParam String idGrupo) {
+    public GrupoDTO deleteGrupo(@RequestParam Long idGrupo) {
         return GrupoDTO.parse(service.delete(idGrupo));
     }
     
     @DeleteMapping("/membro")
-    public GrupoDTO deleteGrupo(@RequestParam String idGrupo, @RequestParam String idMembro) {
+    public GrupoDTO deleteGrupo(@RequestParam Long idGrupo, @RequestParam Long idMembro) {
         return GrupoDTO.parse(service.removerMembro(idGrupo, idMembro));
     }
 

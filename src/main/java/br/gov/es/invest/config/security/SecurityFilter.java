@@ -120,7 +120,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean checarAcesso(HttpServletRequest request, String userId){
+    private boolean checarAcesso(HttpServletRequest request, Long userId){
         String url = request.getHeader("Origin-URL");
 
         if(url == null) return false;

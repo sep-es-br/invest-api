@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.FonteOrcamentaria;
 
-public interface FonteOrcamentariaRepository extends Neo4jRepository<FonteOrcamentaria, String>{
+public interface FonteOrcamentariaRepository extends Neo4jRepository<FonteOrcamentaria, Long>{
     
     @Query("MATCH (fonte:FonteOrcamentaria) WHERE fonte.codigo = $codigo RETURN fonte")
     public FonteOrcamentaria findByCodigo(String codigo);

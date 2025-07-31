@@ -47,7 +47,7 @@ public class InvestimentoController {
             @RequestBody FiltroInvestimentoDto filtro, @RequestHeader("Authorization") String authToken
         ) {                
             
-            List<String> idsUo = null;
+            List<Long> idsUo = null;
             if(filtro.unidades() == null && !filtro.podeVerUnidades()) {
                 
                 authToken = authToken.replace("Bearer ", "");
@@ -64,7 +64,7 @@ public class InvestimentoController {
             }
 
         
-            List<String> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
+            List<Long> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
         
         
             DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(

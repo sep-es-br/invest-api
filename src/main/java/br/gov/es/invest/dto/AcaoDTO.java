@@ -3,13 +3,13 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.Acao;
 
 public record AcaoDTO(
-    String id,
+    Long id,
     String nome,
     String acaoId,
     StatusDTO statusFinal,
     String atividadeFinal,
     Boolean positivo,
-    String proxEtapaId
+    Long proxEtapaId
 ) {
     public static AcaoDTO parse (Acao model) {
         return model == null ? null :

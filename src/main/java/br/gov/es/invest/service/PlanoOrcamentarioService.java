@@ -34,11 +34,11 @@ public class PlanoOrcamentarioService {
         return repository.getAllSimples();
     }
 
-    public String getCodById(String idPlano) {
+    public String getCodById(Long idPlano) {
         return repository.getCodById(idPlano);
     }
 
-    public String getIdByCod(String cod) {
+    public Long getIdByCod(String cod) {
         return repository.findBy(
             Example.of(PlanoOrcamentario.builder().codigo(cod).build()), 
             q -> q.first())

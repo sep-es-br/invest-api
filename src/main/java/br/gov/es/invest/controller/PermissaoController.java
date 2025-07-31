@@ -59,7 +59,7 @@ public class PermissaoController {
     }
 
     @GetMapping("/byModuloGrupo")
-    public PodeDto getByModuloGrupo(@RequestParam String idModulo, @RequestParam String idGrupo) {
+    public PodeDto getByModuloGrupo(@RequestParam Long idModulo, @RequestParam Long idGrupo) {
 
 
         Pode pode = podeService.findByGrupoModulo(idModulo, idGrupo);

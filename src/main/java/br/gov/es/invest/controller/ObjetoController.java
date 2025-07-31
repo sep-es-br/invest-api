@@ -59,7 +59,7 @@ public class ObjetoController {
     public ResponseEntity<?> getAllByFiltro(
         @RequestBody ObjetoFiltroDTO filtro, @RequestHeader("Authorization") String authToken
     ) {
-        List<String> idsUo = null;
+        List<Long> idsUo = null;
         if(filtro.unidades() == null && !filtro.podeVerUnidades()) {
 
             authToken = authToken.replace("Bearer ", "");
@@ -76,7 +76,7 @@ public class ObjetoController {
             idsUo = filtro.unidades().stream().map(UnidadeOrcamentariaDTO::id).toList();
         }
 
-        List<String> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
+        List<Long> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
 
             
 
@@ -99,14 +99,14 @@ public class ObjetoController {
     
     @GetMapping("/allTiraEmProcessamento")
     public ResponseEntity<?> getAllByFiltroEmProcessamento(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) String statusId,
+        @RequestParam(required = false) String nome, @RequestParam(required = false) Long statusId,
         @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
         @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
-        @RequestParam(required = false) String etapaId, @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
+        @RequestParam(required = false) Long etapaId, @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
     ) {
 
         try{
-            List<String> idsUo = null;
+            List<Long> idsUo = null;
             if(unidadeId == null && !podeVerUnidades) {
 
                 authToken = authToken.replace("Bearer ", "");
@@ -120,9 +120,9 @@ public class ObjetoController {
 
                 idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {
-                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<String>>(){});
+                idsUo = new JsonMapper().readValue(unidadeId, new TypeReference<List<Long>>(){});
             }
-            List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>(){});
+            List<Long> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
                 service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1))
@@ -139,7 +139,7 @@ public class ObjetoController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<?> getById(@RequestParam String id, @RequestParam(required = false, defaultValue="true") boolean updateStatus) {
+    public ResponseEntity<?> getById(@RequestParam Long id, @RequestParam(required = false, defaultValue="true") boolean updateStatus) {
 
         try{
 
@@ -222,7 +222,7 @@ public class ObjetoController {
     }
 
     @DeleteMapping("")
-    public ResponseEntity<?> deleteObj(String objetoId){
+    public ResponseEntity<?> deleteObj(Long objetoId){
         
         Optional<Objeto> optObjetoRemovido = service.getById(objetoId);
 

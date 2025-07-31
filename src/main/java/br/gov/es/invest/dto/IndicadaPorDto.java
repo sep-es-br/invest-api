@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.IndicadaPor;
 
 public record IndicadaPorDto(
-    String id,
+    Long id,
     FonteOrcamentariaDTO fonteOrcamentaria,
     Double previsto,
     Double contratado,

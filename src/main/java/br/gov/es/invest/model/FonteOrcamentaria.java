@@ -25,7 +25,7 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
         this.nome = nome;
     }
 
-    public FonteOrcamentaria(String codigo, String nome) {
+    public FonteOrcamentaria(Long codigo, String nome) {
         this.setId(codigo);
         this.nome = nome;
     }

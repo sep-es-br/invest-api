@@ -5,11 +5,11 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.Papel;
 
-public interface PapelRepository extends Neo4jRepository<Papel, String> {
+public interface PapelRepository extends Neo4jRepository<Papel, Long> {
     
     @Query("MATCH (p:Papel)\r\n" + //
-            "WHERE elementId(p) = $id\r\n" + //
+            "WHERE id(p) = $id\r\n" + //
             "DETACH DELETE p")
-    public void deleteById(String id);
+    public void deleteById(Long id);
 
 }

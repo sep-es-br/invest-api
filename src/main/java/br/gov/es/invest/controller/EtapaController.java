@@ -47,7 +47,7 @@ public class EtapaController {
     }
 
     @GetMapping("/doUsuario")
-    public EtapaDTO getEtapaDoUsuario(@RequestParam(required = false) String userId,  @RequestHeader("Authorization") String authToken) {
+    public EtapaDTO getEtapaDoUsuario(@RequestParam(required = false) Long userId,  @RequestHeader("Authorization") String authToken) {
 
         if(userId == null) {
             String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));

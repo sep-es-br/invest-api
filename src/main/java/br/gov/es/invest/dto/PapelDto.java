@@ -4,7 +4,7 @@ import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
 import br.gov.es.invest.model.Papel;
 
 public record PapelDto(
-    String id,
+    Long id,
     String guid,
     String nome,
     SetorDto setor,

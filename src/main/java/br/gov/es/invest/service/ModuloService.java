@@ -35,11 +35,11 @@ public class ModuloService {
         return repository.findByPathId(pathId);
     }
 
-    public boolean temAcessoPorDescedencia(String grupoId, String moduloId) {
+    public boolean temAcessoPorDescedencia(Long grupoId, Long moduloId) {
         return repository.temAcessoPorDescedencia(grupoId, moduloId);
     }
 
-    public boolean checarAcesso(String grupoId, String path){
+    public boolean checarAcesso(Long grupoId, String path){
         Modulo modulo = findByPathId(path);
 
         if(modulo == null) {
@@ -56,7 +56,7 @@ public class ModuloService {
         
     }
 
-    public boolean checarAcessoUsuario(String path, String userId){
+    public boolean checarAcessoUsuario(String path, Long userId){
         
         for(Grupo grupo : grupoRepository.getGruposByUsuario(userId)){
             if(this.checarAcesso(grupo.getId(), path))

@@ -47,7 +47,7 @@ public class RelatorioController {
     @GetMapping("/gerarRelatorio/{tipoDespesa}/{anoDe}/{anoAte}")
     public ResponseEntity<?> gerarRelatorio(
         @PathVariable String tipoDespesa, @PathVariable Integer anoDe, @PathVariable Integer anoAte,
-        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) String idsPlanos,@RequestParam(required=false) String idFonte,
+        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) String idsPlanos,@RequestParam(required=false) Long idFonte,
         @RequestParam(required=false) Integer gnd, @RequestParam boolean verTodasUnidades, @RequestHeader("Authorization") String authToken
         ) {
         
@@ -57,7 +57,7 @@ public class RelatorioController {
 
 
 
-            List<String> idsUo = null;
+            List<Long> idsUo = null;
             if(idsUnidade == null && !verTodasUnidades) {
                 
                 authToken = authToken.replace("Bearer ", "");
@@ -70,11 +70,11 @@ public class RelatorioController {
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(idsUnidade != null) {
-                idsUo = new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+                idsUo = new ObjectMapper().readValue(idsUnidade, new TypeReference<List<Long>>(){});
             }
             
-            List<String> idPlanoList = idsPlanos == null ? null
-                        : new ObjectMapper().readValue(idsPlanos, new TypeReference<List<String>>(){});
+            List<Long> idPlanoList = idsPlanos == null ? null
+                        : new ObjectMapper().readValue(idsPlanos, new TypeReference<List<Long>>(){});
             
             
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -100,7 +100,7 @@ public class RelatorioController {
     @GetMapping("/gerarRelatorioConsolidado/{tipoDespesa}/{anoDe}/{anoAte}")
     public ResponseEntity<?> gerarRelatorioConsolidado(
         @PathVariable String tipoDespesa, @PathVariable Integer anoDe, @PathVariable Integer anoAte,
-        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) String idFonte,
+        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) Long idFonte,
         @RequestParam(required=false) Integer gnd, @RequestParam boolean verTodasUnidades, @RequestHeader("Authorization") String authToken
         ) {
         
@@ -108,7 +108,7 @@ public class RelatorioController {
         try{
             String fileName = "relatório-consolidado-" + anoDe + ".xlsx";
 
-            List<String> idsUo = null;
+            List<Long> idsUo = null;
             if(idsUnidade == null && !verTodasUnidades) {
                 
                 authToken = authToken.replace("Bearer ", "");
@@ -121,7 +121,7 @@ public class RelatorioController {
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(idsUnidade != null) {
-                idsUo = new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+                idsUo = new ObjectMapper().readValue(idsUnidade, new TypeReference<List<Long>>(){});
             }
             
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -146,13 +146,13 @@ public class RelatorioController {
     @GetMapping("/valoresTotalizadosConsolidado/{tipoDespesa}/{anoDe}/{anoAte}")
     public ResponseEntity<?> getValoresConsolidado(
         @PathVariable String tipoDespesa, @PathVariable Integer anoDe, @PathVariable Integer anoAte,
-        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) String idFonte,
+        @RequestParam(required=false) String idsUnidade,@RequestParam(required=false) Long idFonte,
         @RequestParam(required=false) Integer gnd, @RequestParam boolean verTodasUnidades, @RequestHeader("Authorization") String authToken
         ) {
             
         try{
             
-            List<String> idsUo = null;
+            List<Long> idsUo = null;
             if(idsUnidade == null && !verTodasUnidades) {
                 
                 authToken = authToken.replace("Bearer ", "");
@@ -165,7 +165,7 @@ public class RelatorioController {
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(idsUnidade != null) {
-                idsUo = new ObjectMapper().readValue(idsUnidade, new TypeReference<List<String>>(){});
+                idsUo = new ObjectMapper().readValue(idsUnidade, new TypeReference<List<Long>>(){});
             }
 
 

@@ -7,7 +7,7 @@ import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.VinculadaPor;
 
 public record ExecucaoOrcamentariaDto(
-    String id,
+    Long id,
     Integer anoExercicio,
     Set<VinculadaPorDto> vinculadaPor
 ) {

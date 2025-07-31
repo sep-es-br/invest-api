@@ -71,7 +71,7 @@ public class StatusService {
 
     }
 
-    public Status findById(String statusId) {
+    public Status findById(Long statusId) {
         return repository.findById(statusId).orElse(null);
     }
 

@@ -4,7 +4,7 @@ import br.gov.es.invest.dto.acessocidadaoapi.SetorACResponseDto;
 import br.gov.es.invest.model.Setor;
  
 public record SetorDto(
-    String id,
+    Long id,
     String guid,
     String nome,
     String sigla,

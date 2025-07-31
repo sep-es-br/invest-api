@@ -70,7 +70,7 @@ public class GrupoService {
 
     }
 
-    public Optional<Grupo> findById(String id){
+    public Optional<Grupo> findById(Long id){
 
         return repository.findById(id);
     }
@@ -79,7 +79,7 @@ public class GrupoService {
         return repository.save(grupo);
     }
 
-    public Grupo delete (String grupoId){
+    public Grupo delete (Long grupoId){
         Optional<Grupo> optGrupo = repository.findById(grupoId);
         
         return optGrupo.map(grupo -> {
@@ -192,17 +192,17 @@ public class GrupoService {
         return this.repository.findById(grupo.getId()).get();
     }
 
-    public int quantidadeDeMembros(String grupoId){
+    public int quantidadeDeMembros(Long grupoId){
         return this.repository.quantidadeDeMembros(grupoId);
     }
 
-    public Grupo removerMembro(String grupoId, String membroId){
+    public Grupo removerMembro(Long grupoId, Long membroId){
         this.repository.removerMembro(grupoId, membroId);
         
         return this.repository.findById(grupoId).orElse(null);
     }
 
-    public List<Grupo> getGruposDoUsuario(String usuarioId) {
+    public List<Grupo> getGruposDoUsuario(Long usuarioId) {
 
 
         // MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
@@ -212,15 +212,15 @@ public class GrupoService {
         return this.repository.getGruposByUsuario(usuarioId);
     }
 
-    public List<Grupo> getGruposByOrgao(String orgaoId){
+    public List<Grupo> getGruposByOrgao(Long orgaoId){
         return this.repository.getGruposByOrgao(orgaoId);
     }
 
-    public List<Grupo> getGruposBySetor(String orgaoId){
+    public List<Grupo> getGruposBySetor(Long orgaoId){
         return this.repository.getGruposByOrgao(orgaoId);
     }
 
-    public List<Grupo> getGruposByPapel(String papelId){
+    public List<Grupo> getGruposByPapel(Long papelId){
         return this.repository.getGruposByPapel(papelId);
     }
 

@@ -10,7 +10,7 @@ import br.gov.es.invest.dto.IValoresCusto;
 import br.gov.es.invest.dto.projection.IValoresIndicadaPor;
 import br.gov.es.invest.model.Custo;
 
-public interface CustoRepository extends Neo4jRepository<Custo, String> {
+public interface CustoRepository extends Neo4jRepository<Custo, Long> {
     
     @Query("MATCH (c:Custo)-[:EM]->(ano:Ano) WHERE (ano.ano = $exercicio) RETURN c\r\n")
     public List<Custo> findByExercicio(String exercicio);
@@ -20,12 +20,12 @@ public interface CustoRepository extends Neo4jRepository<Custo, String> {
                 "OPTIONAL MATCH (conta)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
                 "OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
                 "WITH custo, fonte, unidade, plano, indicadaPor\r\n" + //
-                "WHERE ( $idFonte IS NULL OR elementId(fonte) = $idFonte )\r\n" + //
+                "WHERE ( $idFonte IS NULL OR id(fonte) = $idFonte )\r\n" + //
                 "    AND custo.anoExercicio = $exercicio\r\n" + //
-                "    AND ( $idUnidade IS NULL OR elementId(unidade) = $idUnidade )\r\n" + //
-                "    AND ( $idPlano IS NULL OR elementId(plano) = $idPlano )" + //
+                "    AND ( $idUnidade IS NULL OR id(unidade) = $idUnidade )\r\n" + //
+                "    AND ( $idPlano IS NULL OR id(plano) = $idPlano )" + //
                 "RETURN custo, collect(indicadaPor), collect(fonte)")
-    public List<Custo> getTotais(String idFonte, Integer exercicio, String idUnidade, String idPlano);
+    public List<Custo> getTotais(Long idFonte, Integer exercicio, Long idUnidade, Long idPlano);
 
     @Query("MATCH (custo:Custo)\r\n" + //
             "RETURN DISTINCT custo.anoExercicio")

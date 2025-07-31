@@ -23,7 +23,7 @@ public class FluxoController {
     private final FluxoService fluxoService;
 
     @GetMapping("")
-    public ResponseEntity<?> find(@RequestParam(required = false) String id) {
+    public ResponseEntity<?> find(@RequestParam(required = false) Long id) {
 
         if(id == null) {
             List<FluxoDTO> fluxoDTOs = fluxoService.findAll().stream()
@@ -47,7 +47,7 @@ public class FluxoController {
     }
 
     @GetMapping("/withEtapa")
-    public ResponseEntity<?> findWithEtapa(@RequestParam String etapaId){
+    public ResponseEntity<?> findWithEtapa(@RequestParam Long etapaId){
         Fluxo fluxo = fluxoService.findWithEtapa(etapaId);
 
         if(fluxo == null) {

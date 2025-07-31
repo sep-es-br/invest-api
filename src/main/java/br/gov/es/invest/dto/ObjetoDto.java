@@ -14,7 +14,7 @@ import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
 
 public record ObjetoDto(
-    String id,
+    Long id,
     String tipoConta,
     String tipo,
     String nome,

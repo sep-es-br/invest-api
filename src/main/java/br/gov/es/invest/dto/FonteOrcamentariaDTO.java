@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FonteOrcamentariaDTO implements Serializable {
 
-    private String id;
+    private Long id;
     private String nome;
     private String codigo;
     private String descricao;

@@ -30,7 +30,7 @@ public class TipoPlanoController {
     private final TipoPlanoBIService biService;
 
     @GetMapping("")
-    public ResponseEntity<?> findBy(@RequestParam(required = false) String id, @RequestParam(required = false) String sigla) {
+    public ResponseEntity<?> findBy(@RequestParam(required = false) Long id, @RequestParam(required = false) String sigla) {
         if(id == null && sigla == null) {
             return ResponseEntity.ok(
                 service.findAll().stream()

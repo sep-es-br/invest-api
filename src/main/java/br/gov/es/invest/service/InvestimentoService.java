@@ -39,8 +39,8 @@ public class InvestimentoService {
     }
 
     public DataListResult<TiraInvestimentoProjection> findAllTiraBy(
-            String nome, List<String> codUnidade, List<String> codPO,
-            Integer exercicio, String idFonte, Integer gnd, List<OrdemItemDto> ordem,
+            String nome, List<Long> codUnidade, List<Long> codPO,
+            Integer exercicio, Long idFonte, Integer gnd, List<OrdemItemDto> ordem,
             Pageable pageable
         ) {
 
@@ -135,7 +135,7 @@ public class InvestimentoService {
             return pattern.matcher(normalized).replaceAll("").toLowerCase();
     }
 
-    public void addExecucao (String investimentoId, String execId) {
+    public void addExecucao (Long investimentoId, Long execId) {
 
         this.repository.addExecucao(investimentoId, execId);
 
