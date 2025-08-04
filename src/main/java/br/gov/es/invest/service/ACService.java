@@ -273,9 +273,50 @@ public class ACService {
       
       return Optional.ofNullable(papelGuid)
                 .flatMap(guid -> papelSrv.findByGuid(guid.toLowerCase()))
+                .map(_papel -> {
+                      _papel.setNome(papelAc.Nome());
+                      _papel.setPrioritario(papelAc.Prioritario());
+                      return _papel;
+                })
                 .orElseGet(() -> Papel.parse(papelAc, setor));
       
       
+      
+      
+  }
+  
+  public Papel gerarPapelFromRespSemSalvar(PapelACResponseDto papelAc, String token){
+      
+      
+      String papelGuid = papelAc.Guid();
+      String setorGuid = papelAc.LotacaoGuid();
+      
+      UnidadeACResponseDto setorAc = Optional.ofNullable(setorGuid)
+                                        .map(lot -> getUnidadeInfoByGuid(lot, token))
+                                        .orElse(null);
+      
+      String orgaoGuid = Optional.ofNullable(setorAc)
+                            .map(setor -> setor.guidOrganizacao())
+                            .orElse(null);
+      
+      OrganizacaoACResponseDto orgaoAc = Optional.ofNullable(orgaoGuid)
+                                            .map(orgao -> getOrgaoInfoByGuid(orgao, token))
+                                            .orElse(null);
+      
+      Orgao orgao = Optional.ofNullable(orgaoGuid)
+                        .flatMap((guid) -> orgaoSrv.findByGuid(guid.toLowerCase()))
+                        .or(() -> Optional.ofNullable(orgaoAc)
+                                .map(Orgao::new))
+                        .orElse(null);
+              
+
+      Setor setor = Optional.ofNullable(setorGuid)
+                        .flatMap((guid) -> setorSrv.findByGuid(guid.toLowerCase()))
+                        .orElseGet(() -> Setor.parse(setorAc, orgao));
+      
+      return Optional.ofNullable(papelGuid)
+                .flatMap(guid -> papelSrv.findByGuid(guid.toLowerCase()))
+                .orElseGet(() -> Papel.parse(papelAc, setor));
       
       
   }

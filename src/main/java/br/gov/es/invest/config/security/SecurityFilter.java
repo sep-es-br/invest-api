@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -80,21 +81,14 @@ public class SecurityFilter extends OncePerRequestFilter {
                 
                 Set<Funcao> funcoes = user.getRole();
                 
-                
                 String acToken = acSrv.getClientToken();
                 
                 List<Papel> papeisAtualizados = acSrv.getPapeisBySub(sub, acSrv.getClientToken()).stream()
-                            .map(papel -> acSrv.gerarPapelFromResp(papel, acToken))
+                            .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                             .collect(Collectors.toList());
-                
-                if (!user.getPapeis().equals(papeisAtualizados)) {
-                    user.setPapeis(papeisAtualizados);
-                    usuarioService.save(user);
-                }
-                
-                
+                       
                 if(!Funcao.testarFuncao(funcoes, "GESTOR_MASTER")
-                && !checarAcesso(request, user.getId())) {
+                && !checarAcesso(request, papeisAtualizados)) {
                     MensagemErroRest erro = new MensagemErroRest(
                         HttpStatus.FORBIDDEN,
                         "Usuário sem permissão", 
@@ -125,8 +119,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-
-    private boolean checarAcesso(HttpServletRequest request, String userId){
+    
+    private boolean checarAcesso(HttpServletRequest request, List<Papel> papeis){
         String url = request.getHeader("Origin-URL");
 
         if(url == null) return false;
@@ -136,7 +130,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         for(int i = 0; i < paths.length-1; i++){
             String pathId = paths[i] + paths[i+1];
             
-            if(!moduloService.checarAcessoUsuario(pathId, userId))
+            if(!moduloService.checarAcessoUsuario(pathId, papeis))
                 return false;
         }
 

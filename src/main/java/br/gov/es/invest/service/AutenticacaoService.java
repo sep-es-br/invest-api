@@ -58,11 +58,19 @@ public class AutenticacaoService {
 
         ACUserInfoDto userInfo = getUserInfo(accessToken);
         String token = tokenService.gerarToken(userInfo, accessToken);
+        
+        String acToken = acService.getClientToken();
+        
 
         if(!userInfo.role().contains("GESTOR_MASTER") && !validarPapel(userInfo.subNovo())) throw new UsuarioSemPermissaoException();
         
+        List<Papel> papeis = acService.getPapeisBySub(userInfo.subNovo(), acToken).stream()
+                                .map(papel -> acService.gerarPapelFromResp(papel, acToken))
+                                .toList();
+        
+        
         Usuario usuario = usuarioService.getUserBySub(userInfo.subNovo())
-                            .orElseGet(() -> this.gerarUsuario(userInfo));
+                            .orElseGet(() -> new Usuario(userInfo));
 
         if (usuario.getName() == null)
             usuario.setName(userInfo.apelido().split(" ")[0]);
@@ -70,6 +78,7 @@ public class AutenticacaoService {
         usuario.setNomeCompleto(userInfo.apelido());
         usuario.setEmail(getEmailUserInfo(userInfo));
         usuario.setRole(userInfo.role());
+        usuario.setPapeis(papeis);
                 
         usuario = usuarioService.save(usuario);
         
@@ -77,76 +86,6 @@ public class AutenticacaoService {
 
         return dto;
 
-    }
-
-    protected boolean validaUsuario(Usuario user){
-        if(user == null) {
-            return false;
-        }
-
-        if(user.getPapeis() == null || user.getPapeis().isEmpty()) {
-            Optional<Usuario> usuarioBanco = usuarioService.getUserBySub(user.getSub());
-
-            if(usuarioBanco.isEmpty()) {
-                return  false;
-            } else {
-                return !grupoService.getGruposDoUsuario( usuarioBanco.get().getId()).isEmpty();
-            }
-            
-        } else {
-            Papel papelDoUser = user.getPapeis().get(0);
-
-            Papel papelProbe = new Papel();
-            papelProbe.setGuid(papelDoUser.getGuid());
-
-            Optional<Papel> optPapel = papelRepository.findBy(Example.of(papelProbe), q -> q.first());
-
-            if(optPapel.isPresent()) {
-                
-                if(!grupoService.getGruposByPapel(optPapel.get().getId()).isEmpty()) return true;
-                
-                papelDoUser = optPapel.get();
-            }
-            Setor setorDoUser = papelDoUser.getSetor();
-
-            Optional<Setor> optSetor = setorService.findByGuid(setorDoUser.getGuid());
-
-            if(optSetor.isPresent()) {
-                return !grupoService.getGruposBySetor(optSetor.get().getId()).isEmpty();
-            } else {
-
-                Orgao orgaoDoUser = setorDoUser.getOrgao();
-
-                Optional<Orgao> optOrgao = orgaoService.findByGuid(orgaoDoUser.getGuid());
-
-                if(optOrgao.isPresent()) {
-                    return !grupoService.getGruposByOrgao(optOrgao.get().getId()).isEmpty();
-                } else {
-                    return false;
-                }
-
-            }
-
-
-
-
-        }
-        
-    }
-
-    protected Usuario gerarUsuario(ACUserInfoDto userInfo){
-        
-        String clientToken = acService.getClientToken();
-
-        List<PapelACResponseDto> papeis = acService.getPapeisBySub(userInfo.subNovo(), clientToken);
-        
-        Usuario usuario = new Usuario(userInfo);
-        usuario.setPapeis(papeis.stream()
-                .map(papel -> acService.gerarPapelFromResp(papel, clientToken))
-                .collect(Collectors.toList()));
-
-        return usuario;
-            
     }
 
     protected boolean validarPapel(String userSub){

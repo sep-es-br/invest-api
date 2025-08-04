@@ -17,8 +17,10 @@ import br.gov.es.invest.dto.PodeDto;
 import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Modulo;
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Pode;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.PodeService;
@@ -41,6 +43,8 @@ public class PermissaoController {
 
     private final TokenService tokenService;
     
+    private final ACService acSrv;
+    
 
     @GetMapping("/usuarioTemAcesso")
     public boolean checarAcessoUsuario(@RequestParam String path, @RequestHeader("Authorization") String authToken){
@@ -49,12 +53,18 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
                 
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Usuario usuario = usuarioService.getUserBySub(sub).orElseThrow();
+        
+        String acToken = acSrv.getClientToken();
+        
+        List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
+                                .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
+                                .toList();
 
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) 
             return true;
         
-        return moduloService.checarAcessoUsuario(path, usuario.getId());
+        return moduloService.checarAcessoUsuario(path, papeis);
         
     }
 
@@ -129,8 +139,14 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-
+        String acToken = acSrv.getClientToken();
+        
+        List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
+                                .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
+                                .toList();
+        
+        Usuario usuario = usuarioService.getUserBySub(sub).orElseThrow();
+        
         boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
         
         // boolean isGestorMaster = false;
@@ -138,19 +154,19 @@ public class PermissaoController {
         return Arrays.asList(new ItemMenu(
             "Inventário", 
             "home", 
-            isGestorMaster || moduloService.checarAcessoUsuario("inventario", usuario.getId()), 
+            isGestorMaster || moduloService.checarAcessoUsuario("inventario", papeis), 
             "/inventario", 
             Arrays.asList(new ItemMenu(
                 "Investimentos", 
                 null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("inventarioinvestimentos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("inventarioinvestimentos", papeis), 
                 "/investimentos", 
                 null
             ))
         ), new ItemMenu(
             "Minha Carteira", 
             "archive", 
-            isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
+            isGestorMaster || moduloService.checarAcessoUsuario("carteira", papeis), 
             "/carteira", 
             Arrays.asList( 
                 new ItemMenu(
@@ -163,7 +179,7 @@ public class PermissaoController {
              new ItemMenu(
                 "Objetos", 
                 null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", papeis), 
                 "/objetos", 
                 null
             )
