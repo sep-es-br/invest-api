@@ -125,18 +125,6 @@ public class GrupoService {
                 setor: setor.sigla,
                 orgao: orgao.sigla + ' - ' + orgao.nome
             } AS membros
-            UNION
-            MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:MEMBRO_DE]-(agente:Agente)-[:MEMBRO_DE]->(g:Grupo)
-            WHERE elementId(g) = $grupoId
-            OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
-            RETURN {
-                id: elementId(agente),
-                icone: avatar.blob,
-                nomeCompleto: agente.nomeCompleto,
-                papel: agente.papel,
-                setor: setor.sigla,
-                orgao: orgao.sigla + ' - ' + orgao.nome
-            } AS membros
              """;
         
         HashMap<String, Object> params = new HashMap<>();

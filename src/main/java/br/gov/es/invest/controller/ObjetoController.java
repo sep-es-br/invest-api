@@ -68,7 +68,7 @@ public class ObjetoController {
                     
             Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
             
-            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
+            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
             idsUo = unidades.stream().map(u -> u.getId()).toList();
 
@@ -116,7 +116,7 @@ public class ObjetoController {
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
                 idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {

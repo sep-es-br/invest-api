@@ -36,4 +36,9 @@ public class AutenticacaoController {
     public UsuarioDto montarUsuarioDto(@RequestHeader("Authorization") String authorization) {
         return service.autenticar( authorization.replace("Bearer ", ""));
     }
+    
+//    @GetMapping("/teste")
+//    public void teste(){
+//        service.transferirTodosUsuarios();
+//    }
 }

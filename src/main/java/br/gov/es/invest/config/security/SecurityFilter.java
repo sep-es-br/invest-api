@@ -26,7 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Funcao;
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
@@ -34,6 +36,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -43,7 +46,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final ModuloService moduloService;
-       
+    private final ACService acSrv;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -52,7 +55,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             "/oauth2/authorization",
             "/acesso-cidadao-response",
             "acesso-cidadao-response.html",
-            "importarPentaho" 
+            "importarPentaho", "teste"
         ))) {
             filterChain.doFilter(request, response);
             return;
@@ -75,17 +78,20 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                 Usuario user = usuarioService.getUserBySub(sub).orElse(null);
                 
-                if(user == null) {
-                    MensagemErroRest erro = new MensagemErroRest(
-                        HttpStatus.FORBIDDEN,
-                        "Usuário não existe", 
-                        Arrays.asList("Usuário não existe", "Favor incluir o usuario em algum grupo")
-                    );
-                    enviarMensagemErro(erro, response);
-                    return;
-                }
-
                 Set<Funcao> funcoes = user.getRole();
+                
+                
+                String acToken = acSrv.getClientToken();
+                
+                List<Papel> papeisAtualizados = acSrv.getPapeisBySub(sub, acSrv.getClientToken()).stream()
+                            .map(papel -> acSrv.gerarPapelFromResp(papel, acToken))
+                            .collect(Collectors.toList());
+                
+                if (!user.getPapeis().equals(papeisAtualizados)) {
+                    user.setPapeis(papeisAtualizados);
+                    usuarioService.save(user);
+                }
+                
                 
                 if(!Funcao.testarFuncao(funcoes, "GESTOR_MASTER")
                 && !checarAcesso(request, user.getId())) {

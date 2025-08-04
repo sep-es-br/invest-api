@@ -28,6 +28,10 @@ public class OrgaoService {
 
         return repository.findBy(Example.of(probe), query -> query.first());
     }
+    
+    public Orgao save(Orgao orgao) {
+        return repository.save(orgao);
+    }
 
     public Orgao findOrCreateByGuidOrSigla(Orgao orgao){
 
