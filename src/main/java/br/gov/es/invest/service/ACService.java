@@ -34,6 +34,7 @@ import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Papel;
+import java.util.UUID;
 import net.minidev.json.JSONObject;
 
 @Service
@@ -318,14 +319,13 @@ public class ACService {
           List<PapelACResponseDto> papeisResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<PapelACResponseDto>>(){});
           return papeisResponse.stream().map(papelResp -> new PapelDto(papelResp)).toList();
         } else {
-          Logger.getGlobal().severe("token: " + token);
           Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          
         }
 
     } catch (Exception e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.SEVERE, e.getLocalizedMessage(), e);
     }
 
     return null;
