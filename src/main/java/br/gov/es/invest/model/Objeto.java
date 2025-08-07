@@ -24,6 +24,7 @@ import lombok.experimental.SuperBuilder;
 public class Objeto extends Entidade implements Serializable {
     
     private String nome;
+    private String hashProposta;
     private String descricao;
     private String tipo;
     private int openPMOId;
@@ -64,6 +65,7 @@ public class Objeto extends Entidade implements Serializable {
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
         this.nome = dto.nome();
+        this.hashProposta = dto.hashProposta();
         this.descricao = dto.descricao();
         this.tipo = dto.tipo();
         this.emStatus = EmStatus.parse(dto.emStatus());

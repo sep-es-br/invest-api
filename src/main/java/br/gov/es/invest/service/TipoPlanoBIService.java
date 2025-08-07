@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import br.gov.es.invest.biClient.BiClient;
+import br.gov.es.invest.feignClient.BiClient;
 import br.gov.es.invest.dto.acessocidadaoapi.LoginACResponseDto;
 import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.repository.TipoPlanoRepository;

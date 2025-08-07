@@ -1,4 +1,4 @@
-package br.gov.es.invest.biClient;
+package br.gov.es.invest.feignClient;
 
 import java.util.List;
 import java.util.Map;

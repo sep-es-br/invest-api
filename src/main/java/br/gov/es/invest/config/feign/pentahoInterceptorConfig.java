@@ -28,7 +28,6 @@ import feign.RequestTemplate;
 import feign.ResponseInterceptor;
 import feign.ResponseInterceptor.Chain;
 
-@Configuration
 public class pentahoInterceptorConfig {
     
     @Value("${pentahoBI.userId}")
