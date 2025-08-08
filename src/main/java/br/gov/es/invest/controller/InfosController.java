@@ -38,6 +38,7 @@ import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 
@@ -83,7 +84,9 @@ public class InfosController {
     
     @GetMapping("/papeis")
     public List<PapelDto> getPapeis(@RequestParam String setorGuid) {
-        return aCService.getPapeis(setorGuid);
+        return aCService.getPapeis(setorGuid).stream()
+                .sorted((p1, p2) -> p1.agenteNome().compareToIgnoreCase(p2.agenteNome()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/cardsTotais")
