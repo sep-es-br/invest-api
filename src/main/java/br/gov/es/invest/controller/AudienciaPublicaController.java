@@ -53,8 +53,8 @@ public class AudienciaPublicaController {
     @GetMapping("/listaPropostas")
     public ResponseEntity<?> getListaAudiencia(
         @RequestParam(required = false) String unidadeIds,
-        @RequestParam(required = false) String areaTematicaId,
-        @RequestParam(required = false, defaultValue = "") String filtroTexto,
+        @RequestParam(required = false) String areaTematicaId, @RequestParam int pag,
+        @RequestParam(required = false, defaultValue = "") String filtroTexto, 
         @RequestParam Boolean podeVerUnidades, @RequestHeader("Authorization") String authToken   
     ) {
         
@@ -87,7 +87,8 @@ public class AudienciaPublicaController {
         return ResponseEntity.ok(new DataListResult<>(audienciaPublicaSrv.listaAudienciaPublica(
                 codsUo,
                 areaTematicaNome,
-                filtroTexto
+                filtroTexto,
+                pag-1
         )));
             
 
