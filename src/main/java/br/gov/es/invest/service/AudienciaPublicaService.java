@@ -38,7 +38,8 @@ public class AudienciaPublicaService {
     public PageResponseDto<PropostaResponse> listaAudienciaPublica(
             List<String> uos,
             String areaTematica,
-            String filtroTexto
+            String filtroTexto,
+            int pag
     ) {
         
         List<String> hashsUsados = objSrv.listarHashUsadosPorDemandaPublica();
@@ -49,8 +50,8 @@ public class AudienciaPublicaService {
                 .budgetUnitCodes(uos)
                 .planItemName(areaTematica)
                 .textFilter(filtroTexto)
-                .pageNumber(0)
-                .pageSize(100)
+                .pageNumber(pag)
+                .pageSize(15)
                 .build();
         
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
