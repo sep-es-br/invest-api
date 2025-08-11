@@ -31,6 +31,12 @@ public class SetorService {
         }
 
     }
+    
+    public Setor save(Setor setor){
+        if(setor == null) return null;
+        
+        return repository.save(setor);
+    }
 
     public Optional<Setor> findByGuid(String guid) {
         Setor setorProbe = new Setor(guid, null, null, null);

@@ -39,9 +39,9 @@ public class SecurityConfig {
                                 "/swagger-ui/*",
                                 "/v3/*",
                                 "/v3/api-docs/*",
-                                "/signin/*",
+                                "/signin/**",
                                 "/acesso-cidadao-response.html",
-                                "*/importarPentaho").permitAll();
+                                "/importarPentaho").permitAll();
                         authConfig.anyRequest().authenticated();
                 })
                 .oauth2Login(oAuth2LoginConfig ->

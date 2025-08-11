@@ -26,7 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Funcao;
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
@@ -34,7 +36,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -43,7 +47,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final ModuloService moduloService;
-       
+    private final ACService acSrv;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -52,7 +56,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             "/oauth2/authorization",
             "/acesso-cidadao-response",
             "acesso-cidadao-response.html",
-            "importarPentaho" 
+            "importarPentaho", "teste"
         ))) {
             filterChain.doFilter(request, response);
             return;
@@ -75,20 +79,16 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                 Usuario user = usuarioService.getUserBySub(sub).orElse(null);
                 
-                if(user == null) {
-                    MensagemErroRest erro = new MensagemErroRest(
-                        HttpStatus.FORBIDDEN,
-                        "Usuário não existe", 
-                        Arrays.asList("Usuário não existe", "Favor incluir o usuario em algum grupo")
-                    );
-                    enviarMensagemErro(erro, response);
-                    return;
-                }
-
                 Set<Funcao> funcoes = user.getRole();
                 
+                String acToken = acSrv.getClientToken();
+                
+                List<Papel> papeisAtualizados = acSrv.getPapeisBySub(sub, acSrv.getClientToken()).stream()
+                            .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
+                            .collect(Collectors.toList());
+                       
                 if(!Funcao.testarFuncao(funcoes, "GESTOR_MASTER")
-                && !checarAcesso(request, user.getId())) {
+                && !checarAcesso(request, papeisAtualizados)) {
                     MensagemErroRest erro = new MensagemErroRest(
                         HttpStatus.FORBIDDEN,
                         "Usuário sem permissão", 
@@ -119,8 +119,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-
-    private boolean checarAcesso(HttpServletRequest request, String userId){
+    
+    private boolean checarAcesso(HttpServletRequest request, List<Papel> papeis){
         String url = request.getHeader("Origin-URL");
 
         if(url == null) return false;
@@ -130,7 +130,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         for(int i = 0; i < paths.length-1; i++){
             String pathId = paths[i] + paths[i+1];
             
-            if(!moduloService.checarAcessoUsuario(pathId, userId))
+            if(!moduloService.checarAcessoUsuario(pathId, papeis))
                 return false;
         }
 

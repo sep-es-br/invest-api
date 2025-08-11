@@ -71,23 +71,23 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, String> {
 
     
     @Query("CALL () {\r\n" + //
-                "        MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonte:FonteOrcamentaria),\r\n" + //
-                "        (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta)\r\n" + //
-                "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-                "    OPTIONAL MATCH (execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
-                "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
-                "    RETURN obj, plano, unidade, execucao, custo, conta\r\n" + //
-                "} WITH  obj, plano, unidade, execucao, custo, conta\r\n" + //
-                "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
-                "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
-                "    AND ($unidadeId IS NULL OR elementId(unidade) = $unidadeId)\r\n" + //
-                "    AND ($status IS NULL OR obj.status = $status)\r\n" + //
-                "    AND (\r\n" + //
-                "        $planoId IS NULL\r\n" + //
-                "        OR ($planoId = \"S.PO\" AND plano IS NULL)\r\n" + //
-                "        OR ($planoId <> \"S.PO\" AND $planoId = elementId(plano))\r\n" + //
-                "        )\r\n" + //
-                "RETURN count(distinct obj)")
+            "        MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonte:FonteOrcamentaria),\r\n" + //
+            "        (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta)\r\n" + //
+            "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
+            "    OPTIONAL MATCH (execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
+            "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
+            "    RETURN obj, plano, unidade, execucao, custo, conta\r\n" + //
+            "} WITH  obj, plano, unidade, execucao, custo, conta\r\n" + //
+            "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
+            "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
+            "    AND ($unidadeId IS NULL OR elementId(unidade) = $unidadeId)\r\n" + //
+            "    AND ($status IS NULL OR obj.status = $status)\r\n" + //
+            "    AND (\r\n" + //
+            "        $planoId IS NULL\r\n" + //
+            "        OR ($planoId = \"S.PO\" AND plano IS NULL)\r\n" + //
+            "        OR ($planoId <> \"S.PO\" AND $planoId = elementId(plano))\r\n" + //
+            "        )\r\n" + //
+            "RETURN count(distinct obj)")
     public int countByFilter(String nome, String unidadeId, String planoId, String status, Integer exercicio);
 
     @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) \n" +
