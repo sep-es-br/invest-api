@@ -21,11 +21,4 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, String> {
             "RETURN usuario")
     public Optional<Usuario> setNewACToken(String sub, String newACToken);
     
-    @Query("MATCH (g:Grupo)<-[oldR:MEMBRO_DE]-(u:Usuario)-[:POSSUI]->(papel:Papel)\r\n" + //
-                "WHERE elementId(u) = $userId\r\n" + //
-                "    AND elementId(papel) = $papelId\r\n" + //
-                "MERGE (papel)-[:MEMBRO_DE]->(g)\r\n" + //
-                "DELETE oldR")
-    public void transferirGrupo(String userId, String papelId);
-
 }
