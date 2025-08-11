@@ -176,14 +176,20 @@ public class PermissaoController {
                 "/investimentos", 
                 null
                 ),
-             new ItemMenu(
-                "Objetos", 
-                null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", papeis), 
-                "/objetos", 
-                null
-            )
-
+                new ItemMenu(
+                   "Objetos", 
+                   null, 
+                   isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", usuario.getId()), 
+                   "/objetos", 
+                   null
+               ),
+                new ItemMenu(
+                   "Propostas de Audiência Pública", 
+                   null, 
+                   isGestorMaster || moduloService.checarAcessoUsuario("carteiraaudiencia-publica", usuario.getId()), 
+                   "/audiencia-publica", 
+                   null
+               )
             )
         ), new ItemMenu(
             "Relatório", 
