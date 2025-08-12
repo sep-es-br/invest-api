@@ -39,6 +39,18 @@ public class UsuarioController {
         return (optUsuario.isEmpty() || optUsuario.get().getImgPerfil() == null)  ? null : new AvatarDTO(optUsuario.get().getImgPerfil());
     }
 
+    @GetMapping("")
+    public UsuarioDto getUsuarioByAuth(@RequestHeader("Authorization") String authToken) {
+        
+        authToken = authToken.replace("Bearer ", "");
+        
+        String sub = tokenService.validarToken(authToken);
+                
+        Optional<Usuario> optUsuario = service.getUserBySub(sub);
+
+        return UsuarioDto.parse(optUsuario.orElse(null));
+    }
+
     @GetMapping("/{id}")
     public UsuarioDto getUsuario(@PathVariable String userId) {
         
@@ -50,11 +62,7 @@ public class UsuarioController {
     @PutMapping("")
     public ResponseEntity<UsuarioDto> salvarUsuario(@RequestBody UsuarioDto usuario) {
         
-        Usuario user = new Usuario(usuario);
-        
-        user = service.save(user);
-
-        return ResponseEntity.ok(UsuarioDto.parse(user));
+        return ResponseEntity.ok(UsuarioDto.parse(service.save(usuario)));
     }
     
 
