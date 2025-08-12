@@ -34,14 +34,23 @@ import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
+import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class ACService {
     
   private static final String GUID_GOVES = "fe88eb2a-a1f3-4cb1-a684-87317baf5a57";
-
+  
+  private final PapelService papelSrv;
+  private final SetorService setorSrv;
+  private final OrgaoService orgaoSrv;
+  
   @Value("${acessocidadao.tokenUrl}")
   private String ACTokenUrl;
 
@@ -230,6 +239,86 @@ public class ACService {
     }
 
     return null;
+  }
+  
+  public Papel gerarPapelFromResp(PapelACResponseDto papelAc, String token){
+      
+      
+      String papelGuid = papelAc.Guid();
+      String setorGuid = papelAc.LotacaoGuid();
+      
+      UnidadeACResponseDto setorAc = Optional.ofNullable(setorGuid)
+                                        .map(lot -> getUnidadeInfoByGuid(lot, token))
+                                        .orElse(null);
+      
+      String orgaoGuid = Optional.ofNullable(setorAc)
+                            .map(setor -> setor.guidOrganizacao())
+                            .orElse(null);
+      
+      OrganizacaoACResponseDto orgaoAc = Optional.ofNullable(orgaoGuid)
+                                            .map(orgao -> getOrgaoInfoByGuid(orgao, token))
+                                            .orElse(null);
+      
+      Orgao orgao = Optional.ofNullable(orgaoGuid)
+                        .flatMap((guid) -> orgaoSrv.findByGuid(guid.toLowerCase()))
+                        .or(() -> Optional.ofNullable(orgaoAc)
+                                .map(Orgao::new)
+                                .map(_orgao -> orgaoSrv.save(_orgao)))
+                        .orElse(null);
+              
+
+      Setor setor = Optional.ofNullable(setorGuid)
+                        .flatMap((guid) -> setorSrv.findByGuid(guid.toLowerCase()))
+                        .orElseGet(() -> setorSrv.save(Setor.parse(setorAc, orgao)));
+      
+      return Optional.ofNullable(papelGuid)
+                .flatMap(guid -> papelSrv.findByGuid(guid.toLowerCase()))
+                .map(_papel -> {
+                      _papel.setNome(papelAc.Nome());
+                      _papel.setPrioritario(papelAc.Prioritario());
+                      return _papel;
+                })
+                .orElseGet(() -> Papel.parse(papelAc, setor));
+      
+      
+      
+      
+  }
+  
+  public Papel gerarPapelFromRespSemSalvar(PapelACResponseDto papelAc, String token){
+      
+      
+      String papelGuid = papelAc.Guid();
+      String setorGuid = papelAc.LotacaoGuid();
+      
+      UnidadeACResponseDto setorAc = Optional.ofNullable(setorGuid)
+                                        .map(lot -> getUnidadeInfoByGuid(lot, token))
+                                        .orElse(null);
+      
+      String orgaoGuid = Optional.ofNullable(setorAc)
+                            .map(setor -> setor.guidOrganizacao())
+                            .orElse(null);
+      
+      OrganizacaoACResponseDto orgaoAc = Optional.ofNullable(orgaoGuid)
+                                            .map(orgao -> getOrgaoInfoByGuid(orgao, token))
+                                            .orElse(null);
+      
+      Orgao orgao = Optional.ofNullable(orgaoGuid)
+                        .flatMap((guid) -> orgaoSrv.findByGuid(guid.toLowerCase()))
+                        .or(() -> Optional.ofNullable(orgaoAc)
+                                .map(Orgao::new))
+                        .orElse(null);
+              
+
+      Setor setor = Optional.ofNullable(setorGuid)
+                        .flatMap((guid) -> setorSrv.findByGuid(guid.toLowerCase()))
+                        .orElseGet(() -> Setor.parse(setorAc, orgao));
+      
+      return Optional.ofNullable(papelGuid)
+                .flatMap(guid -> papelSrv.findByGuid(guid.toLowerCase()))
+                .orElseGet(() -> Papel.parse(papelAc, setor));
+      
+      
   }
   
   public OrganizacaoACResponseDto getOrgaoInfoByGuid(String guid, String token){

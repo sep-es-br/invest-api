@@ -467,6 +467,8 @@ public class ObjetoService {
     }
 
     public Optional<Objeto> getById(String id, boolean updateStatus) {
+        if(id == null) return Optional.empty();
+        
         Optional<Objeto> optObjeto = repository.findById(id);
         
         if(optObjeto.isPresent() 

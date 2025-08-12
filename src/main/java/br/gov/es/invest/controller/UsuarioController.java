@@ -64,11 +64,7 @@ public class UsuarioController {
     @PutMapping("")
     public ResponseEntity<UsuarioDto> salvarUsuario(@RequestBody UsuarioDto usuario) {
         
-        Usuario user = new Usuario(usuario);
-        
-        user = service.save(user);
-
-        return ResponseEntity.ok(UsuarioDto.parse(user));
+        return ResponseEntity.ok(UsuarioDto.parse(service.save(usuario)));
     }
     
 

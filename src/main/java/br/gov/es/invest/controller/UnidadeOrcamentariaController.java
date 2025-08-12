@@ -64,15 +64,10 @@ public class UnidadeOrcamentariaController {
                 
         Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
 
-        if(usuario.getSetor() == null) {
-            return null;
-        } else {
+        List<UnidadeOrcamentaria> unidades = this.service.findByAgente(usuario.getId());
 
-            List<UnidadeOrcamentaria> unidades = this.service.findByOrgaoId(usuario.getSetor().getOrgao());
+        return unidades.stream().map(UnidadeOrcamentariaDTO::new).toList();
 
-            return unidades.stream().map(uo -> new UnidadeOrcamentariaDTO(uo)).toList();
-
-        }
 
     }
     
