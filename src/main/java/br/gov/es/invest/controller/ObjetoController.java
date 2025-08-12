@@ -203,9 +203,7 @@ public class ObjetoController {
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = new Objeto(objetoDto);
-        if(objeto.getId() != null) {
-            objeto.setEmEtapa(service.getById(objeto.getId()).get().getEmEtapa());
-        }
+        objeto.setEmEtapa(service.getById(objeto.getId()).map(Objeto::getEmEtapa).orElse(null));
         
         
         if(objeto.getResponsavel() == null) {

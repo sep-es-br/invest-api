@@ -36,11 +36,10 @@ public class GrupoService {
     private final UsuarioService usuarioService;
     private final ModuloRepository moduloRepository;
 
-    private final UsuarioRepository usuarioRepository;
-
     private final Neo4jOperations neo4jOperations;
 
     private final PapelService papelService;
+    private final UsuarioService usuarioSrv;
 
     
     private final Neo4jClient neo4jClient;
@@ -166,11 +165,11 @@ public class GrupoService {
                     membro.setNomeCompleto(papelDto.agenteNome());
                     membro.setName(papelDto.agenteNome().split(" ")[0]);
                 }
-
+                
                 papeisDoUsuario.add(papelMembro);
                 membro.setPapeis(papeisDoUsuario);
 
-                usuarioRepository.save(membro);
+                this.usuarioSrv.save(membro);
 
             }
             this.repository.addMembro(grupo.getId(), papelMembro.getId());
@@ -191,11 +190,6 @@ public class GrupoService {
     }
 
     public List<Grupo> getGruposDoUsuario(String usuarioId) {
-
-
-        // MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(usuario:Usuario)\r\n" + //
-        //         "WHERE elementId(usuario) = $usuarioId\r\n" + //
-        //         "RETURN grupo 
 
         return this.repository.getGruposByUsuario(usuarioId);
     }
