@@ -17,6 +17,7 @@ import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/usuario")
@@ -38,28 +39,13 @@ public class UsuarioController {
         return (optUsuario.isEmpty() || optUsuario.get().getImgPerfil() == null)  ? null : new AvatarDTO(optUsuario.get().getImgPerfil());
     }
 
-    @GetMapping("")
-    public UsuarioDto getUsuario(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
-        authToken = authToken.replace("Bearer ", "");
+    @GetMapping("/{id}")
+    public UsuarioDto getUsuario(@PathVariable String userId) {
         
-        sub = Optional.ofNullable(sub).orElse(tokenService.validarToken(authToken));
-
-        Optional<Usuario> optUsuario = service.getUserBySub(sub);
+        Optional<Usuario> optUsuario = service.findById(userId);
 
         return UsuarioDto.parse(optUsuario.orElse(null));
     }
-
-    @GetMapping("comAvatar")
-    public UsuarioDto getUsuarioComAvatar(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
-        authToken = authToken.replace("Bearer ", "");
-        
-        sub = Optional.ofNullable(sub).orElse(tokenService.validarToken(authToken));
-
-        Optional<Usuario> optUsuario = service.getUserBySub(sub);
-
-        return UsuarioDto.parse( optUsuario.orElse(null) );
-    }
-    
 
     @PutMapping("")
     public ResponseEntity<UsuarioDto> salvarUsuario(@RequestBody UsuarioDto usuario) {
