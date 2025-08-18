@@ -48,6 +48,10 @@ public class UsuarioService {
     public List<Usuario> findAll(){
         return repository.findAll();
     }
+    
+    public Optional<Usuario> findById(String id) {
+        return repository.findById(id);
+    }
 
     public Optional<Usuario> getUserBySub(String sub){
 
