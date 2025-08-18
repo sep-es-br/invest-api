@@ -106,7 +106,7 @@ public class AutenticacaoService {
          * 
          */
         
-        for(PapelACResponseDto papelAc : papeisAc ){
+        for(PapelACResponseDto papelAc : papeisAc.stream().filter(p -> p.Prioritario()).toList() ){
             
             Optional<Papel> papelBanco = papelSrv.findByGuid(papelAc.Guid());
             
