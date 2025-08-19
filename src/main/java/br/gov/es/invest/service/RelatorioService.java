@@ -121,7 +121,7 @@ public class RelatorioService {
                                                                                 .previsto(record.get("previsto").asDouble())
                                                                                 .contratado(record.get("contratado").asDouble())
                                                                                 .autorizado(exec.get("autorizado").asDouble())
-                                                                                .difAutorizadoContratado(exec.get("autorizado").asDouble() - record.get("difAutorizadoContratado").asDouble() )
+                                                                                .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())
                                                                                 .build())
                                             .first().get();      
 
