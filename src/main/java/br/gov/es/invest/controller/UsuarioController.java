@@ -51,12 +51,12 @@ public class UsuarioController {
         return UsuarioDto.parse(optUsuario.orElse(null));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{userId}")
     public UsuarioDto getUsuario(@PathVariable String userId) {
         
         Optional<Usuario> optUsuario = service.findById(userId);
 
-        return UsuarioDto.parse(optUsuario.orElse(null));
+        return optUsuario.map(UsuarioDto::parse).orElse(null);
     }
 
     @PutMapping("")
