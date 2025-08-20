@@ -21,8 +21,7 @@ public class Apontamento extends Entidade{
     private String texto;
     private boolean active;
 
-    @Relationship("EM")
-    private Etapa etapa;
+    private String etapaId;
     
     @Relationship("SOBRE")
     private Campo campo;
