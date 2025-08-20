@@ -22,4 +22,5 @@ public record Etapa(
         
         return result.isEmpty() ? null : result.get(0);
     }
+    
 }

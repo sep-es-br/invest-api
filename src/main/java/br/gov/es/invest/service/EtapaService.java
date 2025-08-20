@@ -8,16 +8,19 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Etapa;
+import br.gov.es.invest.model.EtapaEnum;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.repository.EtapaRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class EtapaService {
     
-    @Autowired
-    private EtapaRepository etapaRepository;
+    
+    private final EtapaRepository etapaRepository;
 
-    private GrupoService grupoService;
+    private final GrupoService grupoService;
 
     public List<Etapa> findAll(){
         return etapaRepository.findAll();
@@ -25,6 +28,13 @@ public class EtapaService {
 
     public Optional<Etapa> findById(String id) {
         return etapaRepository.findById(id);
+    }
+    
+    public Optional<Etapa> getByEtapaId(String etapaId) {
+        
+        Etapa example = Etapa.builder().etapaId(EtapaEnum.valueOf(etapaId)).build();
+        
+        return etapaRepository.findBy(Example.of(example), q -> q.first());
     }
 
     public Etapa getEtapaDoUsuario(String userId) {
@@ -45,11 +55,6 @@ public class EtapaService {
         }
 
         return null;
-    }
-
-    @Autowired
-    public void setGrupoService(GrupoService grupoService) {
-        this.grupoService = grupoService;
     }
 
     

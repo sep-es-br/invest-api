@@ -22,4 +22,13 @@ public record Fluxo(
         
         return result.isEmpty() ? null : result.get(0);
     }
+    
+    public Acao acao(String acaoId) {
+        for(Etapa etapa : etapas){
+            Acao result = etapa.acao(acaoId);
+            if(result != null) return result;
+        }
+        
+        return null;
+    }
 }

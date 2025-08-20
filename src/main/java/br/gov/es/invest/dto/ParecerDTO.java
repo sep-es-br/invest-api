@@ -5,7 +5,7 @@ import br.gov.es.invest.utils.DateTimeUtils;
 
 public record ParecerDTO(
     String id,
-    EtapaDTO etapa,
+    String etapa,
     UsuarioDto feitoPor,
     GrupoDTO doGrupo,
     String timestamp,
@@ -15,7 +15,7 @@ public record ParecerDTO(
         return model == null ? null
         : new ParecerDTO(
             model.getId(), 
-            EtapaDTO.parse(model.getEtapa()), 
+            model.getEtapa().getEtapaId().name(), 
             UsuarioDto.parse(model.getUsuario()), 
             GrupoDTO.parse(model.getGrupo()), 
             DateTimeUtils.formatZonedDateTime(model.getTimestamp()), 

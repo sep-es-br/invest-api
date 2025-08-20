@@ -40,7 +40,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.utils.DataListResult;
+import br.gov.es.invest.utils.components.FluxoConfig;
 
 
 @RestController
@@ -54,6 +56,9 @@ public class ObjetoController {
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    private final EtapaService etapaSrv;
+    
+    private final FluxoConfig fluxoConfig;
 
     @PostMapping("/allTira")
     public ResponseEntity<?> getAllByFiltro(
@@ -154,17 +159,8 @@ public class ObjetoController {
             }
 
             Objeto objeto = optObjeto.get();
-            
-            if(objeto.getEmEtapa() != null){
-                objeto.getEmEtapa().getEtapa().setAcoes(
-                    objeto.getEmEtapa().getEtapa().getAcoes().stream().sorted((acao1, acao2) -> 
-                        getAsNumberValue(acao1.getPositivo()) - getAsNumberValue(acao2.getPositivo())
-                    
-                    ).toList()
-                );
-            }
-            
-            return ResponseEntity.ok(new ObjetoDto(objeto));
+                        
+            return ResponseEntity.ok(new ObjetoDto(objeto, fluxoConfig));
 
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -187,7 +183,7 @@ public class ObjetoController {
             filtro.unidades() == null ? null : filtro.unidades().stream().map(UnidadeOrcamentariaDTO::id).toList(), 
             filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList(), 
             filtro.status() == null ? null : filtro.status().id(), 
-            filtro.etapa() == null ? null : filtro.etapa().id(), 
+            filtro.etapa() == null ? null : filtro.etapa().etapaId(), 
             null, 
             null
             );
@@ -202,7 +198,7 @@ public class ObjetoController {
     @PostMapping("")
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         
-        Objeto objeto = new Objeto(objetoDto);
+        Objeto objeto = new Objeto(objetoDto).hidratar(etapaSrv);
         objeto.setEmEtapa(service.getById(objeto.getId()).map(Objeto::getEmEtapa).orElse(null));
         
         
@@ -245,7 +241,7 @@ public class ObjetoController {
         
         service.removerObjeto(objetoId);
 
-        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get()));
+        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get(), fluxoConfig));
 
     }
         

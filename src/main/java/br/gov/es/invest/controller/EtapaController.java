@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.EtapaDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.Etapa;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
+import br.gov.es.invest.utils.components.FluxoConfig;
+import br.gov.es.invest.utils.domains.Etapa;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EtapaController {
     
+    private final FluxoConfig fluxoConfig;
     private final EtapaService etapaService;
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
@@ -32,7 +34,7 @@ public class EtapaController {
     public ResponseEntity<?> getEtapa(@RequestParam(required = false) String id) {
 
         if(id == null) {
-            List<Etapa> etapas = etapaService.findAll();
+            List<Etapa> etapas = fluxoConfig.getFluxo(FluxoConfig.FLUXO_AVALIACAO_PIP).etapas();
 
             return ResponseEntity
                     .ok(etapas.stream().map(EtapaDTO::parse).toList());
@@ -57,7 +59,7 @@ public class EtapaController {
             userId = usuario.getId();
         }
 
-        return EtapaDTO.parse(etapaService.getEtapaDoUsuario(userId));
+        return EtapaDTO.parse(fluxoConfig.getFluxo(FluxoConfig.FLUXO_AVALIACAO_PIP).etapa(etapaService.getEtapaDoUsuario(userId).getEtapaId().name()));  
                
         
 

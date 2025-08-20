@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.FluxoDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.service.FluxoService;
+import br.gov.es.invest.utils.domains.Fluxo;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class FluxoController {
     
     private final FluxoService fluxoService;
+    
 
     @GetMapping("")
     public ResponseEntity<?> find(@RequestParam(required = false) String id) {
@@ -33,7 +34,7 @@ public class FluxoController {
             return ResponseEntity.ok(fluxoDTOs);
         }
 
-        Fluxo fluxo = fluxoService.findById(id);
+        Fluxo fluxo = fluxoService.findByFluxoId(id);
 
         if(fluxo == null) {
             return MensagemErroRest.asResponseEntity(

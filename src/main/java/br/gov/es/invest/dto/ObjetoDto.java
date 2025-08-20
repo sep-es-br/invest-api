@@ -12,6 +12,7 @@ import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
+import br.gov.es.invest.utils.components.FluxoConfig;
 
 public record ObjetoDto(
     String id,
@@ -36,7 +37,7 @@ public record ObjetoDto(
 
 ) {
     
-    public ObjetoDto(Objeto model) {
+    public ObjetoDto(Objeto model, FluxoConfig fluxoConfig) {
         this(
             model.getId(), 
             "Investimento", 
@@ -44,7 +45,7 @@ public record ObjetoDto(
             model.getHashProposta(),
             model.getNome(), 
             EmStatusDTO.parse(model.getEmStatus()),
-            EmEtapaDTO.parse(model.getEmEtapa()),
+            EmEtapaDTO.parse(model.getEmEtapa(), fluxoConfig),
             model.getDescricao(), 
             Optional.ofNullable(model.getMicrorregiao()).map(LocalidadeDto::new).orElse(null), 
             model.getInfoComplementares(), 

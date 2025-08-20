@@ -10,7 +10,8 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
 import br.gov.es.invest.dto.ObjetoDto;
-import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import br.gov.es.invest.service.EtapaService;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -83,7 +84,22 @@ public class Objeto extends Entidade implements Serializable {
         this.custosEstimadores = new ArrayList<>(dto.recursosFinanceiros().stream().map(custoDto -> new Custo(custoDto)).toList());
         this.microrregiao = dto.microregiaoAtendida() == null ? null : new Localidade(dto.microregiaoAtendida());
         this.apontamentos = dto.apontamentos() == null ? null : dto.apontamentos().stream().map(Apontamento::parse).toList();
-        this.pareceres = dto.pareceres() == null ? null : dto.pareceres().stream().map(Parecer::parse).toList();
+        this.pareceres = Optional.ofNullable(dto.pareceres())
+                .map(ps -> ps.stream()
+                                .map(Parecer::parse)
+                                .toList()).orElse(null);
+        
+        
+        
+    }
+    
+    public Objeto hidratar(EtapaService etapaSrv) {
+        
+        this.apontamentos.forEach(a -> a.hidratar(etapaSrv));
+        this.pareceres.forEach(_parecer -> _parecer.hidratar(etapaSrv));
+        this.emEtapa.hidratar(etapaSrv);
+        
+        return this;
         
     }
 
@@ -112,21 +128,6 @@ public class Objeto extends Entidade implements Serializable {
         conta.filtrarExecucoes(anoExercicio, fonteId);
     }
 
-    public static Objeto parse(ObjetoTiraProjection projection) {
-        if(projection == null)
-            return null;
-
-        Objeto obj = new Objeto();
-        obj.setId(projection.getId());
-        obj.setNome(projection.getNome());
-        obj.setTipo(projection.getTipo());
-        obj.setEmStatus(projection.getEmStatus());
-        obj.setEmEtapa(EmEtapa.parse(projection.getEmEtapa()));
-        obj.setCustosEstimadores(projection.getCustosEstimadores());
-        obj.setConta(projection.getConta());
-
-        return obj;
-    }
 
     public static Objeto parse(ObjetoDto dto) {
         return dto == null ? null

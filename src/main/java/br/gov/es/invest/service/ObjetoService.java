@@ -20,7 +20,6 @@ import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
-import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
@@ -30,6 +29,8 @@ import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 import br.gov.es.invest.utils.DataListResult;
+import br.gov.es.invest.utils.components.FluxoConfig;
+import br.gov.es.invest.utils.domains.Fluxo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class ObjetoService {
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
     private final ContaService contaService;
+    private final EtapaService etapaSrv;
     
     private final StatusService statusService;
 
@@ -109,12 +111,12 @@ public class ObjetoService {
 
             objeto.setEmStatus(emStatus);
 
-            Fluxo fluxo = fluxoService.findByFluxoId("avaliacaoPip");
+            Fluxo fluxo = fluxoService.findByFluxoId(FluxoConfig.FLUXO_AVALIACAO_PIP);
 
             EmEtapa emEtapa = new EmEtapa();
             emEtapa.setAtividade("Avaliar Solicitação");
             emEtapa.setDevolvido(false);
-            emEtapa.setEtapa(fluxo.getEtapaInicial());
+            emEtapa.setEtapa(etapaSrv.getByEtapaId(fluxo.etapaInicial()).orElseThrow());
             
             objeto.setEmEtapa(emEtapa);
             

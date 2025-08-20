@@ -1,19 +1,19 @@
 package br.gov.es.invest.dto;
 
+import br.gov.es.invest.utils.domains.Fluxo;
 import java.util.List;
-
-import br.gov.es.invest.model.Fluxo;
+import java.util.Optional;
 
 public record FluxoDTO(
-    String id,
     String nome,
+    String fluxoId,
     List<EtapaDTO> etapas
 ) {
     public FluxoDTO (Fluxo model) {
         this(
-            model.getId(),
-            model.getNome(),
-            model.getEtapas() == null ? null : model.getEtapas().stream().map(EtapaDTO::parse).toList()
+            model.nome(),
+            model.fluxoId(),
+            Optional.ofNullable(model.etapas()).map(_etapas -> _etapas.stream().map(EtapaDTO::parse).toList()).orElse(null)
         );
     }
 

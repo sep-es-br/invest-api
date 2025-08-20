@@ -4,6 +4,7 @@
  */
 package br.gov.es.invest.utils.components;
 
+import br.gov.es.invest.utils.domains.Acao;
 import br.gov.es.invest.utils.domains.Fluxo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class FluxoConfig {
+    
+    public static final String FLUXO_AVALIACAO_PIP = "avaliacaoPip";
        
     private final List<Fluxo> fluxos;
 
@@ -38,6 +41,6 @@ public class FluxoConfig {
         
         return !result.isEmpty() ? result.get(0) : null;
     }
-    
+        
     
 }

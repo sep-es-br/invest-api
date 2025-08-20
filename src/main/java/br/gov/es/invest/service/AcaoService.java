@@ -10,26 +10,35 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.gov.es.invest.exception.SemApontamentosException;
-import br.gov.es.invest.model.Acao;
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.utils.components.FluxoConfig;
+import br.gov.es.invest.utils.domains.Acao;
+import br.gov.es.invest.utils.domains.Etapa;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AcaoService {
     
 
-    private ApontamentoService apontamentoService;
-    private ObjetoService objetoService;
+    private final ApontamentoService apontamentoService;
+    private final ObjetoService objetoService;
+    private final StatusService statusSrv;
+    private final EtapaService etapaSrv;
+    private final GrupoService grupoSrv;
+    
+    private final FluxoConfig fluxoConfig;
 
     @Transactional
     public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Usuario usuario) throws SemApontamentosException{
         
 
-        if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())
+        if(acao.positivo() != null && apontamentos != null && !acao.positivo() && acao.proxEtapa() != null && apontamentos.isEmpty())
             throw new SemApontamentosException();
 
         ZonedDateTime agora = ZonedDateTime.now();
@@ -39,11 +48,11 @@ public class AcaoService {
         objeto.setApontamentos(objetoOriginal.getApontamentos());
         objeto.setPareceres(objetoOriginal.getPareceres());
 
-        if(acao.getProxEtapa() == null) { // ponta do fluxo
-            if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
+        if(acao.proxEtapa()== null) { // ponta do fluxo
+            if(acao.positivo()) { // ação positiva significa que terminou o fluxo
                 
                 EmStatus emStatusTarget = new EmStatus();
-                emStatusTarget.setStatus(acao.getStatusFinal());
+                emStatusTarget.setStatus(statusSrv.getByStatusId(acao.statusFinal()).orElseThrow());
                 emStatusTarget.setTimestamp(agora);
 
                 objeto.setEmStatus(emStatusTarget); // aplica status final
@@ -55,12 +64,17 @@ public class AcaoService {
             }
 
         } else { // meio do fluxo
-            if(acao.getPositivo() != null && !acao.getPositivo()){         
+            Etapa etapa = this.fluxoConfig
+                            .getFluxo(FluxoConfig.FLUXO_AVALIACAO_PIP)
+                            .etapa(objeto.getEmEtapa().getEtapa().getEtapaId().name());
+            if(acao.positivo()!= null && !acao.positivo()){         
 
                 if(parecer != null) {
+                    
+                    
 
-                    parecer.setEtapa(acao.getProxEtapa());
-                    parecer.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
+                    parecer.setEtapa(etapaSrv.getByEtapaId(acao.proxEtapa()).orElseThrow());
+                    parecer.setGrupo(grupoSrv.findById(etapa.grupoResponsavel()).orElseThrow());
                     parecer.setTimestamp(agora);
                     parecer.setUsuario(usuario);
 
@@ -85,9 +99,13 @@ public class AcaoService {
                     }
 
                     for(Apontamento apontamento : apontamentos.stream().filter(a -> a.getId() == null).toList()) {
+                        
+                        Etapa proxEtapa = fluxoConfig
+                                .getFluxo(FluxoConfig.FLUXO_AVALIACAO_PIP)
+                                .etapa(acao.proxEtapa());
     
-                        apontamento.setEtapa(acao.getProxEtapa());
-                        apontamento.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
+                        apontamento.setEtapa(etapaSrv.getByEtapaId(acao.proxEtapa()).orElseThrow() );
+                        apontamento.setGrupo(grupoSrv.findById( etapa.grupoResponsavel()).orElseThrow());
                         apontamento.setTimestamp(agora);
                         apontamento.setUsuario(usuario);
                         apontamento.setActive(true);
@@ -101,15 +119,15 @@ public class AcaoService {
             }
             
             EmEtapa emEtapaTarget = new EmEtapa();
-            emEtapaTarget.setDevolvido(!acao.getPositivo());
-            emEtapaTarget.setEtapa(acao.getProxEtapa());
-            emEtapaTarget.setAtividade(acao.getAtividadeFinal());
+            emEtapaTarget.setDevolvido(!acao.positivo());
+            emEtapaTarget.setEtapa(etapaSrv.getByEtapaId( acao.proxEtapa() ).orElseThrow());
+            emEtapaTarget.setAtividade(acao.atividadeFinal());
             
             objeto.setEmEtapa(emEtapaTarget);
             
              
             EmStatus emStatusTarget = new EmStatus();
-            emStatusTarget.setStatus(acao.getStatusFinal());
+            emStatusTarget.setStatus(statusSrv.getByStatusId(acao.statusFinal()).orElseThrow());
             emStatusTarget.setTimestamp(agora);
 
             objeto.setEmStatus(emStatusTarget);
@@ -117,16 +135,6 @@ public class AcaoService {
             return objetoService.findById(objeto.getId());
         }
         
-    }
-
-    @Autowired
-    public void setApontamentoService(ApontamentoService apontamentoService) {
-        this.apontamentoService = apontamentoService;
-    }
-
-    @Autowired
-    public void setObjetoService(ObjetoService objetoService) {
-        this.objetoService = objetoService;
     }
 
     

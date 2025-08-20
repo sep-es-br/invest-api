@@ -14,7 +14,7 @@ public record Acao(
         String acaoId,
         String nome,
         String atividadeFinal,
-        boolean positivo,
+        Boolean positivo,
         String statusFinal,
         String proxEtapa
 ) {
