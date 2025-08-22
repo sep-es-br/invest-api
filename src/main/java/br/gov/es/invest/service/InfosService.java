@@ -68,7 +68,7 @@ public class InfosService {
         return Arrays.asList();
     }
 
-    public ValoresCusto getTotaisInvestimento(String nome, String idFonte, Integer exercicio, List<String> idUnidade, List<String> idPlano, Integer gnd){
+    public ValoresCusto getTotaisInvestimento(String nome, Long idFonte, Integer exercicio, List<Long> idUnidade, List<Long> idPlano, Integer gnd){
 
         String cypher = """
                         MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),

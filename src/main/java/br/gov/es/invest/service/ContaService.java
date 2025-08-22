@@ -53,8 +53,8 @@ public class ContaService {
     }
 
     public List<Conta> findByFiltro(
-        String nome, String unidadeId, String planoId,
-        Integer anoExercicio, String fonteId, Pageable pageable
+        String nome, Long unidadeId, Long planoId,
+        Integer anoExercicio, Long fonteId, Pageable pageable
     ){
         
         ExampleMatcher matcher = ExampleMatcher.matching();
@@ -99,13 +99,13 @@ public class ContaService {
 
     }
 
-    public Integer countByFilter(String nome, String codUnidade, String codPO, Integer exercicio, String idFonte){
+    public Integer countByFilter(String nome, Long codUnidade, Long codPO, Integer exercicio, Long idFonte){
         return findByFiltro(nome, codUnidade, codPO, exercicio, idFonte, null).size();
     }
 
     public DataListResult<DadosDetalhadoDTO> getDadosDetalhados (
-        String tipoDespesa, Integer gnd, Integer exercicio, String idFonte,
-        Pageable pageable, List<String> idsUnidade, List<String> idsPlano
+        String tipoDespesa, Integer gnd, Integer exercicio, Long idFonte,
+        Pageable pageable, List<Long> idsUnidade, List<Long> idsPlano
     ) {
 
         HashMap<String, Object> paramMap = new HashMap<>();
@@ -214,7 +214,7 @@ public class ContaService {
 
     public DataListResult<DadoConsolidadoDTO> getDadosConsolidados (
         String tipoDespesa, Integer gnd, Integer exercicioInicio, Integer exercicioFim, String idFonte,
-        Pageable pageable, List<String> idsUnidade
+        Pageable pageable, List<Long> idsUnidade
     ) {
 
 

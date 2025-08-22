@@ -1,7 +1,7 @@
 package br.gov.es.invest.dto.projection;
 
 public record UnidadeOrcamentariaDTOProjection(
-    String id, 
+    Long id, 
     String guid, 
     String codigo, 
     String nome, 

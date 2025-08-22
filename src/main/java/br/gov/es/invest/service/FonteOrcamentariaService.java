@@ -38,14 +38,14 @@ public class FonteOrcamentariaService {
         return repository.findFontesExtra();
     }
 
-    public String getCodById(String id){
+    public String getCodById(Long id){
         Optional<FonteOrcamentaria> optFonte = repository.findById(id);
 
         return optFonte.map(fonte -> fonte.getCodigo()).orElse(null);
  
     }
 
-    public Optional<FonteOrcamentaria> findById(String id){
+    public Optional<FonteOrcamentaria> findById(Long id){
         return repository.findById(id);
     }
 

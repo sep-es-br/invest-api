@@ -5,7 +5,7 @@ import java.util.Optional;
 import br.gov.es.invest.model.Orgao;
 
 public record OrgaoDto(
-        String id,
+        Long id,
         String guid,
         String sigla,
         String nome

@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 
 public record PlanoOrcamentarioDTO(
-    String id, 
+    Long id, 
     String codigo, 
     String nome
 )  {

@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.Orgao;
 
-public interface OrgaoRepository extends Neo4jRepository<Orgao, String>{
+public interface OrgaoRepository extends Neo4jRepository<Orgao, Long>{
 
     @Query("MATCH (orgao:Orgao) WHERE orgao.guid = $guid RETURN orgao")
     public Optional<Orgao> findByGuid(String guid);

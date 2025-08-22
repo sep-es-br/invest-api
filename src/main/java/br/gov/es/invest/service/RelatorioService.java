@@ -64,7 +64,7 @@ public class RelatorioService {
     private InvestimentosBIService investimentosBIService;
 
     public RegistroDadoConsolidado cardsTotaisRelatorioConsolidado(
-        String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
+        String tipoDespesa, List<Long> idsUnidade, Long idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
 
         String cypher = """
@@ -129,7 +129,7 @@ public class RelatorioService {
     }
 
     public Workbook gerarPlanilha(
-        String tipoDespesa, List<String> idsUnidade, List<String> idsPlanos, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
+        String tipoDespesa, List<Long> idsUnidade, List<Long> idsPlanos, Long idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
         
         List<RegistroDadoDetalhado> dados = getRegistroDadoDetalhados(tipoDespesa, idsUnidade, idsPlanos, idFonte, gnd, anoInicio, anoFim);
@@ -146,7 +146,7 @@ public class RelatorioService {
     }
 
     public Workbook gerarPlanilhaConsolidado(
-        String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim
+        String tipoDespesa, List<Long> idsUnidade, Long idFonte, Integer gnd, Integer anoInicio, Integer anoFim
     ){
         
         List<RegistroDadoConsolidado> dados = getRegistroDadoConsolidados(tipoDespesa, idsUnidade, idFonte, gnd, anoInicio, anoFim);
@@ -386,7 +386,7 @@ public class RelatorioService {
     }
 
     private List<RegistroDadoDetalhado> getRegistroDadoDetalhados(
-        String tipoDespesa, List<String> idsUnidade, List<String> idsPlanos, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
+        String tipoDespesa, List<Long> idsUnidade, List<Long> idsPlanos, Long idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
         ){
         
 
@@ -528,7 +528,7 @@ public class RelatorioService {
     }
 
     private List<RegistroDadoConsolidado> getRegistroDadoConsolidados(
-        String tipoDespesa, List<String> idsUnidade, String idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
+        String tipoDespesa, List<Long> idsUnidade, Long idFonte, Integer gnd, Integer anoInicio, Integer anoFim 
         ){
         
             String cypher = """

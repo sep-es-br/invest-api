@@ -33,7 +33,7 @@ public class Conta extends Entidade implements Serializable {
     @Relationship(type = "DELIMITA", direction = Direction.INCOMING)
     private List<ExecucaoOrcamentaria> execucoesOrcamentaria;
 
-    public void filtrarExecucoes(Integer anoExecucao, String fonteId) {
+    public void filtrarExecucoes(Integer anoExecucao, Long fonteId) {
         if(anoExecucao != null){
             this.setExecucoesOrcamentaria(
                 this.getExecucoesOrcamentaria().stream()

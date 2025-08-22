@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.Status;
 
-public interface StatusRepository extends Neo4jRepository<Status, String> {
+public interface StatusRepository extends Neo4jRepository<Status, Long> {
     
 
     @Query("MATCH (:Objeto)-[:EM]->(status:Status) \r\n" + //

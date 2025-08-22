@@ -1,7 +1,7 @@
 package br.gov.es.invest.dto.projection;
 
 public record TiraObjetoProjection(
-    String id,
+    Long id,
     String nome,
     String codPo,
     String unidadeOrcamentaria,

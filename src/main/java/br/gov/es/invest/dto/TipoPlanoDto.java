@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.TipoPlano;
 
 public record TipoPlanoDto(
-    String id,
+    Long id,
     String nome,
     String sigla
 ) {

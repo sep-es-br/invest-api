@@ -4,7 +4,7 @@ import br.gov.es.invest.model.Modulo;
 import br.gov.es.invest.model.Pode;
 
 public record PodeDto(
-    String id,
+    Long id,
     ModuloDto modulo,
     boolean listar,
     boolean visualizar,

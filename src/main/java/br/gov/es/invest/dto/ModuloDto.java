@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import br.gov.es.invest.model.Modulo;
 
 public record ModuloDto(
-    String id,
+    Long id,
     String nome,
     String pathId,
     Set<ModuloDto> filhos

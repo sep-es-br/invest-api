@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 
-public interface ExecucaoOrcamentariaRepository extends Neo4jRepository<ExecucaoOrcamentaria, String> {
+public interface ExecucaoOrcamentariaRepository extends Neo4jRepository<ExecucaoOrcamentaria, Long> {
     
 
     @Query("MATCH (execucao:ExecucaoOrcamentaria)-[:EM]->(ano:Ano)\r\n" + //

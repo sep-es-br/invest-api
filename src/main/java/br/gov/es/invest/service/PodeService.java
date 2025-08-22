@@ -21,7 +21,7 @@ public class PodeService {
     private GrupoRepository grupoRepository;
 
 
-    public Pode findByGrupoModulo(String moduloId, String grupoId){
+    public Pode findByGrupoModulo(Long moduloId, Long grupoId){
 
         Optional<Grupo> optGrupo = grupoRepository.findByGrupoModulo(moduloId, grupoId);
 

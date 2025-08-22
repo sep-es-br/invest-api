@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import br.gov.es.invest.model.Custo;
 
 public record CustoDTO(
-    String id,
+    Long id,
     Integer anoExercicio,
     Set<IndicadaPorDto> indicadaPor
 ){

@@ -4,7 +4,7 @@ import br.gov.es.invest.model.Parecer;
 import br.gov.es.invest.utils.DateTimeUtils;
 
 public record ParecerDTO(
-    String id,
+    Long id,
     EtapaDTO etapa,
     UsuarioDto feitoPor,
     GrupoDTO doGrupo,

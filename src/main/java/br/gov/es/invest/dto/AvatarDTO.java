@@ -5,7 +5,7 @@ import java.util.Optional;
 import br.gov.es.invest.model.Avatar;
 
 public record AvatarDTO(
-    String id,
+    Long id,
     String blob
 ) {
 

@@ -8,7 +8,7 @@ import br.gov.es.invest.model.Etapa;
 import br.gov.es.invest.model.EtapaEnum;
 
 public record EtapaDTO(
-    String id,
+    Long id,
     Integer ordem,
     String nome,
     EtapaEnum etapaId,

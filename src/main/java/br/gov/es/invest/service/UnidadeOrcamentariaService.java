@@ -23,11 +23,11 @@ public class UnidadeOrcamentariaService {
         return repository.findAllUnidades();
     }
 
-    public String getCodById(String idUnidade) {
+    public String getCodById(Long idUnidade) {
         return repository.getCodById(idUnidade);
     }
 
-    public List<String> getCodsByIds(List<String> ids){
+    public List<String> getCodsByIds(List<Long> ids){
         return repository.getCodsById(ids);
     }
     
@@ -35,7 +35,7 @@ public class UnidadeOrcamentariaService {
         return repository.findAllById(repository.findByAgente(agenteId).stream().map(UnidadeOrcamentaria::getId).toList());
     }
 
-    public String getIdByCod(String cod) {
+    public Long getIdByCod(String cod) {
         
         return repository.findBy(
             Example.of( UnidadeOrcamentaria.builder().codigo(cod).build() ), 

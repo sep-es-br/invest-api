@@ -9,7 +9,7 @@ import br.gov.es.invest.model.Usuario;
 
 public record UsuarioDto(
         String token,
-        String id,
+        Long id,
         String sub,
         AvatarDTO imgPerfil,
         String name,

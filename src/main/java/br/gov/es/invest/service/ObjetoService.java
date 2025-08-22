@@ -123,7 +123,7 @@ public class ObjetoService {
         if(objeto.getId() != null) {
             List<TipoPlano> filhoAtuais = repository.findById(objeto.getId()).get().getTiposPlano();
 
-            List<String> idsFilhoFinal = objeto.getTiposPlano().stream().map( filho -> filho.getId()).toList();
+            List<Long> idsFilhoFinal = objeto.getTiposPlano().stream().map( filho -> filho.getId()).toList();
 
             List<TipoPlano> orfaos = filhoAtuais.stream().filter(filho -> !idsFilhoFinal.contains(filho.getId())).toList();
 
@@ -136,7 +136,7 @@ public class ObjetoService {
         return repository.save(objeto);
     }
 
-    public Objeto findById(String id){
+    public Objeto findById(Long id){
         return repository.findById(id).orElse(null);
     }
     
@@ -159,7 +159,7 @@ public class ObjetoService {
         
     }
 
-    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String fonteId, List<OrdemItemDto> ordem, Pageable pageable){
+    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){
         
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
@@ -254,7 +254,7 @@ public class ObjetoService {
 
     }
 
-    public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
+    public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long etapaId, Long fonteId, Pageable pageable){
          
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
@@ -351,7 +351,7 @@ public class ObjetoService {
 
     }
 
-    public List<Objeto> getAllByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable) {
+    public List<Objeto> getAllByFilter(Integer exercicio, String nome, Long idUnidade, String idPo, Long statusId, Pageable pageable) {
         
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
@@ -375,7 +375,7 @@ public class ObjetoService {
                 matcher = matcher.withMatcher("conta.planoOrcamentario", ExampleMatcher.GenericPropertyMatchers.exact()).withIncludeNullValues();
             } else {
                 PlanoOrcamentario planoProbe = new PlanoOrcamentario();
-                planoProbe.setId(idPo);
+                planoProbe.setId(Long.valueOf(idPo));
                 contaProbe.setPlanoOrcamentario(planoProbe);
             }
         }
@@ -413,8 +413,8 @@ public class ObjetoService {
     }
 
     public List<Objeto> findByFilter(
-        String nome, String unidadeId, String planoId,
-        Integer anoExercicio, String fonteId
+        String nome, Long unidadeId, String planoId,
+        Integer anoExercicio, Long fonteId
     ) {
 
         ExampleMatcher matcher = ExampleMatcher.matching();
@@ -439,7 +439,7 @@ public class ObjetoService {
                 matcher = matcher.withMatcher("conta.planoOrcamentario", ExampleMatcher.GenericPropertyMatchers.exact()).withIncludeNullValues();
             } else {
                 PlanoOrcamentario planoProbe = new PlanoOrcamentario();
-                planoProbe.setId(planoId);
+                planoProbe.setId(Long.valueOf(planoId));
                 contaProbe.setPlanoOrcamentario(planoProbe);
             }
         }
@@ -453,7 +453,7 @@ public class ObjetoService {
         return objetoFiltrado;
     }
 
-    public void updateStatus(String objId, Status novoStatus) {
+    public void updateStatus(Long objId, Status novoStatus) {
         Optional<Objeto> optObjeto = repository.findById(objId);
         
         if(optObjeto.isEmpty()) return;
@@ -466,9 +466,7 @@ public class ObjetoService {
 
     }
 
-    public Optional<Objeto> getById(String id, boolean updateStatus) {
-        if(id == null) return Optional.empty();
-        
+    public Optional<Objeto> getById(Long id, boolean updateStatus) {
         Optional<Objeto> optObjeto = repository.findById(id);
         
         if(optObjeto.isPresent() 
@@ -483,15 +481,15 @@ public class ObjetoService {
         return optObjeto;
     }
 
-    public Optional<Objeto> getById(String id) {
+    public Optional<Objeto> getById(Long id) {
         return this.getById(id, false);
     }
 
-    public List<Objeto> getAllByIds(List<String> ids) {
+    public List<Objeto> getAllByIds(List<Long> ids) {
         return repository.findAllById(ids);
     }
 
-    public Objeto removerObjeto(String objetoId) {
+    public Objeto removerObjeto(Long objetoId) {
         Optional<Objeto> optObjeto = repository.findById(objetoId);
 
         if(optObjeto.isEmpty())
@@ -505,7 +503,7 @@ public class ObjetoService {
         return this.findObjetoByConta(conta.getId());
     }
 
-    public List<Objeto> findObjetoByConta(String contaId) {
+    public List<Objeto> findObjetoByConta(Long contaId) {
         Objeto objetoProbe = new Objeto();
         Conta contaProbe = new Conta();
         contaProbe.setId(contaId);
@@ -515,7 +513,7 @@ public class ObjetoService {
     }
 
     public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
-            String idConta, Integer exercicio, String idFonte, Integer gnd, Pageable pageable
+            String idConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
     ) {
         String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
                         "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
@@ -579,7 +577,7 @@ public class ObjetoService {
     }
 
 
-    public List<Objeto> findObjetoByContaFiltrado(Conta conta, Integer exercicio, String fonteId) {
+    public List<Objeto> findObjetoByContaFiltrado(Conta conta, Integer exercicio, Long fonteId) {
         List<Objeto> todosObjetos = findObjetoByConta(conta);
 
         for(Objeto objeto : todosObjetos) {

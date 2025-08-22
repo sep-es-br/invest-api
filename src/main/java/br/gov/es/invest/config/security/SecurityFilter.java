@@ -119,7 +119,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-    
     private boolean checarAcesso(HttpServletRequest request, List<Papel> papeis){
         String url = request.getHeader("Origin-URL");
 
