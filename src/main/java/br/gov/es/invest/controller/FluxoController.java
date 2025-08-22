@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.gov.es.invest.dto.FluxoDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.service.FluxoService;
+import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.utils.domains.Fluxo;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class FluxoController {
     
     private final FluxoService fluxoService;
+    private final GrupoService grupoSrv;
     
 
     @GetMapping("")
@@ -28,7 +30,7 @@ public class FluxoController {
 
         if(id == null) {
             List<FluxoDTO> fluxoDTOs = fluxoService.findAll().stream()
-                                    .map(fluxo -> new FluxoDTO(fluxo))
+                                    .map(fluxo -> new FluxoDTO(fluxo, grupoSrv))
                                     .toList();
 
             return ResponseEntity.ok(fluxoDTOs);
@@ -44,7 +46,7 @@ public class FluxoController {
             );
         }
 
-        return ResponseEntity.ok(FluxoDTO.parse(fluxo));
+        return ResponseEntity.ok(FluxoDTO.parse(fluxo, grupoSrv));
     }
 
     @GetMapping("/withEtapa")
@@ -59,7 +61,7 @@ public class FluxoController {
             );
         }
 
-        return ResponseEntity.ok(FluxoDTO.parse(fluxo));
+        return ResponseEntity.ok(FluxoDTO.parse(fluxo, grupoSrv));
 
 
     }

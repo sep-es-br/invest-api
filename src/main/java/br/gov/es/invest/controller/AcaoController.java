@@ -21,6 +21,7 @@ import br.gov.es.invest.model.Parecer;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.AcaoService;
 import br.gov.es.invest.service.EtapaService;
+import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
@@ -40,6 +41,7 @@ public class AcaoController {
     private final AcaoService acaoService;
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
+    private final GrupoService grupoSrv;
     
     private final FluxoConfig fluxoConfig;
 
@@ -73,7 +75,7 @@ public class AcaoController {
             
             Objeto objetoFinal = acaoService.executarAcao(objeto, apontamentos, parecer, acao, usuario);
             
-            return ResponseEntity.ok(new ObjetoDto(objetoFinal, fluxoConfig));        
+            return ResponseEntity.ok(new ObjetoDto(objetoFinal, fluxoConfig, grupoSrv));        
         } catch(SemApontamentosException ex){
             return MensagemErroRest.asResponseEntity(
                 HttpStatus.UNPROCESSABLE_ENTITY, 

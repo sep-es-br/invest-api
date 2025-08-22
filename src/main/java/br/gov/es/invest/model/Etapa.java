@@ -43,7 +43,7 @@ public class Etapa extends Entidade {
 
         Etapa etapa = new Etapa();
         etapa.setEtapaId(EtapaEnum.valueOf(dto.etapaId()));
-        etapa.setGrupoResponsavelId(dto.grupoResponsavel());
+        etapa.setGrupoResponsavel(Grupo.parse(dto.grupoResponsavel()));
 
         return etapa;
 

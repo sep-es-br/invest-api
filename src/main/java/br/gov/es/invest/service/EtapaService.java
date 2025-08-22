@@ -37,7 +37,7 @@ public class EtapaService {
         return etapaRepository.findBy(Example.of(example), q -> q.first());
     }
 
-    public Etapa getEtapaDoUsuario(String userId) {
+    public Optional<Etapa> getEtapaDoUsuario(String userId) {
         List<Grupo> gruposDoUser = grupoService.getGruposDoUsuario(userId);
 
         Grupo grupoProbe = new Grupo();
@@ -50,11 +50,11 @@ public class EtapaService {
             Optional<Etapa> optEtapa = etapaRepository.findBy(Example.of(etapaProbe), q -> q.first());
 
             if(optEtapa.isPresent()) {
-                return optEtapa.get();
+                return Optional.ofNullable(optEtapa.get());
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     

@@ -41,6 +41,7 @@ import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.service.EtapaService;
+import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.utils.DataListResult;
 import br.gov.es.invest.utils.components.FluxoConfig;
 
@@ -57,6 +58,7 @@ public class ObjetoController {
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
     private final EtapaService etapaSrv;
+    private final GrupoService grupoSrv;
     
     private final FluxoConfig fluxoConfig;
 
@@ -160,7 +162,7 @@ public class ObjetoController {
 
             Objeto objeto = optObjeto.get();
                         
-            return ResponseEntity.ok(new ObjetoDto(objeto, fluxoConfig));
+            return ResponseEntity.ok(new ObjetoDto(objeto, fluxoConfig, grupoSrv));
 
         } catch(Exception e){
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -241,7 +243,7 @@ public class ObjetoController {
         
         service.removerObjeto(objetoId);
 
-        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get(), fluxoConfig));
+        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get(), fluxoConfig, grupoSrv));
 
     }
         

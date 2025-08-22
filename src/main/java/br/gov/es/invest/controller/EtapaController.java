@@ -14,10 +14,12 @@ import br.gov.es.invest.dto.EtapaDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.EtapaService;
+import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.components.FluxoConfig;
 import br.gov.es.invest.utils.domains.Etapa;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,6 +31,7 @@ public class EtapaController {
     private final EtapaService etapaService;
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
+    private final GrupoService grupoSrv;
 
     @GetMapping("")
     public ResponseEntity<?> getEtapa(@RequestParam(required = false) String id) {
@@ -37,7 +40,7 @@ public class EtapaController {
             List<Etapa> etapas = fluxoConfig.getFluxo(FluxoConfig.FLUXO_AVALIACAO_PIP).etapas();
 
             return ResponseEntity
-                    .ok(etapas.stream().map(EtapaDTO::parse).toList());
+                    .ok(etapas.stream().map(etapa -> EtapaDTO.parse(etapa, grupoSrv)).toList());
 
         }
 
@@ -51,17 +54,17 @@ public class EtapaController {
     @GetMapping("/doUsuario")
     public EtapaDTO getEtapaDoUsuario(@RequestParam(required = false) String userId,  @RequestHeader("Authorization") String authToken) {
 
-        if(userId == null) {
-            String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
+        userId = Optional.ofNullable(userId)
+                    .orElseGet(() -> {
+                        String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
             
-            Usuario usuario = usuarioService.getUserBySub(sub).get();
-
-            userId = usuario.getId();
-        }
-
-        return EtapaDTO.parse(fluxoConfig.getFluxo(FluxoConfig.FLUXO_AVALIACAO_PIP).etapa(etapaService.getEtapaDoUsuario(userId).getEtapaId().name()));  
-               
-        
+                        return usuarioService.getUserBySub(sub).map(Usuario::getId).orElse(null);
+                    });
+                
+        return etapaService.getEtapaDoUsuario(userId)
+                .map(etapa -> EtapaDTO.parse(etapa, fluxoConfig, grupoSrv))
+                .orElse(null);
+                        
 
     }
 }
