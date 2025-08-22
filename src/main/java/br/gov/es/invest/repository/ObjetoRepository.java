@@ -80,15 +80,18 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
             "} WITH  obj, plano, unidade, execucao, custo, conta\r\n" + //
             "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
             "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
+
             "    AND ($unidadeId IS NULL OR id(unidade) = $unidadeId)\r\n" + //
             "    AND ($status IS NULL OR obj.status = $status)\r\n" + //
             "    AND (\r\n" + //
             "        $planoId IS NULL\r\n" + //
             "        OR ($planoId = \"S.PO\" AND plano IS NULL)\r\n" + //
+
             "        OR ($planoId <> \"S.PO\" AND toInteger($planoId) = id(plano))\r\n" + //
             "        )\r\n" + //
             "RETURN count(distinct obj)")
     public int countByFilter(String nome, Long unidadeId, String planoId, String status, Integer exercicio);
+
 
     @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) \n" +
                 "WHERE id(obj) = $objetoId \n" + 

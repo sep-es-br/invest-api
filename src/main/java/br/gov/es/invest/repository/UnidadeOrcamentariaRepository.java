@@ -28,5 +28,16 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
             WHERE id(unidade) IN $ids
             RETURN unidade.codigo
             """)
-    public List<String> getCodsById(List<Long> ids);
+   public List<String> getCodsById(List<Long> ids);
+
+    public List<String> getCodsById(List<String> ids);
+    
+    @Query("""
+           MATCH (a:Agente)-[]-(:Papel)-[]-(:Setor)-[]-(:Orgao)-[:CONTROLA]->(uo:UnidadeOrcamentaria)
+           WHERE elementId(a) = $idAgente
+           RETURN DISTINCT uo
+           """)
+    public List<UnidadeOrcamentaria> findByAgente(String idAgente);
+    
+
 }

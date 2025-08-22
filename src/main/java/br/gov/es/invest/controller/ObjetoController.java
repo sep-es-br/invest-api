@@ -68,7 +68,7 @@ public class ObjetoController {
                     
             Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
             
-            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
+            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
             idsUo = unidades.stream().map(u -> u.getId()).toList();
 
@@ -116,7 +116,7 @@ public class ObjetoController {
                 Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
                 idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {
@@ -203,9 +203,7 @@ public class ObjetoController {
     public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = new Objeto(objetoDto);
-        if(objeto.getId() != null) {
-            objeto.setEmEtapa(service.getById(objeto.getId()).get().getEmEtapa());
-        }
+        objeto.setEmEtapa(service.getById(objeto.getId()).map(Objeto::getEmEtapa).orElse(null));
         
         
         if(objeto.getResponsavel() == null) {

@@ -28,16 +28,12 @@ public class Usuario extends Entidade {
     private String nomeCompleto;
     private String telefone;
     private String email;
-    private String papel;
 
     @Relationship(type = "POSSUI")
     private Avatar imgPerfil;
 
     @Relationship(type = "ATUA_COMO")
     private Set<Funcao> role;
-
-    @Relationship(type ="MEMBRO_DE")
-    private Setor setor;
 
     @Relationship("POSSUI")
     private List<Papel> papeis;
@@ -51,13 +47,11 @@ public class Usuario extends Entidade {
         this.telefone = dto.telefone();
         
         this.email = dto.email();
-        this.papel = dto.papel();
 
         this.imgPerfil = Avatar.parse(dto.imgPerfil());
         this.role = Optional.ofNullable(dto.role())
             .map(roles -> roles.stream().map(Funcao::new).collect(Collectors.toSet())).orElse(null);
 
-        this.setor = Setor.parse(dto.setor());
     }
 
     public Usuario(ACUserInfoDto acUser) {

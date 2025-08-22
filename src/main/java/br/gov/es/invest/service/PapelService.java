@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.repository.PapelRepository;
+import java.util.List;
 
 @Service
 public class PapelService {
@@ -22,7 +23,16 @@ public class PapelService {
 
         return repository.findBy(Example.of(papelProbe), q -> q.first());
 
-
+    }
+    
+    public void deleteAllById(List<String> ids) {
+        repository.deleteAllById(ids);
+    }
+    
+    public Papel save(Papel papel){
+        if(papel == null) return null;
+        
+        return repository.save(papel);
     }
 
 

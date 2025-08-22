@@ -30,7 +30,10 @@ import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 import br.gov.es.invest.utils.DataListResult;
+import java.util.ArrayList;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.neo4j.core.Neo4jClient;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,7 @@ public class ObjetoService {
     private final ObjetoRepository repository;
 
     private final Neo4jOperations neo4jOperations;
+    private final Neo4jClient neo4jClient;
 
     
     private final InvestimentoService investimentoService;
@@ -49,6 +53,8 @@ public class ObjetoService {
     private final StatusService statusService;
 
     private final FluxoService fluxoService;
+    
+    private final TipoPlanoService tpPlanoSrv;
 
 
 
@@ -132,6 +138,25 @@ public class ObjetoService {
 
     public Objeto findById(Long id){
         return repository.findById(id).orElse(null);
+    }
+    
+    public List<String> listarHashUsadosPorDemandaPublica() {
+        
+        String cypher = 
+        """
+            MATCH (obj:Objeto)-[:DO_TIPO]->(n:TipoPlano) 
+            WHERE n.sigla = 'DA'
+              AND obj.hashProposta IS NOT NULL
+            RETURN obj.hashProposta AS hash
+        """;
+
+        return new ArrayList<>(neo4jClient
+                    .query(cypher)
+                    .fetchAs(String.class)
+                    .mappedBy((typeSystem, record) -> record.get("hash").asString())
+                    .all()
+        );
+        
     }
 
     public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){

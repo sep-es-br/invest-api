@@ -21,8 +21,9 @@ public class AreaTematicaService {
 
         return repository.findAll(Sort.by(Sort.Order.asc("nome")));
     }
-    
+  
     public Optional<AreaTematica> findById(Long id){
+
         return repository.findById(id);
     }
     

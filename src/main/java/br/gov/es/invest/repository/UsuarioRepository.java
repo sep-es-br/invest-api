@@ -21,6 +21,7 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, Long> {
             "RETURN usuario")
     public Optional<Usuario> setNewACToken(String sub, String newACToken);
     
+
     @Query("MATCH (g:Grupo)<-[oldR:MEMBRO_DE]-(u:Usuario)-[:POSSUI]->(papel:Papel)\r\n" + //
                 "WHERE id(u) = $userId\r\n" + //
                 "    AND id(papel) = $papelId\r\n" + //

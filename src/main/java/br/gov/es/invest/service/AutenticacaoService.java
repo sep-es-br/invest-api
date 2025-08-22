@@ -24,13 +24,16 @@ import br.gov.es.invest.dto.acessocidadaoapi.OrganizacaoACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
 import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
 import br.gov.es.invest.exception.PapelInvalidoException;
+import br.gov.es.invest.exception.UsuarioSemPermissaoException;
 import br.gov.es.invest.exception.service.InfoplanServiceException;
 import br.gov.es.invest.model.Orgao;
 import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.repository.PapelRepository;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +45,7 @@ public class AutenticacaoService {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final ACService acService;
+    private final PapelService papelSrv;
     private final GrupoService grupoService;
     private final SetorService setorService;
     private final OrgaoService orgaoService;
@@ -54,51 +58,21 @@ public class AutenticacaoService {
 
         ACUserInfoDto userInfo = getUserInfo(accessToken);
         String token = tokenService.gerarToken(userInfo, accessToken);
-
         
+        String acToken = acService.getClientToken();
+
         Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());;
+
+        if(!userInfo.role().contains("GESTOR_MASTER") && !validarPapel(userInfo.subNovo())) throw new UsuarioSemPermissaoException();
+
         
-        Usuario usuario;
-
-        if(optUsuario.isPresent()){
-            usuario = optUsuario.get();
-
-            if(userInfo.role().contains("GESTOR_MASTER")){
-                if(!validarPapel(usuario)) throw new PapelInvalidoException("Papel não existe ou não é prioritário; usuario-sub: " + usuario.getSub());
-            } else if(usuario.getPapeis() == null || usuario.getPapeis().isEmpty()){
-                final String papelBanco = usuario.getPapel();
-
-                String clientToken = acService.getClientToken();
+        List<Papel> papeis = acService.getPapeisBySub(userInfo.subNovo(), acToken).stream()
+                                .map(papel -> acService.gerarPapelFromResp(papel, acToken))
+                                .toList();
         
-                List<PapelACResponseDto> papeisDoUser = acService.getPapeisBySub(usuario.getSub(), clientToken);
-                
-                List<PapelACResponseDto> papeisComNome = papeisDoUser.stream().filter(papelac -> papelac.Nome().equals(papelBanco)).toList();
-                if(!papeisComNome.isEmpty()){
-    
-                    Setor setor = usuario.getSetor();
-    
-                    // independentemente atualiza para novo formato
-                    Optional<PapelACResponseDto> optPapelCerto = papeisComNome.stream().filter(p -> p.LotacaoGuid().equals(setor.getGuid())).findFirst();
-    
-                    if(optPapelCerto.isPresent()) {
-                        Papel papel = Papel.parse(optPapelCerto.get());
-                        papel.setSetor(setor);
-                        
-                        usuarioService.trasnferirNovoFormato(usuario, papel);
-                    }
-                }
-            }
-            
-        } else {
-            usuario = this.gerarUsuario(userInfo);
-
-            if(!userInfo.role().contains("GESTOR_MASTER") && !validaUsuario(usuario)){
-                throw new PapelInvalidoException("papel sem acesso");
-            }
-            
-
-
-        }
+        
+        Usuario usuario = usuarioService.getUserBySub(userInfo.subNovo())
+                            .orElseGet(() -> new Usuario(userInfo));
 
         if (usuario.getName() == null)
             usuario.setName(userInfo.apelido().split(" ")[0]);
@@ -106,6 +80,7 @@ public class AutenticacaoService {
         usuario.setNomeCompleto(userInfo.apelido());
         usuario.setEmail(getEmailUserInfo(userInfo));
         usuario.setRole(userInfo.role());
+        usuario.setPapeis(papeis);
                 
         usuario = usuarioService.save(usuario);
         
@@ -113,191 +88,88 @@ public class AutenticacaoService {
 
         return dto;
 
-
     }
 
-    protected boolean validaUsuario(Usuario user){
-        if(user == null) {
-            return false;
-        }
-
-        if(user.getPapeis() == null || user.getPapeis().isEmpty()) {
-            Optional<Usuario> usuarioBanco = usuarioService.getUserBySub(user.getSub());
-
-            if(usuarioBanco.isEmpty()) {
-                return  false;
-            } else {
-                return !grupoService.getGruposDoUsuario( usuarioBanco.get().getId()).isEmpty();
-            }
-            
-        } else {
-            Papel papelDoUser = user.getPapeis().get(0);
-
-            Papel papelProbe = new Papel();
-            papelProbe.setGuid(papelDoUser.getGuid());
-
-            Optional<Papel> optPapel = papelRepository.findBy(Example.of(papelProbe), q -> q.first());
-
-            if(optPapel.isPresent()) {
-                
-                if(!grupoService.getGruposByPapel(optPapel.get().getId()).isEmpty()) return true;
-                
-                papelDoUser = optPapel.get();
-            }
-            Setor setorDoUser = papelDoUser.getSetor();
-
-            Optional<Setor> optSetor = setorService.findByGuid(setorDoUser.getGuid());
-
-            if(optSetor.isPresent()) {
-                return !grupoService.getGruposBySetor(optSetor.get().getId()).isEmpty();
-            } else {
-
-                Orgao orgaoDoUser = setorDoUser.getOrgao();
-
-                Optional<Orgao> optOrgao = orgaoService.findByGuid(orgaoDoUser.getGuid());
-
-                if(optOrgao.isPresent()) {
-                    return !grupoService.getGruposByOrgao(optOrgao.get().getId()).isEmpty();
-                } else {
-                    return false;
-                }
-
-            }
-
-
-
-
-        }
+    protected boolean validarPapel(String userSub){
         
-    }
-
-    protected Usuario gerarUsuario(ACUserInfoDto userInfo){
-        String clientToken = acService.getClientToken();
-
-        List<PapelACResponseDto> papeis = acService.getPapeisBySub(userInfo.subNovo(), clientToken);
-        
-        List<PapelACResponseDto>  papeisComPrioridade = papeis.stream().filter(p -> p.Prioritario()).toList();
-
-        PapelACResponseDto papelAc;
-
-        if(!userInfo.role().contains("GESTOR_MASTER")){
-            if(papeisComPrioridade.isEmpty())
-                return null;
-            
-            papelAc = papeisComPrioridade.get(0);
-        } else {
-            papelAc = papeis.get(0);
-        }
-
-        UnidadeACResponseDto setorAc = acService.getUnidadeInfoByGuid(papelAc.LotacaoGuid(), clientToken);
-
-        if(setorAc == null) {
-            return null;
-        }
-
-        OrganizacaoACResponseDto orgaoAc = acService.getOrgaoInfoByGuid(setorAc.guidOrganizacao(), clientToken);
-
-        if(orgaoAc == null)
-            return null;
-
-        Orgao orgao = new Orgao(orgaoAc);
-        orgao = orgaoService.findOrCreate(orgao);
-
-        Setor setor = Setor.parse(setorAc, orgao);
-        setor = setorService.findOrCreate(setor);
-
-        Papel papel = Papel.parse(papelAc, setor);
-        
-        Usuario user = new Usuario(userInfo);
-        user.setPapeis(Arrays.asList(papel));
-
-        return user;
-                    
-        
-    }
-
-    protected boolean validarPapel(Usuario user){
-        
-        ArrayList<PapelACResponseDto> papeisValidos = new ArrayList<>();
 
         String clientToken = acService.getClientToken();
-
-        // 1º valida se o papel ainda existe e é prioritário
-        if(user.getPapeis() == null || user.getPapeis().isEmpty()) {
-            List<PapelACResponseDto> papeisDoUser = acService.getPapeisBySub(user.getSub(), clientToken);
+        List<PapelACResponseDto> papeisAc = acService.getPapeisBySub(userSub, clientToken);
+        
+        /**
+         * niveis de validação de cada papel
+         * 
+         * 1) papel: se o papel é cadastrado diretamente em algum grupo
+         * 2) setor: se o setor do papel está cadastrado
+         * 3) orgão: se o orgão tá cadastrado
+         * 
+         * objetivo dessa etapa não é definir acessos especificos, é apenas saber se tem ou não algum acesso
+         * acesso especifico é validado em seus respectivos módulos
+         * 
+         */
+        
+        for(PapelACResponseDto papelAc : papeisAc.stream().filter(p -> p.Prioritario()).toList() ){
             
-            List<PapelACResponseDto> papeisComNome = papeisDoUser.stream().filter(papelac -> papelac.Nome().equals(user.getPapel())).toList();
-            if(!papeisComNome.isEmpty()){
-                List<Papel> papeisPrioritário = papeisComNome.stream().map(Papel::parse).toList();
-
-                if(!papeisPrioritário.isEmpty()) {
-                    papeisValidos.add(papeisComNome.get(0));
-                }
-
-                // independentemente atualiza para novo formato
-                Optional<PapelACResponseDto> optPapelCerto = papeisComNome.stream().filter(p -> p.LotacaoGuid().equals(user.getSetor().getGuid())).findFirst();
-
-                if(optPapelCerto.isPresent()) {
-                    Papel papel = Papel.parse(optPapelCerto.get());
-                    papel.setSetor(user.getSetor());
-                    
-                    usuarioService.trasnferirNovoFormato(user, papel);
-                } else {
-                    user.setPapeis(Arrays.asList(
-                        Papel.parse(papeisComNome.get(0), user.getSetor())
-                    ));
-                }
-
-                
+            Optional<Papel> papelBanco = papelSrv.findByGuid(papelAc.Guid());
+            
+            if(papelBanco.isPresent()){
+                if(!grupoService.getGruposByPapel(papelBanco.get().getId()).isEmpty())
+                    return true;
             }
-        } else {
-            // pega o unico papel dele
-            if (user.getPapeis().size() == 1){
-                Papel papelNoBanco = user.getPapeis().get(0);
-
-                PapelACResponseDto papelAc = acService.getPapelByGuid(papelNoBanco.getGuid(), clientToken);
-                if(papelAc != null){
-                    Papel papelValido = Papel.parse(papelAc, papelNoBanco.getSetor());
-                    papelValido.setId(papelNoBanco.getId());
-                    papelRepository.save(papelValido);
-                    papeisValidos.add(papelAc);
-                }
-
-            } else { // ou, se tiver mais, valida todos os papeis
+            
+            if(papelAc.LotacaoGuid() != null) {
                 
-                for(Papel papel : user.getPapeis()){
-                    PapelACResponseDto papelAc = acService.getPapelByGuid(papel.getGuid(), clientToken);
-                    if(papelAc != null){
-                        Papel papelValido = Papel.parse(papelAc, papel.getSetor());
-                        papelValido.setId(papel.getId());
-                        papelRepository.save(papelValido);
-                        papeisValidos.add(papelAc);
-                    } else if(papelAc != null) { // se não existir então remove
-                        papelRepository.deleteById(papel.getId());
+                UnidadeACResponseDto setorAc = acService.getUnidadeInfoByGuid(papelAc.LotacaoGuid(), clientToken);
+                
+                if(setorAc != null){
+                    
+                    Optional<Setor> setorBanco = setorService.findByGuid(setorAc.guid());
+                    
+                    if(setorBanco.isPresent()){
+                        if(!grupoService.getGruposBySetor(setorBanco.get().getId()).isEmpty())
+                            return true;
                     }
-
+                    
+                    if(setorAc.guidOrganizacao() != null){
+                        
+                        Optional<Orgao> orgaoBanco = orgaoService.findByGuid(setorAc.guidOrganizacao());
+                        
+                        if(orgaoBanco.isPresent()){
+                            if(!grupoService.getGruposByOrgao(orgaoBanco.get().getId()).isEmpty())
+                                return true;
+                        }
+                        
+                    }
+                    
                 }
-            }
-
-        }
-
-        // valida se o setor e orgão ainda existem;
-        ArrayList<PapelACResponseDto> papeisValidos2 = new ArrayList<>();
-        for( PapelACResponseDto papel : papeisValidos ) {
-            UnidadeACResponseDto unidade = acService.getUnidadeInfoByGuid(papel.LotacaoGuid(), clientToken);
-
-            if(unidade != null ){
-                OrganizacaoACResponseDto organizacaoACResponseDto = acService.getOrgaoInfoByGuid(unidade.guidOrganizacao(), clientToken);
                 
-                if( organizacaoACResponseDto != null){
-                    papeisValidos2.add(papel);
-                }
             }
+            
         }
-
-        return !papeisValidos2.isEmpty();
+        
+        return false;
+        
         
     }
+    
+//    public void transferirTodosUsuarios(){
+//        List<Usuario> usuarios = usuarioService.findAll();
+//        String token = acService.getClientToken();
+//        
+//        for(Usuario user : usuarios){
+//            if(user.getPapeis() != null && !user.getPapeis().isEmpty()) continue;
+//            
+//            List<PapelACResponseDto> papeisAc = acService.getPapeisBySub(user.getSub(), token);
+//            
+//            user.setPapeis(papeisAc.stream().map(papel -> acService.gerarPapelFromResp(papel, token)).toList());
+//            user.setPapel(null);
+//            user = usuarioService.save(user);
+//            for(Papel papel : user.getPapeis()){
+//                usuarioService.transferirGrupo(user.getId(), papel.getId());
+//            }
+//            
+//        }
+//    }
 
     protected ACUserInfoDto getUserInfo(String accessToken) {
         HttpRequest request = HttpRequest.newBuilder()

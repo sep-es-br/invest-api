@@ -17,6 +17,7 @@ public record ObjetoDto(
     Long id,
     String tipoConta,
     String tipo,
+    String hashProposta,
     String nome,
     EmStatusDTO emStatus,
     EmEtapaDTO emEtapa, 
@@ -40,23 +41,24 @@ public record ObjetoDto(
             model.getId(), 
             "Investimento", 
             model.getTipo(), 
+            model.getHashProposta(),
             model.getNome(), 
             EmStatusDTO.parse(model.getEmStatus()),
             EmEtapaDTO.parse(model.getEmEtapa()),
             model.getDescricao(), 
-            model.getMicrorregiao() == null ? null : new LocalidadeDto(model.getMicrorregiao()), 
+            Optional.ofNullable(model.getMicrorregiao()).map(LocalidadeDto::new).orElse(null), 
             model.getInfoComplementares(), 
-            model.getTiposPlano() == null ? null : model.getTiposPlano().stream().map(tipo -> new TipoPlanoDto(tipo)).toList(),
+            Optional.ofNullable(model.getTiposPlano()).map(list -> list.stream().map(TipoPlanoDto::new).toList()).orElse(null),
             model.getContrato(),
-            model.getAreaTematica() == null ? null : new AreaTematicaDto(model.getAreaTematica()),
+            Optional.ofNullable(model.getAreaTematica()).map(AreaTematicaDto::new).orElse(null),
 
-            Optional.ofNullable(model.getCustosEstimadores()).orElse(new ArrayList<Custo>()).stream()
+            Optional.ofNullable(model.getCustosEstimadores()).orElse(new ArrayList<>()).stream()
                     .sorted(Comparator.comparing(Custo::getAnoExercicio)).map(CustoDTO::parse).toList(),
 
             UsuarioDto.parse(model.getResponsavel()),
             new ContaDto(model.getConta()),
-            model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList(),
-            model.getPareceres() == null ? null : model.getPareceres().stream().map(ParecerDTO::parse).toList(),
+            Optional.ofNullable(model.getApontamentos()).map(list -> list.stream().map(ApontamentoDTO::parse).toList()).orElse(null),
+            Optional.ofNullable(model.getPareceres()).map(list -> list.stream().map(ParecerDTO::parse).toList()).orElse(null),
             model.getPossuiOrcamento()
         );
     }

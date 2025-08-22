@@ -17,6 +17,7 @@ import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/usuario")
@@ -39,36 +40,29 @@ public class UsuarioController {
     }
 
     @GetMapping("")
-    public UsuarioDto getUsuario(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
+    public UsuarioDto getUsuarioByAuth(@RequestHeader("Authorization") String authToken) {
+        
         authToken = authToken.replace("Bearer ", "");
         
-        sub = Optional.ofNullable(sub).orElse(tokenService.validarToken(authToken));
-
+        String sub = tokenService.validarToken(authToken);
+                
         Optional<Usuario> optUsuario = service.getUserBySub(sub);
 
         return UsuarioDto.parse(optUsuario.orElse(null));
     }
 
-    @GetMapping("comAvatar")
-    public UsuarioDto getUsuarioComAvatar(@RequestParam(required = false) String sub, @RequestHeader("Authorization") String authToken) {
-        authToken = authToken.replace("Bearer ", "");
+    @GetMapping("/{userId}")
+    public UsuarioDto getUsuario(@PathVariable String userId) {
         
-        sub = Optional.ofNullable(sub).orElse(tokenService.validarToken(authToken));
+        Optional<Usuario> optUsuario = service.findById(userId);
 
-        Optional<Usuario> optUsuario = service.getUserBySub(sub);
-
-        return UsuarioDto.parse( optUsuario.orElse(null) );
+        return optUsuario.map(UsuarioDto::parse).orElse(null);
     }
-    
 
     @PutMapping("")
     public ResponseEntity<UsuarioDto> salvarUsuario(@RequestBody UsuarioDto usuario) {
         
-        Usuario user = new Usuario(usuario);
-        
-        user = service.save(user);
-
-        return ResponseEntity.ok(UsuarioDto.parse(user));
+        return ResponseEntity.ok(UsuarioDto.parse(service.save(usuario)));
     }
     
 

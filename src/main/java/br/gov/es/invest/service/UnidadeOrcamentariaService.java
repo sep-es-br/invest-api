@@ -30,6 +30,10 @@ public class UnidadeOrcamentariaService {
     public List<String> getCodsByIds(List<Long> ids){
         return repository.getCodsById(ids);
     }
+    
+    public List<UnidadeOrcamentaria> findByAgente(String agenteId){
+        return repository.findAllById(repository.findByAgente(agenteId).stream().map(UnidadeOrcamentaria::getId).toList());
+    }
 
     public Long getIdByCod(String cod) {
         

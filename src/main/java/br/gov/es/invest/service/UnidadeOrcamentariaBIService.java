@@ -32,7 +32,7 @@ public class UnidadeOrcamentariaBIService extends PentahoBIService {
         try {
             String url = buildEndpointUri(spoPath, unidadesTarget, null);
             List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
-
+            
             List<UnidadeOrcamentaria> unidades = dados.stream()
             .filter( dado -> !dado.get("cod_uo").asText().startsWith("0") &&  !dado.get("cod_uo").asText().startsWith("8"))
             .map(

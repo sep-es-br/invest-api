@@ -16,9 +16,7 @@ public record UsuarioDto(
         String nomeCompleto,
         String email,
         String telefone,
-        String papel,
         Set<FuncaoDTO> role,
-        SetorDto setor,
         Set<PapelDto> papeis
 ){
         
@@ -32,15 +30,13 @@ public record UsuarioDto(
                                         _usuario.getName(), 
                                         _usuario.getNomeCompleto(), 
                                         _usuario.getEmail(), 
-                                        _usuario.getTelefone(), 
-                                        _usuario.getPapel(), 
+                                        _usuario.getTelefone(),  
                                         Optional.ofNullable(_usuario.getRole())
                                                 .map(roles -> roles.stream()
                                                         .map(FuncaoDTO::new)
                                                         .collect(Collectors.toSet())
                                                 )
                                                 .orElseGet(Collections::emptySet),
-                                        _usuario.getSetor() == null ? null : new SetorDto(_usuario.getSetor()),
                                         usuario.getPapeis() == null || usuario.getPapeis().isEmpty() ? null : usuario.getPapeis().stream().map(PapelDto::parse).collect(Collectors.toSet())
                         ))
                         .orElse(null);
