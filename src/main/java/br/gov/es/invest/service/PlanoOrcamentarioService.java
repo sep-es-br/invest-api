@@ -51,7 +51,7 @@ public class PlanoOrcamentarioService {
         String cypher = """
                 UNWIND $codigos AS codigo
                 MATCH (p:PlanoOrcamentario {codigo: codigo})
-                RETURN p.codigo AS cod, elementId(p) AS id
+                RETURN p.codigo AS cod, id(p) AS id
                 """;
         
         List<CodIds> ids = neo4jOperations.findAll(cypher, Map.of("codigos", cods), CodIds.class);

@@ -131,10 +131,10 @@ public class ContaService {
                         "MATCH (fonte:FonteOrcamentaria)\r\n" + //
                         "WHERE\r\n" + //
                         "    _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND (_idFonte IS NULL OR elementId(fonte) = _idFonte)\r\n" + //
+                        "    AND (_idFonte IS NULL OR id(fonte) = _idFonte)\r\n" + //
                         "    AND custo.anoExercicio = _exercicio\r\n" + //
-                        "    AND (_idsUnidade IS NULL OR elementId(unidade) IN _idsUnidade)\r\n" + //
-                        "    AND (_idsPlano IS NULL OR elementId(po) IN _idsPlano)\r\n" + //
+                        "    AND (_idsUnidade IS NULL OR id(unidade) IN _idsUnidade)\r\n" + //
+                        "    AND (_idsPlano IS NULL OR id(po) IN _idsPlano)\r\n" + //
                         "OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonte)\r\n" + //
                         "WHERE (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
                         "WITH \r\n" + //
@@ -146,7 +146,7 @@ public class ContaService {
                         "    tipoPlano,\r\n" + //
                         "    sum(indicada_por.previsto) AS valorPrevisto,\r\n" + //
                         "    sum(indicada_por.contratado) AS valorContratado,\r\n" + //
-                        "    elementId(fonte) AS idFonte,\r\n" + //
+                        "    id(fonte) AS idFonte,\r\n" + //
                         "    fonte.nome AS nomeFonte\r\n" + //
                         "WITH \r\n" + //
                         "    unidade,\r\n" + //
@@ -165,9 +165,9 @@ public class ContaService {
         String cypherQuery = cypherBase + 
                             "RETURN\r\n" + //
                             "    unidade.codigo AS codUnidade,\r\n" + //
-                            "    elementId(conta) AS idUnidade,\r\n" + //
+                            "    id(conta) AS idUnidade,\r\n" + //
                             "    unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,\r\n" + //
-                            "    elementId(po) AS idPO,\r\n" + //
+                            "    id(po) AS idPO,\r\n" + //
                             "    po.codigo AS codPO,\r\n" + //
                             "    po.nome AS nomePO,\r\n" + //
                             "    'E' IN collect(tipoPlano.sigla) AS projEstrategico,\r\n" + //
@@ -230,13 +230,13 @@ public class ContaService {
                         "MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
                                 "WHERE \r\n" + //
                                 "    $tipoDespesa IN labels(conta)\r\n" + //
-                                "    AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)\r\n" + //
+                                "    AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)\r\n" + //
                                 "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
                                 "\r\n" + //
                                 "CALL {\r\n" + //
                                 "    WITH obj\r\n" + //
                                 "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                                "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
+                                "    WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r\n" + //
                                 "        AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio)\r\n" + //
                                 "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
                                 "    RETURN\r\n" + //
@@ -247,7 +247,7 @@ public class ContaService {
                                 "CALL {\r\n" + //
                                 "    WITH conta\r\n" + //
                                 "    MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                                "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
+                                "    WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r\n" + //
                                 "        AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio)\r\n" + //
                                 "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
                                 "    RETURN\r\n" + //

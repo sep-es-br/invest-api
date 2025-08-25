@@ -16,11 +16,6 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
             "RETURN grupo SKIP $skip LIMIT $limit")
     public List<Grupo> findAllByFilter(String nome, Pageable pageable);
 
-    @Query("MATCH (grupo:Grupo)\r\n" + //
-            "WHERE id(grupo) = $id\r\n" + //
-            GRUPO_HIDRATADO)
-    public Optional<Grupo> findByIdHidratado(Long id);
-
     @Query("MATCH (grupo:Grupo)<-[md:MEMBRO_DE]-(membro)\r\n" + //
                 "WHERE id(grupo) = $grupoId\r\n" + //
                 "RETURN count(membro)")
@@ -39,17 +34,17 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
     public Optional<Grupo> findByGrupoModulo(Long moduloId, Long grupoId);
 
     @Query("MATCH (usuario)-[:POSSUI]->(:Papel)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE elementId(usuario) = $usuarioId\r\n" + //
+            "WHERE id(usuario) = $usuarioId\r\n" + //
             "RETURN grupo\r\n" + //
             "UNION\r\n" + //
             "MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE elementId(usuario) = $usuarioId\r\n" + //
+            "WHERE id(usuario) = $usuarioId\r\n" + //
             "RETURN grupo\r\n" + //
             "UNION\r\n" + //
             "MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:PERTENCE_A]->(:Orgao)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE elementId(usuario) = $usuarioId\r\n" + //
+            "WHERE id(usuario) = $usuarioId\r\n" + //
             "RETURN grupo")
-    public List<Grupo> getGruposByUsuario(String usuarioId);
+    public List<Grupo> getGruposByUsuario(Long usuarioId);
 
     @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(orgao:Orgao)\r\n" + //
                 "WHERE id(orgao) = $orgaoId\r\n" + //
@@ -81,8 +76,8 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
 
     @Query("MATCH (grupo:Grupo)\r\n" + //
                 "MATCH (entidade)\r\n" + //
-                "WHERE (elementId(grupo) = $grupoId)\r\n" + //
-                "    AND (elementId(entidade) = $membroId) \r\n" + //
+                "WHERE (id(grupo) = $grupoId)\r\n" + //
+                "    AND (id(entidade) = $membroId) \r\n" + //
                 "    AND (entidade:Agente OR entidade:Setor OR entidade:Papel OR entidade:Orgao)\r\n" + //
 
                 "MERGE (entidade)-[:MEMBRO_DE]->(grupo)")
