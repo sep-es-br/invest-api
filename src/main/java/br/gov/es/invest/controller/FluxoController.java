@@ -47,7 +47,7 @@ public class FluxoController {
     }
 
     @GetMapping("/withEtapa")
-    public ResponseEntity<?> findWithEtapa(@RequestParam Long etapaId){
+        public ResponseEntity<?> findWithEtapa(@RequestParam String etapaId){
         Fluxo fluxo = fluxoService.findWithEtapa(etapaId);
 
         if(fluxo == null) {
