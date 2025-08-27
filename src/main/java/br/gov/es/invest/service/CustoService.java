@@ -21,9 +21,6 @@ public class CustoService {
         repository.saveAll(custos);
     }
 
-    public List<Custo> getAllByExercicio(String exercicio){
-        return repository.findByExercicio(exercicio);
-    }
 
     @Autowired
     public void setObjetoService(ObjetoService objetoService) {

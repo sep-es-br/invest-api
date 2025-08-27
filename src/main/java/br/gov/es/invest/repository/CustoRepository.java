@@ -12,9 +12,6 @@ import br.gov.es.invest.model.Custo;
 
 public interface CustoRepository extends Neo4jRepository<Custo, Long> {
     
-    @Query("MATCH (c:Custo)-[:EM]->(ano:Ano) WHERE (ano.ano = $exercicio) RETURN c\r\n")
-    public List<Custo> findByExercicio(String exercicio);
-
     @Query("MATCH\r\n" + //
                 "    (fonte:FonteOrcamentaria)<-[indicadaPor:INDICADA_POR]-(custo:Custo)-[:ESTIMADO]->(p:Objeto)-[:CUSTEADO]->(conta:Conta)\r\n" + //
                 "OPTIONAL MATCH (conta)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //

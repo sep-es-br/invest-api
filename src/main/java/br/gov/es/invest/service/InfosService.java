@@ -74,12 +74,12 @@ public class InfosService {
                         MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
                                 (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
                         WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))
-                            AND ($idUnidade IS NULL OR elementId(unidade) IN $idUnidade)
-                            AND ($idPlano IS NULL OR elementId(po) IN $idPlano)
+                            AND ($idUnidade IS NULL OR id(unidade) IN $idUnidade)
+                            AND ($idPlano IS NULL OR id(po) IN $idPlano)
                             AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))
                         CALL (obj) {
                             MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
-                            WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                            WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                                 AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)
                                 AND ($gnd IS NULL OR $gnd = indicada_por.gnd)
                             RETURN 

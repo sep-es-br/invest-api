@@ -25,10 +25,6 @@ public class PapelService {
 
     }
     
-    public void deleteAllById(List<String> ids) {
-        repository.deleteAllById(ids);
-    }
-    
     public Papel save(Papel papel){
         if(papel == null) return null;
         

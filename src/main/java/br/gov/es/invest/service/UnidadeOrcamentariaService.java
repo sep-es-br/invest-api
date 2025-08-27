@@ -31,7 +31,7 @@ public class UnidadeOrcamentariaService {
         return repository.getCodsById(ids);
     }
     
-    public List<UnidadeOrcamentaria> findByAgente(String agenteId){
+    public List<UnidadeOrcamentaria> findByAgente(Long agenteId){
         return repository.findAllById(repository.findByAgente(agenteId).stream().map(UnidadeOrcamentaria::getId).toList());
     }
 

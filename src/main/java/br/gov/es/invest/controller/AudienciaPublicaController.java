@@ -53,12 +53,12 @@ public class AudienciaPublicaController {
     @GetMapping("/listaPropostas")
     public ResponseEntity<?> getListaAudiencia(
         @RequestParam(required = false) String unidadeIds,
-        @RequestParam(required = false) String areaTematicaId, @RequestParam int pag,
+        @RequestParam(required = false) Long areaTematicaId, @RequestParam int pag,
         @RequestParam(required = false, defaultValue = "") String filtroTexto, 
         @RequestParam Boolean podeVerUnidades, @RequestHeader("Authorization") String authToken   
     ) {
         
-        List<String> idsUo = Arrays.asList();
+        List<Long> idsUo = Arrays.asList();
         if(unidadeIds == null && !podeVerUnidades) {
 
             authToken = authToken.replace("Bearer ", "");
@@ -72,7 +72,7 @@ public class AudienciaPublicaController {
 
             idsUo = unidades.stream().map(u -> u.getId()).toList();
         } else if(unidadeIds != null) {
-            idsUo = Arrays.asList(unidadeIds.split(";"));
+            idsUo = Arrays.asList(unidadeIds.split(";")).stream().map(Long::valueOf).toList();
         }
         
         List<String> codsUo = unidadeOrcamentariaService.getCodsByIds(idsUo);

@@ -71,11 +71,11 @@ public class RelatorioService {
                         match (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)
                         where 
                             $tipoDespesa in labels(conta)
-                        AND ($idsUnidade is null or elementId(unidade) in $idsUnidade)
+                        AND ($idsUnidade is null or id(unidade) in $idsUnidade)
                         AND NOT EXISTS((obj)-[:EM]->(:Etapa))
                         CALL(obj) {
                             MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
-                            WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                            WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                                 AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio )
                                 AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
                             RETURN
@@ -84,7 +84,7 @@ public class RelatorioService {
                         }\r
                         CALL(conta) {
                             MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r
-                            WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                            WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)
                                 AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio )
                                 AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
                             RETURN
@@ -397,11 +397,11 @@ public class RelatorioService {
                         WHERE  
                             $tipoDespesa IN LABELS(conta)
                             AND NOT EXISTS((obj)-[:EM]->(:Etapa))
-                            AND ($unidades IS NULL OR elementId(unidade) IN $unidades)
-                            AND ($planos IS NULL OR elementId(po) IN $planos)
+                            AND ($unidades IS NULL OR id(unidade) IN $unidades)
+                            AND ($planos IS NULL OR id(po) IN $planos)
 
                         MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(fonte:FonteOrcamentaria)
-                        WHERE ($fonte IS NULL OR elementId(fonte) = $fonte)
+                        WHERE ($fonte IS NULL OR id(fonte) = $fonte)
                             AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
 
                         OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)
@@ -421,7 +421,7 @@ public class RelatorioService {
                             areaTematica.nome AS areaTematica,
                             CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,
                             COALESCE(indicada_por.gnd, -1) AS gnd,
-                            elementId(obj) AS objetoId
+                            id(obj) AS objetoId
 
                         RETURN DISTINCT
                             codUnidade,
@@ -462,11 +462,11 @@ public class RelatorioService {
 
         String cypherPrevistoContratado = """
                                         MATCH (objeto:Objeto)
-                                        WHERE elementId(objeto) = $idObjeto
+                                        WHERE id(objeto) = $idObjeto
                                         OPTIONAL MATCH (objeto)<-[:ESTIMADO]-(custo:Custo)
                                         WHERE custo.anoExercicio = $ano
                                         OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonteOrcamentaria:FonteOrcamentaria)\r
-                                        WHERE elementId(fonteOrcamentaria) = $idFonte
+                                        WHERE id(fonteOrcamentaria) = $idFonte
                                         RETURN COALESCE(indicada_por.previsto, 0) AS previsto,
                                                 COALESCE(indicada_por.contratado, 0) AS contratado
                                         """ ;
@@ -535,14 +535,14 @@ public class RelatorioService {
                 MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)
                 WHERE 
                     $tipoDespesa IN labels(conta)
-                    AND ($idsUnidade IS NULL OR elementId(unidade) IN $idsUnidade)
+                    AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
                     AND NOT EXISTS((obj)-[:EM]->(:Etapa))
 
                 // Subconsulta para valores de custo
                 CALL (obj) {
                     MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                     WHERE 
-                        ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                        ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                         AND (custo.anoExercicio = $exercicio)
                         AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
                     RETURN
@@ -554,7 +554,7 @@ public class RelatorioService {
                 CALL(conta) {
                     MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
                     WHERE 
-                        ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                        ($idFonte IS NULL OR id(fonteExec) = $idFonte)
                         AND (exec.anoExercicio = $exercicio)
                         AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
                     RETURN
@@ -568,7 +568,7 @@ public class RelatorioService {
                 CALL (conta) {
                     MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
                     WHERE 
-                        ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                        ($idFonte IS NULL OR id(fonteExec) = $idFonte)
                         AND (exec.anoExercicio = $exercicio - 1)
                         AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
                     RETURN
