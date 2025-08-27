@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import br.gov.es.invest.model.Acao;
 import br.gov.es.invest.model.AcaoEnum;
 import br.gov.es.invest.model.Etapa;
+import br.gov.es.invest.model.EtapaEnum;
 import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.repository.FluxoRepository;
@@ -27,9 +28,9 @@ public class FluxoService {
         return repository.findAll(Sort.by("codigo", "nome"));
     }
 
-    public Fluxo findWithEtapa(Long etapaId) {
+    public Fluxo findWithEtapa(String etapaId) {
         Etapa etapaProbe = new Etapa();
-        etapaProbe.setId(etapaId);
+        etapaProbe.setEtapaId(EtapaEnum.valueOf(etapaId));
 
         Fluxo fluxoProbe = new Fluxo();
         fluxoProbe.setEtapas(Collections.singletonList(etapaProbe));
