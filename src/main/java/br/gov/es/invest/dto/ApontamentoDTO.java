@@ -4,7 +4,7 @@ import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.utils.DateTimeUtils;
 
 public record ApontamentoDTO(
-    String id,
+    Long id,
     String timestamp,
     String texto,
     EtapaDTO etapa,

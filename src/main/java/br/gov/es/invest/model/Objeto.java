@@ -87,7 +87,7 @@ public class Objeto extends Entidade implements Serializable {
         
     }
 
-    public void filtrar(Integer anoExercicio, String fonteId) {
+    public void filtrar(Integer anoExercicio, Long fonteId) {
         
 
         if(anoExercicio != null){

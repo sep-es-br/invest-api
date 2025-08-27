@@ -39,21 +39,21 @@ public class InvestimentoService {
     }
 
     public DataListResult<TiraInvestimentoProjection> findAllTiraBy(
-            String nome, List<String> codUnidade, List<String> codPO,
-            Integer exercicio, String idFonte, Integer gnd, List<OrdemItemDto> ordem,
+            String nome, List<Long> codUnidade, List<Long> codPO,
+            Integer exercicio, Long idFonte, Integer gnd, List<OrdemItemDto> ordem,
             Pageable pageable
         ) {
 
             String cypherBase = """
                             MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto),
                                     (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
-                            WHERE ($idPo IS NULL OR elementId(po) IN $idPo)
-                                AND ( $idUnidade IS NULL OR elementId(unidade) IN $idUnidade )
+                            WHERE ($idPo IS NULL OR id(po) IN $idPo)
+                                AND ( $idUnidade IS NULL OR id(unidade) IN $idUnidade )
                                 AND NOT EXISTS((obj)-[:EM]->(:Etapa))
                                 AND ($nome IS NULL OR apoc.text.clean(po.nome) CONTAINS apoc.text.clean($nome))
                             CALL (obj) {
                                 MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
-                                WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)
+                                WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                                     AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)
                                     AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
                                 RETURN 
@@ -63,7 +63,7 @@ public class InvestimentoService {
                             } 
                             CALL (inv) {
                                 MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
-                                WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)
+                                WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)
                                     AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)
                                     AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
                                 RETURN
@@ -77,7 +77,7 @@ public class InvestimentoService {
         String cypherQuery = cypherBase + 
                             """
                             RETURN
-                                elementId(inv) AS id,
+                                id(inv) AS id,
                                 po.nome AS nome, 
                                 po.codigo AS codPO,
                                 unidade.codigo AS codUnidade,
@@ -135,7 +135,7 @@ public class InvestimentoService {
             return pattern.matcher(normalized).replaceAll("").toLowerCase();
     }
 
-    public void addExecucao (String investimentoId, String execId) {
+    public void addExecucao (Long investimentoId, Long execId) {
 
         this.repository.addExecucao(investimentoId, execId);
 

@@ -60,9 +60,11 @@ public class AutenticacaoService {
         String token = tokenService.gerarToken(userInfo, accessToken);
         
         String acToken = acService.getClientToken();
-        
+
+        Optional<Usuario> optUsuario = usuarioService.getUserBySub(userInfo.subNovo());;
 
         if(!userInfo.role().contains("GESTOR_MASTER") && !validarPapel(userInfo.subNovo())) throw new UsuarioSemPermissaoException();
+
         
         List<Papel> papeis = acService.getPapeisBySub(userInfo.subNovo(), acToken).stream()
                                 .map(papel -> acService.gerarPapelFromResp(papel, acToken))

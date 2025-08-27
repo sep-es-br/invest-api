@@ -5,7 +5,7 @@ import java.util.List;
 import br.gov.es.invest.model.Conta;
 
 public record ContaDto(
-    String id,
+    Long id,
     String status,
     String nome,
     PlanoOrcamentarioDTO planoOrcamentario,

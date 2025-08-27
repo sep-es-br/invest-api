@@ -5,7 +5,7 @@ import java.util.List;
 import br.gov.es.invest.model.Fluxo;
 
 public record FluxoDTO(
-    String id,
+    Long id,
     String nome,
     List<EtapaDTO> etapas
 ) {

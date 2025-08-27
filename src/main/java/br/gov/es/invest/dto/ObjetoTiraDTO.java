@@ -17,7 +17,7 @@ import lombok.Setter;
 
 @Builder
 public record ObjetoTiraDTO (
-    String id,
+    Long id,
     String unidadeResponsavel,
     String codPO,
     String nome,

@@ -27,7 +27,7 @@ public class FluxoService {
         return repository.findAll(Sort.by("codigo", "nome"));
     }
 
-    public Fluxo findWithEtapa(String etapaId) {
+    public Fluxo findWithEtapa(Long etapaId) {
         Etapa etapaProbe = new Etapa();
         etapaProbe.setId(etapaId);
 
@@ -40,7 +40,7 @@ public class FluxoService {
 
     }
 
-    public Fluxo findById(String id) {
+    public Fluxo findById(Long id) {
         return repository.findById(id).orElse(null);
     }
 

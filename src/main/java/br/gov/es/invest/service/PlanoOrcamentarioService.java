@@ -34,11 +34,11 @@ public class PlanoOrcamentarioService {
         return repository.getAllSimples();
     }
 
-    public String getCodById(String idPlano) {
+    public String getCodById(Long idPlano) {
         return repository.getCodById(idPlano);
     }
 
-    public String getIdByCod(String cod) {
+    public Long getIdByCod(String cod) {
         return repository.findBy(
             Example.of(PlanoOrcamentario.builder().codigo(cod).build()), 
             q -> q.first())
@@ -51,7 +51,7 @@ public class PlanoOrcamentarioService {
         String cypher = """
                 UNWIND $codigos AS codigo
                 MATCH (p:PlanoOrcamentario {codigo: codigo})
-                RETURN p.codigo AS cod, elementId(p) AS id
+                RETURN p.codigo AS cod, id(p) AS id
                 """;
         
         List<CodIds> ids = neo4jOperations.findAll(cypher, Map.of("codigos", cods), CodIds.class);

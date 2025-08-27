@@ -69,7 +69,7 @@ public class GrupoService {
 
     }
 
-    public Optional<Grupo> findById(String id){
+    public Optional<Grupo> findById(Long id){
 
         return repository.findById(id);
     }
@@ -78,7 +78,7 @@ public class GrupoService {
         return repository.save(grupo);
     }
 
-    public Grupo delete (String grupoId){
+    public Grupo delete (Long grupoId){
         Optional<Grupo> optGrupo = repository.findById(grupoId);
         
         return optGrupo.map(grupo -> {
@@ -91,9 +91,9 @@ public class GrupoService {
     public List<MembroGrupo> getListaMembros(String grupoId) {
         String cypher = """
             MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)
-            WHERE elementId(g) = $grupoId
+            WHERE id(g) = $grupoId
             RETURN {
-                id: elementId(orgao),
+                id: id(orgao),
                 icone: 'todos',
                 nomeCompleto: 'Todos',
                 papel: 'Todos',
@@ -102,9 +102,9 @@ public class GrupoService {
             } AS membros
             UNION
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)-[:MEMBRO_DE]->(g:Grupo)
-            WHERE elementId(g) = $grupoId
+            WHERE id(g) = $grupoId
             RETURN {
-                id: elementId(setor),
+                id: id(setor),
                 icone: 'todos',
                 nomeCompleto: 'Todos',
                 papel: 'Todos',
@@ -114,10 +114,10 @@ public class GrupoService {
             UNION
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)-[:MEMBRO_DE]->(g:Grupo),
                     (papel)<-[:POSSUI]-(agente:Agente)
-            WHERE elementId(g) = $grupoId
+            WHERE id(g) = $grupoId
             OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
             RETURN {
-                id: elementId(papel),
+                id: id(papel),
                 icone: avatar.blob,
                 nomeCompleto: agente.nomeCompleto,
                 papel: papel.nome,
@@ -179,30 +179,30 @@ public class GrupoService {
         return this.repository.findById(grupo.getId()).get();
     }
 
-    public int quantidadeDeMembros(String grupoId){
+    public int quantidadeDeMembros(Long grupoId){
         return this.repository.quantidadeDeMembros(grupoId);
     }
 
-    public Grupo removerMembro(String grupoId, String membroId){
+    public Grupo removerMembro(Long grupoId, Long membroId){
         this.repository.removerMembro(grupoId, membroId);
         
         return this.repository.findById(grupoId).orElse(null);
     }
 
-    public List<Grupo> getGruposDoUsuario(String usuarioId) {
+    public List<Grupo> getGruposDoUsuario(Long usuarioId) {
 
         return this.repository.getGruposByUsuario(usuarioId);
     }
 
-    public List<Grupo> getGruposByOrgao(String orgaoId){
+    public List<Grupo> getGruposByOrgao(Long orgaoId){
         return this.repository.getGruposByOrgao(orgaoId);
     }
 
-    public List<Grupo> getGruposBySetor(String orgaoId){
+    public List<Grupo> getGruposBySetor(Long orgaoId){
         return this.repository.getGruposByOrgao(orgaoId);
     }
 
-    public List<Grupo> getGruposByPapel(String papelId){
+    public List<Grupo> getGruposByPapel(Long papelId){
         return this.repository.getGruposByPapel(papelId);
     }
 

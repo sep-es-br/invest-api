@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import br.gov.es.invest.model.Grupo;
 
 public record GrupoDTO(
-    String id,
+    Long id,
     String icone,
     String sigla,
     String nome,

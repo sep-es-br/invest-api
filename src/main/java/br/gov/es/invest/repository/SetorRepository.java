@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import br.gov.es.invest.model.Setor;
 
-public interface SetorRepository extends Neo4jRepository<Setor, String> {
+public interface SetorRepository extends Neo4jRepository<Setor, Long> {
     
     @Query("MATCH (setor:Setor) WHERE setor.guid = $guid RETURN setor")
     public Optional<Setor> findByGuid(String guid);

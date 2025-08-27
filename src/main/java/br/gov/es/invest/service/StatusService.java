@@ -71,7 +71,7 @@ public class StatusService {
 
     }
 
-    public Status findById(String statusId) {
+    public Status findById(Long statusId) {
         return repository.findById(statusId).orElse(null);
     }
 
@@ -82,8 +82,8 @@ public class StatusService {
         
         String cypher = """
                 MATCH (objeto:Objeto), (status:Status)
-                WHERE elementId(objeto) = $objetoId
-                AND elementId(status) = $statusId
+                WHERE id(objeto) = $objetoId
+                AND id(status) = $statusId
 
                 OPTIONAL MATCH (objeto)-[oldRel:EM]->(:Status)
                 DELETE oldRel

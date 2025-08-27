@@ -9,7 +9,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 
-public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOrcamentaria, String> {
+public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOrcamentaria, Long> {
     
 
     @Query("MATCH (unidade:UnidadeOrcamentaria) RETURN unidade ORDER BY unidade.codigo")
@@ -19,22 +19,23 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
     public Optional<UnidadeOrcamentaria> findByGuid(String guid);
 
     @Query("MATCH (unidade:UnidadeOrcamentaria)\r\n" + //
-            "WHERE elementId(unidade) = $idUnidade\r\n" + //
+            "WHERE id(unidade) = $idUnidade\r\n" + //
             "RETURN toString(unidade.codigo)")
-    public String getCodById(String idUnidade);
+    public String getCodById(Long idUnidade);
 
     @Query("""
             MATCH (unidade:UnidadeOrcamentaria)
-            WHERE elementId(unidade) IN $ids
+            WHERE id(unidade) IN $ids
             RETURN unidade.codigo
             """)
-    public List<String> getCodsById(List<String> ids);
+   public List<String> getCodsById(List<Long> ids);
     
     @Query("""
            MATCH (a:Agente)-[]-(:Papel)-[]-(:Setor)-[]-(:Orgao)-[:CONTROLA]->(uo:UnidadeOrcamentaria)
-           WHERE elementId(a) = $idAgente
+           WHERE id(a) = $idAgente
            RETURN DISTINCT uo
            """)
-    public List<UnidadeOrcamentaria> findByAgente(String idAgente);
+    public List<UnidadeOrcamentaria> findByAgente(Long idAgente);
     
+
 }

@@ -23,11 +23,11 @@ public class EtapaService {
         return etapaRepository.findAll();
     }
 
-    public Optional<Etapa> findById(String id) {
+    public Optional<Etapa> findById(Long id) {
         return etapaRepository.findById(id);
     }
 
-    public Etapa getEtapaDoUsuario(String userId) {
+    public Etapa getEtapaDoUsuario(Long userId) {
         List<Grupo> gruposDoUser = grupoService.getGruposDoUsuario(userId);
 
         Grupo grupoProbe = new Grupo();

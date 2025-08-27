@@ -52,7 +52,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/{userId}")
-    public UsuarioDto getUsuario(@PathVariable String userId) {
+    public UsuarioDto getUsuario(@PathVariable Long userId) {
         
         Optional<Usuario> optUsuario = service.findById(userId);
 

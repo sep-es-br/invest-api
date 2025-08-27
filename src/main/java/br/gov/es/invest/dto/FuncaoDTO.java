@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class FuncaoDTO {
-    private String id;
+    private Long id;
     private String nome;
 
     public FuncaoDTO(Funcao funcao) {

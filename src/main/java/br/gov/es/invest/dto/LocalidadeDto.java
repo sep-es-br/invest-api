@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.Localidade;
 
 public record LocalidadeDto(
-    String id,
+    Long id,
     String nome
 ) {
     

@@ -49,7 +49,7 @@ public class UsuarioService {
         return repository.findAll();
     }
     
-    public Optional<Usuario> findById(String id) {
+    public Optional<Usuario> findById(Long id) {
         return repository.findById(id);
     }
 

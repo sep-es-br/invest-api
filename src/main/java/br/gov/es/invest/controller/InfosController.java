@@ -92,11 +92,11 @@ public class InfosController {
     @GetMapping("/cardsTotais")
     public ResponseEntity<?> getCardsTotais(
         @RequestParam(required=false) String nome, @RequestParam Boolean podeVerUnidades, @RequestHeader("Authorization") String authToken,
-        @RequestParam(required=false) String idUo, @RequestParam(required=false) String idFonte,
+        @RequestParam(required=false) String idUo, @RequestParam(required=false) Long idFonte,
         @RequestParam(required=false) String idPo, @RequestParam Integer ano, @RequestParam(required = false) Integer gnd
         ) {
             try {
-                List<String> idsUo = null;
+                List<Long> idsUo = null;
                 if(idUo == null && !podeVerUnidades) {
                     
                     authToken = authToken.replace("Bearer ", "");
@@ -110,9 +110,10 @@ public class InfosController {
 
                     idsUo = unidades.stream().map(u -> u.getId()).toList();
                 } else if(idUo != null) {
-                    idsUo = new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
+                    idsUo = new JsonMapper().readValue(idUo, new TypeReference<List<Long>>() {});
                 }
-                List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
+                List<Long> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<Long>>() {})
+                                       ;
 
                 ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo, gnd);    
               
@@ -120,12 +121,12 @@ public class InfosController {
                 ArrayList<String> codsPo = new ArrayList<>();
 
                 if(idsUo != null)
-                    for(String idUoS : idsUo) {
+                    for(Long idUoS : idsUo) {
                         codsUo.add(unidadeService.getCodById(idUoS));
                     }
                 
                 if(idsPo != null)
-                    for(String idPoS : idsPo) {
+                    for(Long idPoS : idsPo) {
                         codsPo.add(planoService.getCodById(idPoS));
                     }
                 String codUo = idsUo == null ? null : String.join(",", codsUo) ;
