@@ -1,7 +1,7 @@
 package br.gov.es.invest.dto.projection;
 
 public record MembroGrupo(
-    String id,
+    Long id,
     Integer nvl,
     String icone,
     String nomeCompleto,
