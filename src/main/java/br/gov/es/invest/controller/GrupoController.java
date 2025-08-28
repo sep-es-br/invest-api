@@ -77,7 +77,7 @@ public class GrupoController {
     }
 
     @GetMapping("/membros")
-    public ResponseEntity<?> getMembros(@RequestParam String grupoId){
+    public ResponseEntity<?> getMembros(@RequestParam Long grupoId){
         return ResponseEntity.ok(service.getListaMembros(grupoId));
     }
 

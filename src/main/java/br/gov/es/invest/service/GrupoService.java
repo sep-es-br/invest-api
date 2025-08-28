@@ -88,7 +88,7 @@ public class GrupoService {
     }
 
 
-    public List<MembroGrupo> getListaMembros(String grupoId) {
+    public List<MembroGrupo> getListaMembros(Long grupoId) {
         String cypher = """
             MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)
             WHERE id(g) = $grupoId
