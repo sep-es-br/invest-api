@@ -18,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class InvestimentoTiraDTO {
 
-    private String id;
+    private Long id;
     private String nome;
     private String codPO;
     private String unidadeOrcamentaria;
