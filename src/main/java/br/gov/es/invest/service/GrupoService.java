@@ -88,7 +88,7 @@ public class GrupoService {
     }
 
 
-    public List<MembroGrupo> getListaMembros(String grupoId) {
+    public List<MembroGrupo> getListaMembros(Long grupoId) {
         String cypher = """
             MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)
             WHERE id(g) = $grupoId
@@ -121,6 +121,18 @@ public class GrupoService {
                 icone: avatar.blob,
                 nomeCompleto: agente.nomeCompleto,
                 papel: papel.nome,
+                setor: setor.sigla,
+                orgao: orgao.sigla + ' - ' + orgao.nome
+            } AS membros
+            UNION
+            MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:MEMBRO_DE]-(agente:Agente)-[:MEMBRO_DE]->(g:Grupo)
+            WHERE id(g) = $grupoId
+            OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
+            RETURN {
+                id: id(agente),
+                icone: avatar.blob,
+                nomeCompleto: agente.nomeCompleto,
+                papel: agente.papel,
                 setor: setor.sigla,
                 orgao: orgao.sigla + ' - ' + orgao.nome
             } AS membros

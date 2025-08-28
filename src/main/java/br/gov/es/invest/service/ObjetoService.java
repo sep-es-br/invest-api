@@ -513,7 +513,7 @@ public class ObjetoService {
     }
 
     public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
-            String idConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
+            Long idConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
     ) {
         String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
                         "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
