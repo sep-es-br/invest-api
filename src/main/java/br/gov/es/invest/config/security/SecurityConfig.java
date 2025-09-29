@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 .cors(Customizer.withDefaults())
                                 .exceptionHandling(Customizer.withDefaults())
                                 .build();
+
         }
 
         @Bean
