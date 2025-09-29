@@ -35,6 +35,7 @@ import java.util.logging.StreamHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -65,7 +66,7 @@ public class JobsComponent {
         this.doImportarPentaho();
     }
     
-    
+    @Async
     private void doImportarPentaho() {
         Integer anoRef = LocalDate.now().getYear();
         
