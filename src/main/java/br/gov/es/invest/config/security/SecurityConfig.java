@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/signin/**",
                                 "/acesso-cidadao-response.html",
                                 "/execucao/importarPentaho").permitAll();
+
                         authConfig.anyRequest().authenticated();
                 })
                 .oauth2Login(oAuth2LoginConfig ->
