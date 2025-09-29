@@ -30,29 +30,30 @@ public class SecurityConfig {
 
         @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .authorizeHttpRequests(authConfig -> {
-                        authConfig.requestMatchers(HttpMethod.GET,
-                                "/swagger-ui.html",
-                                "/swagger-ui/*",
-                                "/v3/*",
-                                "/v3/api-docs/*",
-                                "/signin/**",
-                                "/acesso-cidadao-response.html",
-                                "/execucao/importarPentaho").permitAll();
-                        authConfig.anyRequest().authenticated();
-                })
-                .oauth2Login(oAuth2LoginConfig ->
-                        oAuth2LoginConfig.authorizationEndpoint(authEndpointConfig ->
-                                authEndpointConfig.authorizationRequestResolver(new AuthorizationRequestResolver(
-                                        clientRegistrationRepository, "/oauth2/authorization")))
-                )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(Customizer.withDefaults())
-                .exceptionHandling(Customizer.withDefaults())
-                .build();
+                return http
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                                .authorizeHttpRequests(authConfig -> {
+                                        authConfig.requestMatchers(HttpMethod.GET,
+                                                        "/swagger-ui.html",
+                                                        "/swagger-ui/*",
+                                                        "/v3/*",
+                                                        "/v3/api-docs/*",
+                                                        "/signin/**",
+                                                        "/acesso-cidadao-response.html",
+                                                        "*/importarPentaho").permitAll();
+                                        authConfig.anyRequest().authenticated();
+                                })
+                                .oauth2Login(oAuth2LoginConfig -> oAuth2LoginConfig.authorizationEndpoint(
+                                                authEndpointConfig -> authEndpointConfig.authorizationRequestResolver(
+                                                                new AuthorizationRequestResolver(
+                                                                                clientRegistrationRepository,
+                                                                                "/oauth2/authorization"))))
+                                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                                .cors(Customizer.withDefaults())
+                                .exceptionHandling(Customizer.withDefaults())
+                                .build();
+
         }
 
         @Bean
@@ -68,7 +69,5 @@ public class SecurityConfig {
                         }
                 };
         }
-    
-
 
 }
