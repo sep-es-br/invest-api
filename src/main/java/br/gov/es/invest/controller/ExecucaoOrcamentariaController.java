@@ -28,6 +28,7 @@ import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
+import jakarta.annotation.security.PermitAll;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -50,6 +51,7 @@ public class ExecucaoOrcamentariaController {
     private final PlanoOrcamentarioService planoOrcamentarioService;
 
     @GetMapping("/importarPentaho")
+    @PermitAll()
     public ResponseEntity<?> importarPentaho(@RequestParam(required = false) Integer anoRef) {
 
         ByteArrayOutputStream logOut = new ByteArrayOutputStream();
