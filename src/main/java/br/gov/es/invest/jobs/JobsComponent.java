@@ -58,11 +58,11 @@ public class JobsComponent {
     private final FonteOrcamentariaService fonteOrcamentariaService;
     private final PlanoOrcamentarioService planoOrcamentarioService;
     
-    @EventListener(ApplicationReadyEvent.class)
-    @Async
-    public void init(){
-        this.doImportarPentaho();
-    }
+//    @EventListener(ApplicationReadyEvent.class);
+//    @Async
+//    public void init(){
+//        this.doImportarPentaho();
+//    }
     
     @Scheduled(cron = "0 30 5 ? * *")
     public void triggerImportarPentaho(){
