@@ -33,6 +33,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -56,7 +58,8 @@ public class JobsComponent {
     private final FonteOrcamentariaService fonteOrcamentariaService;
     private final PlanoOrcamentarioService planoOrcamentarioService;
     
-    @PostConstruct()
+    @EventListener(ApplicationReadyEvent.class)
+    @Async
     public void init(){
         this.doImportarPentaho();
     }
@@ -66,7 +69,6 @@ public class JobsComponent {
         this.doImportarPentaho();
     }
     
-    @Async
     private void doImportarPentaho() {
         Integer anoRef = LocalDate.now().getYear();
         
