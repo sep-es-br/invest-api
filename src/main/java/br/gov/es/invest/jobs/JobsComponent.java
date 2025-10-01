@@ -21,6 +21,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -33,6 +34,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -56,20 +58,22 @@ public class JobsComponent {
     private final InvestimentosBIService investimentosBIService;
     private final FonteOrcamentariaService fonteOrcamentariaService;
     private final PlanoOrcamentarioService planoOrcamentarioService;
+    
+    @Value("${server.job.importarPentaho.ano}")
+    private Integer importarAno;
 
     @EventListener(ApplicationReadyEvent.class)
     @Async
     public void init() {
-        this.doImportarPentaho();
+        this.doImportarPentaho(Optional.ofNullable(importarAno).orElse(LocalDate.now().getYear()));
     }
 
-    @Scheduled(cron = "0 30 5 ? * *")
+    @Scheduled(cron = "${server.job.importarPentaho.cron}")
     public void triggerImportarPentaho() {
-        this.doImportarPentaho();
+        this.doImportarPentaho(Optional.ofNullable(importarAno).orElse(LocalDate.now().getYear()));
     }
 
-    private void doImportarPentaho() {
-        Integer anoRef = LocalDate.now().getYear();
+    private void doImportarPentaho(Integer anoRef) {
 
         ByteArrayOutputStream logOut = new ByteArrayOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(logOut, StandardCharsets.UTF_8);
