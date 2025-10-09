@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.AvatarDTO;
 import br.gov.es.invest.dto.UsuarioDto;
+import br.gov.es.invest.dto.usuario.SalvarUsuarioForm;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
@@ -60,7 +61,7 @@ public class UsuarioController {
     }
 
     @PutMapping("")
-    public ResponseEntity<UsuarioDto> salvarUsuario(@RequestBody UsuarioDto usuario) {
+    public ResponseEntity<UsuarioDto> salvarUsuario(@RequestBody SalvarUsuarioForm usuario) {
         
         return ResponseEntity.ok(UsuarioDto.parse(service.save(usuario)));
     }

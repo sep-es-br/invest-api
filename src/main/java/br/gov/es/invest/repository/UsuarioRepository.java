@@ -28,5 +28,7 @@ public interface UsuarioRepository extends Neo4jRepository<Usuario, Long> {
                 "MERGE (papel)-[:MEMBRO_DE]->(g)\r\n" + //
                 "DELETE oldR")
     public void transferirGrupo(Long userId, Long papelId);
+    
+    public Optional<Usuario> findBySub(String sub);
 
 }
