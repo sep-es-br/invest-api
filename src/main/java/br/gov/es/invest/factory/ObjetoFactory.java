@@ -6,11 +6,25 @@ package br.gov.es.invest.factory;
 
 import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.EmStatusDTO;
+import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.objeto.ObjetoDetailDto;
+import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
+import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.PlanoOrcamentario;
+import br.gov.es.invest.model.TipoPlano;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.service.AreaTematicaService;
+import br.gov.es.invest.service.ContaService;
+import br.gov.es.invest.service.LocalidadeService;
+import br.gov.es.invest.service.ObjetoService;
+import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,7 +32,14 @@ import org.springframework.stereotype.Component;
  * @author gean.carneiro
  */
 @Component
+@RequiredArgsConstructor
 public class ObjetoFactory {
+    
+    private final ObjetoService objSrv;
+    private final UnidadeOrcamentariaService unidadeSrv;
+    private final ContaService contaSrv;
+    private final LocalidadeService localidadeSrv;
+    private final AreaTematicaService areaSrv;
         
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
@@ -57,16 +78,90 @@ public class ObjetoFactory {
                 .build();
     }
     
+    public Objeto fromDTO(ObjetoCadastroFormDto dto) {
+        
+        /**
+         * Long id,
+            String tipoConta,
+            String tipo,
+            String hashProposta,
+            String nome,
+            String descricao,
+            Long microregiaoId,
+            String infoComplementares,
+            List<TipoPlanoDto> planos,
+            String contrato,
+            Long areaTematicaId,
+            List<Custo> recursos,
+            PlanoOrcamentarioDTO planoOrcamentario,
+            UnidadeOrcamentariaDTO unidadeOrcamentaria,
+            String possuiOrcamento
+         */
+        
+        Objeto obj = Optional.ofNullable(dto.id())
+                        .flatMap(id -> objSrv.getById(id))
+                        .orElse(new Objeto());
+        
+        obj.setTipo(dto.tipo());
+        obj.setHashProposta(dto.hashProposta());
+        obj.setNome(dto.nome());
+        obj.setDescricao(dto.descricao());
+        obj.setMicrorregiao(localidadeSrv.findById(dto.microregiaoId()).orElseThrow());
+        obj.setInfoComplementares(dto.infoComplementares());
+        
+        List<TipoPlano> tiposPlanos = dto.planos().stream()
+                                        .map(TipoPlano::new)
+                                        .collect(Collectors.toList());
+        
+        obj.setTiposPlano(tiposPlanos);
+        obj.setContrato(dto.contrato());
+        obj.setAreaTematica(areaSrv.findById(dto.areaTematicaId()).orElseThrow());
+        // parei aq
+        
+        UnidadeOrcamentaria unidade = unidadeSrv.findOrCreateByCod(dto.unidadeOrcamentaria());
+        
+        // define o Investimento que vai ser associado
+
+        // se não tiver PO usa o investimento generico
+
+        Conta conta = null;
+        if(dto.planoOrcamentario() == null) {
+            conta = contaSrv.getGenericoByCodUnidade(unidade);
+        } else { // se não, busca o investimento
+
+            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(
+                objeto.getConta().getUnidadeOrcamentariaImplementadora().getCodigo(), 
+                objeto.getConta().getPlanoOrcamentario().getCodigo()
+            );
+            Investimento investimento;
+
+            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
+
+                    PlanoOrcamentario plano = planoService.findOrCreateByCod(objeto.getConta().getPlanoOrcamentario());
+
+                    investimento = new Investimento();
+                    investimento.setNome(objeto.getNome());
+                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
+                    investimento.setPlanoOrcamentario(plano);
+            } else { // se existir usa o existente
+                investimento = optInvestimento.get();
+            }
+            
+            conta = investimento;
+
+        }
+        
+        objeto.setConta(conta);
+        
+        
+    }
+    
     private ObjetoDetailDto.Custo from(IndicadaPor model) {
         return new ObjetoDetailDto.Custo(model.getPrevisto(), model.getContratado());
     }
     
     private String getCodFonte(IndicadaPor model) {
         return model.getFonteOrcamentaria().getCodigo();
-    }
-    
-    private String getNomeFonte(IndicadaPor model) {
-        return model.getFonteOrcamentaria().getNome();
     }
     
     

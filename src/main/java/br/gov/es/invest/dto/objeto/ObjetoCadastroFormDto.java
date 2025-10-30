@@ -4,10 +4,38 @@
  */
 package br.gov.es.invest.dto.objeto;
 
+import br.gov.es.invest.dto.FonteOrcamentariaDTO;
+import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
+import br.gov.es.invest.dto.TipoPlanoDto;
+import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import java.util.List;
+import lombok.Builder;
+
 /**
  *
  * @author gean.carneiro
  */
-public record ObjetoCadastroFormDto() {
-
+@Builder
+public record ObjetoCadastroFormDto(
+            Long id,
+            String tipoConta,
+            String tipo,
+            String hashProposta,
+            String nome,
+            String descricao,
+            Long microregiaoId,
+            String infoComplementares,
+            List<TipoPlanoDto> planos,
+            String contrato,
+            Long areaTematicaId,
+            List<Custo> recursos,
+            PlanoOrcamentarioDTO planoOrcamentario,
+            UnidadeOrcamentariaDTO unidadeOrcamentaria,
+            String possuiOrcamento
+        ) {
+    public static record Custo(Integer ano, List<ValoresFonte> valoresFontes){}
+    
+    public static record ValoresFonte(FonteOrcamentariaDTO fonte, Double previsto, Double contratado){}
 }
+
+
