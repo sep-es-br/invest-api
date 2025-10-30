@@ -22,6 +22,7 @@ public class ObjetoFactory {
         
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
+                .id(model.getId())
                 .tipoInvestimento(model.getConta().getClass().getSimpleName())
                 .tipoObjeto(model.getTipo())
                 .nome(model.getNome())
