@@ -5,6 +5,7 @@ import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.ObjetoFactory;
 import br.gov.es.invest.model.Objeto;
@@ -197,11 +198,9 @@ public class ObjetoController {
 
 
     @PostMapping("")
-    public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoDto objetoDto, @RequestHeader("Authorization") String auth ) {
+    public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
         
-        Objeto objeto = new Objeto(objetoDto);
-        objeto.setEmEtapa(service.getById(objeto.getId()).map(Objeto::getEmEtapa).orElse(null));
-        
+        Objeto objeto = objFactory.fromDTO(cadastroForm);
         
         if(objeto.getResponsavel() == null) {
             auth = auth.replace("Bearer ", "");

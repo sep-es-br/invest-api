@@ -1,14 +1,11 @@
 package br.gov.es.invest.repository;
 
+import br.gov.es.invest.model.Custo;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
-
-import br.gov.es.invest.dto.IValoresCusto;
-import br.gov.es.invest.dto.projection.IValoresIndicadaPor;
-import br.gov.es.invest.model.Custo;
 
 public interface CustoRepository extends Neo4jRepository<Custo, Long> {
     
@@ -27,5 +24,7 @@ public interface CustoRepository extends Neo4jRepository<Custo, Long> {
     @Query("MATCH (custo:Custo)\r\n" + //
             "RETURN DISTINCT custo.anoExercicio")
     public Set<Integer> getAnosExercicio();
+    
+    public Optional<Custo> findByAnoExercicio(Integer anoExercicio);
     
 }

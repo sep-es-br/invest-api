@@ -18,8 +18,10 @@ import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.AreaTematicaService;
 import br.gov.es.invest.service.ContaService;
+import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.LocalidadeService;
 import br.gov.es.invest.service.ObjetoService;
+import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,10 @@ public class ObjetoFactory {
     private final ContaService contaSrv;
     private final LocalidadeService localidadeSrv;
     private final AreaTematicaService areaSrv;
+    private final InvestimentoService investimentoSrv;
+    private final PlanoOrcamentarioService planoSrv;
+    
+    private final CustoFactory custoFactory;
         
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
@@ -80,28 +86,10 @@ public class ObjetoFactory {
     
     public Objeto fromDTO(ObjetoCadastroFormDto dto) {
         
-        /**
-         * Long id,
-            String tipoConta,
-            String tipo,
-            String hashProposta,
-            String nome,
-            String descricao,
-            Long microregiaoId,
-            String infoComplementares,
-            List<TipoPlanoDto> planos,
-            String contrato,
-            Long areaTematicaId,
-            List<Custo> recursos,
-            PlanoOrcamentarioDTO planoOrcamentario,
-            UnidadeOrcamentariaDTO unidadeOrcamentaria,
-            String possuiOrcamento
-         */
-        
         Objeto obj = Optional.ofNullable(dto.id())
                         .flatMap(id -> objSrv.getById(id))
                         .orElse(new Objeto());
-        
+                        
         obj.setTipo(dto.tipo());
         obj.setHashProposta(dto.hashProposta());
         obj.setNome(dto.nome());
@@ -116,7 +104,8 @@ public class ObjetoFactory {
         obj.setTiposPlano(tiposPlanos);
         obj.setContrato(dto.contrato());
         obj.setAreaTematica(areaSrv.findById(dto.areaTematicaId()).orElseThrow());
-        // parei aq
+        obj.setPossuiOrcamento(dto.possuiOrcamento());
+        obj.setCustosEstimadoresFromDto(dto.recursos());
         
         UnidadeOrcamentaria unidade = unidadeSrv.findOrCreateByCod(dto.unidadeOrcamentaria());
         
@@ -124,23 +113,23 @@ public class ObjetoFactory {
 
         // se não tiver PO usa o investimento generico
 
-        Conta conta = null;
+        Conta conta;
         if(dto.planoOrcamentario() == null) {
             conta = contaSrv.getGenericoByCodUnidade(unidade);
         } else { // se não, busca o investimento
 
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(
-                objeto.getConta().getUnidadeOrcamentariaImplementadora().getCodigo(), 
-                objeto.getConta().getPlanoOrcamentario().getCodigo()
+            Optional<Investimento> optInvestimento = investimentoSrv.getByCodUoPo(
+                dto.unidadeOrcamentaria().codigo(), 
+                dto.planoOrcamentario().codigo()
             );
             Investimento investimento;
 
             if(optInvestimento.isEmpty()){ // se não existir, cria um novo
 
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(objeto.getConta().getPlanoOrcamentario());
+                    PlanoOrcamentario plano = planoSrv.findOrCreateByCod(new PlanoOrcamentario(dto.planoOrcamentario()));
 
                     investimento = new Investimento();
-                    investimento.setNome(objeto.getNome());
+                    investimento.setNome(dto.nome());
                     investimento.setUnidadeOrcamentariaImplementadora(unidade);
                     investimento.setPlanoOrcamentario(plano);
             } else { // se existir usa o existente
@@ -151,8 +140,11 @@ public class ObjetoFactory {
 
         }
         
-        objeto.setConta(conta);
+        obj.setConta(conta);
         
+        obj.setCustosEstimadores(dto.recursos().stream().map(custoFactory::fromDto).collect(Collectors.toList()));
+        
+        return obj;
         
     }
     

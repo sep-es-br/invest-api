@@ -21,17 +21,14 @@ import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Fluxo;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.StatusEnum;
-import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 import br.gov.es.invest.utils.DataListResult;
 import java.util.ArrayList;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
@@ -63,40 +60,7 @@ public class ObjetoService {
     }
 
     public Objeto save(Objeto objeto) {
-        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(objeto.getConta().getUnidadeOrcamentariaImplementadora());
         
-        // define o Investimento que vai ser associado
-
-        // se não tiver PO usa o investimento generico
-
-        Conta conta = null;
-        if(objeto.getConta().getPlanoOrcamentario() == null) {
-            conta = contaService.getGenericoByCodUnidade(unidade);
-        } else { // se não, busca o investimento
-
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(
-                objeto.getConta().getUnidadeOrcamentariaImplementadora().getCodigo(), 
-                objeto.getConta().getPlanoOrcamentario().getCodigo()
-            );
-            Investimento investimento;
-
-            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
-
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(objeto.getConta().getPlanoOrcamentario());
-
-                    investimento = new Investimento();
-                    investimento.setNome(objeto.getNome());
-                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentario(plano);
-            } else { // se existir usa o existente
-                investimento = optInvestimento.get();
-            }
-            
-            conta = investimento;
-
-        }
-        
-        objeto.setConta(conta);
 
         if(objeto.getEmStatus() == null) {
             
@@ -118,19 +82,6 @@ public class ObjetoService {
             
             objeto.setEmEtapa(emEtapa);
             
-        }
-        
-        if(objeto.getId() != null) {
-            List<TipoPlano> filhoAtuais = repository.findById(objeto.getId()).get().getTiposPlano();
-
-            List<Long> idsFilhoFinal = objeto.getTiposPlano().stream().map( filho -> filho.getId()).toList();
-
-            List<TipoPlano> orfaos = filhoAtuais.stream().filter(filho -> !idsFilhoFinal.contains(filho.getId())).toList();
-
-            if (!orfaos.isEmpty()) {
-                repository.removerTipos(orfaos.stream().map(orfao -> orfao.getId()).toList());
-            }
-
         }
 
         return repository.save(objeto);

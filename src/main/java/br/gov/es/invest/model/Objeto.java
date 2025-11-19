@@ -10,6 +10,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
 import br.gov.es.invest.dto.ObjetoDto;
+import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -131,6 +132,30 @@ public class Objeto extends Entidade implements Serializable {
     public static Objeto parse(ObjetoDto dto) {
         return dto == null ? null
         : new Objeto(dto);
+    }
+    
+    
+    
+    public void setCustosEstimadores(List<Custo> custosEstimadores){
+        
+        this.custosEstimadores = (ArrayList)custosEstimadores;
+        
+    }
+    
+    public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos){
+        
+        this.setCustosEstimadores((ArrayList) custos.stream().map(
+                custo -> Custo.builder()
+                        .anoExercicio(custo.ano())
+                        .indicadaPor(custo.valoresFontes().stream().map(
+                                valores -> IndicadaPor.builder()
+                                            .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
+                                            .previsto(valores.previsto())
+                                            .contratado(valores.contratado())
+                                            .build()
+                        ).collect(Collectors.toSet())).build()
+        ).toList());
+        
     }
 
 }
