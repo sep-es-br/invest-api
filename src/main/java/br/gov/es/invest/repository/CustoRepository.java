@@ -25,6 +25,11 @@ public interface CustoRepository extends Neo4jRepository<Custo, Long> {
             "RETURN DISTINCT custo.anoExercicio")
     public Set<Integer> getAnosExercicio();
     
-    public Optional<Custo> findByAnoExercicio(Integer anoExercicio);
+    @Query("""
+           MATCH (custo:Custo)-[:ESTIMADO]->(obj:Objeto)
+           WHERE custo.anoExercicio = $anoExercicio AND id(obj) = $idObjeto
+           RETURN id(custo)
+           """)
+    public Optional<Long> findIdByAnoExercicioObjetoId(Integer anoExercicio, Long idObjeto);
     
 }

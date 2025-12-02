@@ -17,8 +17,9 @@ public class CustoService {
         repository.saveAll(custos);
     }
     
-    public Optional<Custo> findByAnoExercicio(Integer anoExercicio) {
-        return this.repository.findByAnoExercicio(anoExercicio);
+    public Optional<Custo> findByAnoExercicio(Integer anoExercicio, Long idObjeto) {
+        return this.repository.findIdByAnoExercicioObjetoId(anoExercicio, idObjeto)
+                .flatMap(this.repository::findById);
     }
     
     

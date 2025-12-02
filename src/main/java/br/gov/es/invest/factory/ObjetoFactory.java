@@ -50,7 +50,7 @@ public class ObjetoFactory {
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
                 .id(model.getId())
-                .tipoInvestimento(model.getConta().getClass().getSimpleName())
+                .tipoInvestimento(Optional.ofNullable(model.getConta().getTipoConta()).orElse(Conta.TIPO_CONTA.INVESTIMENTO).toString())
                 .tipoObjeto(model.getTipo())
                 .nome(model.getNome())
                 .descricao(model.getDescricao())
@@ -60,8 +60,8 @@ public class ObjetoFactory {
                 .microrregiaoId(model.getMicrorregiao().getId())
                 .microrregiaoNome(model.getMicrorregiao().getNome())
                 .infoComplementar(model.getInfoComplementares())
-                .codPlano(model.getConta().getPlanoOrcamentario().getCodigo())
-                .nomePlano(model.getConta().getPlanoOrcamentario().getNome())
+                .codPlano(Optional.ofNullable(model.getConta().getPlanoOrcamentario()).map(PlanoOrcamentario::getCodigo).orElse(null))
+                .nomePlano(Optional.ofNullable(model.getConta().getPlanoOrcamentario()).map(PlanoOrcamentario::getNome).orElse(null))
                 .idArea(model.getAreaTematica().getId())
                 .nomeArea(model.getAreaTematica().getNome())
                 .contrato(model.getContrato())
@@ -128,6 +128,7 @@ public class ObjetoFactory {
 
                     PlanoOrcamentario plano = planoSrv.findOrCreateByCod(new PlanoOrcamentario(dto.planoOrcamentario()));
 
+                    
                     investimento = new Investimento();
                     investimento.setNome(dto.nome());
                     investimento.setUnidadeOrcamentariaImplementadora(unidade);
@@ -142,7 +143,7 @@ public class ObjetoFactory {
         
         obj.setConta(conta);
         
-        obj.setCustosEstimadores(dto.recursos().stream().map(custoFactory::fromDto).collect(Collectors.toList()));
+        obj.setCustosEstimadores(dto.recursos().stream().map(custo -> custoFactory.fromDto(custo, obj.getId())).collect(Collectors.toList()));
         
         return obj;
         

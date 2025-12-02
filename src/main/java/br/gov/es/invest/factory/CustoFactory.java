@@ -27,10 +27,10 @@ public class CustoFactory {
     private final CustoService custoSrv;
     private final FonteFactory fonteFactory;
     
-    public Custo fromDto(ObjetoCadastroFormDto.Custo dto) {
+    public Custo fromDto(ObjetoCadastroFormDto.Custo dto, Long objetoId) {
         
-        Optional<Custo> optCusto = this.custoSrv.findByAnoExercicio(dto.ano());
-        Custo custo = optCusto.orElseGet(() -> Custo.builder().anoExercicio(dto.ano()).build());
+        Optional<Custo> optCusto = this.custoSrv.findByAnoExercicio(dto.ano(), objetoId);
+        Custo custo = optCusto.orElseGet(() -> Custo.builder().anoExercicio(dto.ano()).indicadaPor(new HashSet<>()).build());
         
         
         Set<IndicadaPor> setIndicadaPor = new HashSet<>();

@@ -1,19 +1,5 @@
 package br.gov.es.invest.service;
 
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.core.Neo4jOperations;
-import org.springframework.stereotype.Service;
-
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.OrdemItemDto;
 import br.gov.es.invest.dto.projection.TiraObjetoProjection;
@@ -28,9 +14,21 @@ import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 import br.gov.es.invest.utils.DataListResult;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jOperations;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -209,12 +207,12 @@ public class ObjetoService {
          
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
-                    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)
+                    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta), (obj)-[:EM]->(etapa:Etapa)
                 WHERE
                     ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
                      AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
                      AND ($idStatus IS NULL OR id(status) = $idStatus)
-                     AND EXISTS((obj)-[:EM]->(:Etapa))
+                     AND ($idEtapa IS NULL OR id(etapa) = $idEtapa)
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR id(plano) IN $idsPo
@@ -254,6 +252,7 @@ public class ObjetoService {
         params.put("nome", nome);
         params.put("idsUnidade", idUnidade);
         params.put("idStatus", statusId);
+        params.put("idEtapa", etapaId);
         params.put("idsPo", idPo);
         params.put("idFonte", fonteId);
 
@@ -307,7 +306,7 @@ public class ObjetoService {
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
 
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         objetoProbe.setConta(contaProbe);
 
         if(nome != null) {
@@ -371,7 +370,7 @@ public class ObjetoService {
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
 
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         objetoProbe.setConta(contaProbe);
 
         if(nome != null) {
@@ -456,7 +455,7 @@ public class ObjetoService {
 
     public List<Objeto> findObjetoByConta(Long contaId) {
         Objeto objetoProbe = new Objeto();
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         contaProbe.setId(contaId);
         objetoProbe.setConta(contaProbe);
 

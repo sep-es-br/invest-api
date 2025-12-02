@@ -12,14 +12,16 @@ import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Node
 @SuperBuilder
 public class Objeto extends Entidade implements Serializable {
@@ -150,11 +152,11 @@ public class Objeto extends Entidade implements Serializable {
                         .indicadaPor(custo.valoresFontes().stream().map(
                                 valores -> IndicadaPor.builder()
                                             .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
-                                            .previsto(valores.previsto())
-                                            .contratado(valores.contratado())
+                                            .previsto(Optional.ofNullable(valores.previsto()).orElse(Double.valueOf(0)))
+                                            .contratado(Optional.ofNullable(valores.contratado()).orElse(Double.valueOf(0)))
                                             .build()
                         ).collect(Collectors.toSet())).build()
-        ).toList());
+        ).collect(Collectors.toList()));
         
     }
 

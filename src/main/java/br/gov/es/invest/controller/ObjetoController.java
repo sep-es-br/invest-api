@@ -198,7 +198,7 @@ public class ObjetoController {
 
 
     @PostMapping("")
-    public ResponseEntity<ObjetoDto> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
+    public ResponseEntity<?> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = objFactory.fromDTO(cadastroForm);
         
@@ -212,7 +212,7 @@ public class ObjetoController {
         
         service.save(objeto);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(objFactory.fromModel(objeto));
     }
 
     @DeleteMapping("")
