@@ -1,11 +1,11 @@
 package br.gov.es.invest.dto;
 
-import java.util.List;
-
 import br.gov.es.invest.model.Conta;
+import java.util.List;
 
 public record ContaDto(
     Long id,
+    String tipoConta,
     String status,
     String nome,
     PlanoOrcamentarioDTO planoOrcamentario,
@@ -15,6 +15,7 @@ public record ContaDto(
     public ContaDto(Conta model) {
         this(
             model.getId(), 
+            model.getTipoConta().toString(),
             model.getStatus(), 
             model.getNome(), 
             model.getPlanoOrcamentario() == null ? null : new PlanoOrcamentarioDTO(model.getPlanoOrcamentario()), 

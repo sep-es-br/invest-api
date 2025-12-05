@@ -1,18 +1,16 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.model.PlanoOrcamentario;
+import br.gov.es.invest.repository.PlanoOrcamentarioRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.model.PlanoOrcamentario;
-import br.gov.es.invest.repository.PlanoOrcamentarioRepository;
 
 @Service
 public class PlanoOrcamentarioService {

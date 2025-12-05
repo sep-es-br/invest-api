@@ -1,13 +1,11 @@
 package br.gov.es.invest.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.neo4j.repository.Neo4jRepository;
-import org.springframework.data.neo4j.repository.query.Query;
-
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.query.Query;
 
 public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOrcamentaria, Long> {
     
@@ -36,6 +34,8 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
            RETURN DISTINCT uo
            """)
     public List<UnidadeOrcamentaria> findByAgente(Long idAgente);
+    
+    public Optional<UnidadeOrcamentaria> findByCodigo(String codigo);
     
 
 }

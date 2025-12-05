@@ -10,15 +10,18 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 
 import br.gov.es.invest.dto.ObjetoDto;
+import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Node
 @SuperBuilder
 public class Objeto extends Entidade implements Serializable {
@@ -131,6 +134,30 @@ public class Objeto extends Entidade implements Serializable {
     public static Objeto parse(ObjetoDto dto) {
         return dto == null ? null
         : new Objeto(dto);
+    }
+    
+    
+    
+    public void setCustosEstimadores(List<Custo> custosEstimadores){
+        
+        this.custosEstimadores = (ArrayList)custosEstimadores;
+        
+    }
+    
+    public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos){
+        
+        this.setCustosEstimadores((ArrayList) custos.stream().map(
+                custo -> Custo.builder()
+                        .anoExercicio(custo.ano())
+                        .indicadaPor(custo.valoresFontes().stream().map(
+                                valores -> IndicadaPor.builder()
+                                            .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
+                                            .previsto(Optional.ofNullable(valores.previsto()).orElse(Double.valueOf(0)))
+                                            .contratado(Optional.ofNullable(valores.contratado()).orElse(Double.valueOf(0)))
+                                            .build()
+                        ).collect(Collectors.toSet())).build()
+        ).collect(Collectors.toList()));
+        
     }
 
 }

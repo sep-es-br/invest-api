@@ -11,6 +11,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 
 import br.gov.es.invest.dto.ACUserInfoDto;
 import br.gov.es.invest.dto.UsuarioDto;
+import br.gov.es.invest.dto.usuario.SalvarUsuarioForm;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -62,6 +63,13 @@ public class Usuario extends Entidade {
 
     public void setRole(Set<String> roles) {
         this.role = new HashSet<>(roles.stream().map(role -> new Funcao(role)).toList());
+    }
+    
+    public void set(SalvarUsuarioForm form) {
+        this.name = form.nome();
+        this.nomeCompleto = form.nomeCompleto();
+        this.email = form.email();
+        this.telefone = form.telefone();
     }
 
     @Override

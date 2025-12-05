@@ -1,15 +1,13 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.model.FonteOrcamentaria;
+import br.gov.es.invest.repository.FonteOrcamentariaRepository;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.model.FonteOrcamentaria;
-import br.gov.es.invest.repository.FonteOrcamentariaRepository;
 
 @Service
 public class FonteOrcamentariaService {
@@ -32,6 +30,10 @@ public class FonteOrcamentariaService {
 
         return repository.findBy(Example.of(probe), q -> q.firstValue());
 
+    }
+    
+    public Optional<FonteOrcamentaria> findByCodigo(String codigo) {
+        return repository.findByCodigo(codigo);
     }
 
     public List<FonteOrcamentaria> findFontesExtras(){
