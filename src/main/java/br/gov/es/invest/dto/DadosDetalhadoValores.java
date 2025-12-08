@@ -10,7 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DadosDetalhadoValores {
-    private String idFonte;
+    private Long idFonte;
     private String nomeFonte;
     private Double valorPrevisto;
     private Double valorContratado;

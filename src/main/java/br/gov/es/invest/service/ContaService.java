@@ -186,16 +186,16 @@ public class ContaService {
         Collection<DadosDetalhadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
         .fetchAs(DadosDetalhadoDTO.class)
         .mappedBy((typeSystem, record) -> new DadosDetalhadoDTO(
-            record.get("idUnidade").asString(),
+            record.get("idUnidade").asLong(),
             record.get("unidadeResponsavel").asString(),
-            record.get("idPO").asString(),
+            record.get("idPO").asLong(),
             record.get("codPO").asString(),
             record.get("nomePO").asString(),
             record.get("projEstrategico").asBoolean(),
             record.get("contrato").isNull() || record.get("contrato").isEmpty() ? "-" : record.get("contrato") .asString(),
             record.get("anoExercicio").asInt(),
             record.get("valores").asList(value -> new DadosDetalhadoValores(
-                value.get("idFonte").asString(),
+                value.get("idFonte").asLong(),
                 value.get("nomeFonte").asString(),
                 value.get("valorPrevisto").asDouble(),
                 value.get("valorContratado").asDouble()
