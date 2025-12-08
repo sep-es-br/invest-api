@@ -3,6 +3,7 @@ package br.gov.es.invest.service;
 
 import br.gov.es.invest.dto.AvatarDTO;
 import br.gov.es.invest.dto.UsuarioDto;
+import br.gov.es.invest.dto.usuario.SalvarUsuarioForm;
 import java.util.Optional;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -27,27 +28,16 @@ public class UsuarioService {
         return repository.save(usuario);
     } 
     
-    public Usuario save(UsuarioDto usuario) {
+    public Usuario save(SalvarUsuarioForm slvUserForm) {
         
-        return repository.save(
-                getUserBySub(usuario.sub())
-                .map(user -> {
-                    user.setName(usuario.name());
-                    user.setNomeCompleto(usuario.nomeCompleto());
-                    user.setTelefone(usuario.telefone());
-                    Optional.ofNullable(user.getImgPerfil()).ifPresent(avatarUser -> 
-                            avatarUser.setBlob(Optional.ofNullable(usuario.imgPerfil()).map(AvatarDTO::blob).orElse(null)) );
-                    user.setEmail(usuario.email());
-                    
-                    return user;
-                
-                }).orElseGet(() -> Usuario.parse(usuario))
-        );
+        Usuario usuarioBanco = getUserBySub(slvUserForm.sub())
+                                .orElseThrow(() -> new RuntimeException("Usuario com sub " + slvUserForm + " não encontrado"));
+        
+        
+        usuarioBanco.set(slvUserForm);
+        
+        return this.save(usuarioBanco);
     } 
-    
-    public List<Usuario> findAll(){
-        return repository.findAll();
-    }
     
     public Optional<Usuario> findById(Long id) {
         return repository.findById(id);

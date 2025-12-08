@@ -1,5 +1,11 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.dto.RegistroDadoConsolidado;
+import br.gov.es.invest.dto.RegistroDadoDetalhado;
+import br.gov.es.invest.dto.RegistroDadoDetalhadoValoresPorAno;
+import br.gov.es.invest.dto.RegistroDadoDetalhadoValoresPorFonte;
+import br.gov.es.invest.model.FonteOrcamentaria;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,14 +15,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.ColorScaleFormatting;
 import org.apache.poi.ss.usermodel.ComparisonOperator;
 import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
-import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontFormatting;
@@ -36,14 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import br.gov.es.invest.dto.RegistroDadoConsolidado;
-import br.gov.es.invest.dto.RegistroDadoDetalhado;
-import br.gov.es.invest.dto.RegistroDadoDetalhadoValoresPorAno;
-import br.gov.es.invest.dto.RegistroDadoDetalhadoValoresPorFonte;
-import br.gov.es.invest.model.FonteOrcamentaria;
 
 @Service
 public class RelatorioService {
@@ -140,7 +135,10 @@ public class RelatorioService {
         int rowIndex = 0;
         
         this.createHeaderRow(rowIndex++, dados, sheet);
-        this.preencherComDados(rowIndex++, sheet, dados);
+        int totalIndex = rowIndex++;
+        int[] lastPos = this.preencherComDados(rowIndex++, sheet, dados);
+        
+        this.totalizacaoDetalhado(totalIndex, lastPos[0], lastPos[1], sheet);
                 
         return workbook;
     }
@@ -157,6 +155,7 @@ public class RelatorioService {
         int rowIndex = 0;
         
         this.createHeaderRowConsolidado(rowIndex++, dados, sheet);
+        sheet.createFreezePane(0, 1);
         int totalIndex = rowIndex++;
 
         rowIndex = this.preencherComDadosConsolidado(rowIndex++, sheet, dados);
@@ -166,7 +165,7 @@ public class RelatorioService {
         return workbook;
     }
 
-    private void preencherComDados(int startRow, Sheet sheet, List<RegistroDadoDetalhado> dados){
+    private int[] preencherComDados(int startRow, Sheet sheet, List<RegistroDadoDetalhado> dados){
         int rowIndex = startRow;
         XSSFWorkbook workbook = (XSSFWorkbook)sheet.getWorkbook();
 
@@ -176,9 +175,10 @@ public class RelatorioService {
         style.setBorderLeft(BorderStyle.THIN);
         style.setBorderRight(BorderStyle.THIN);
 
+        int colIndex = 0;
         for(RegistroDadoDetalhado registroDadoDetalhado : dados) {
 
-            int colIndex = 0;
+            colIndex = 0;
 
             Row row = sheet.createRow(rowIndex++);
             
@@ -214,6 +214,8 @@ public class RelatorioService {
             }
 
         }
+        
+        return new int[]{rowIndex, colIndex};
     }
 
     private void createCell(int index, String value, XSSFCellStyle style, Row row){
@@ -332,6 +334,9 @@ public class RelatorioService {
         XSSFCellStyle headerStyleContratado = headerStylePrevisto.copy();
         headerStyleContratado.setFillForegroundColor(getColor(255, 229, 151));
         
+        XSSFCellStyle headerStyleOrcado = headerStylePrevisto.copy();
+        headerStyleOrcado.setFillForegroundColor(getColor(255, 204, 102));
+        
         XSSFCellStyle headerStyleAutorizado = headerStylePrevisto.copy();
         headerStyleAutorizado.setFillForegroundColor(getColor(255, 204, 255));
         
@@ -356,6 +361,7 @@ public class RelatorioService {
         this.createHeaderCell(colIndex++, "UO", headerStyleUo, pixelParaWidth(150) , row);
         this.createHeaderCell(colIndex++, "Previsto", headerStylePrevisto, pixelParaWidth(150), row);
         this.createHeaderCell(colIndex++, "Contratado", headerStyleContratado, pixelParaWidth(150), row);
+        this.createHeaderCell(colIndex++, "Orçado", headerStyleOrcado, pixelParaWidth(150), row);
         this.createHeaderCell(colIndex++, "Autorizado", headerStyleAutorizado, pixelParaWidth(150), row);
         this.createHeaderCell(colIndex++, "Empenhado \n (Exercício Anterior)", headerStyleEmpenhadoAnt, pixelParaWidth(200), row);
         this.createHeaderCell(colIndex++, "Empenhado", headerStyleEmpenhado, pixelParaWidth(200), row);
@@ -487,7 +493,7 @@ public class RelatorioService {
 
                                                         RegistroDadoDetalhadoValoresPorAno valorPorAno = neo4jClient.query(cypherPrevistoContratado)
                                                                                                             .bindAll(Map.of(
-                                                                                                                "idObjeto", record.get("objetoId").asString(),
+                                                                                                                "idObjeto", record.get("objetoId").asLong(),
                                                                                                                 "ano", ano,
                                                                                                                 "idFonte", fonte.getId()
                                                                                                             )).fetchAs(RegistroDadoDetalhadoValoresPorAno.class)
@@ -559,6 +565,7 @@ public class RelatorioService {
                         AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
                     RETURN
                         SUM(vinculada_por.autorizado) AS autorizado,
+                        SUM(vinculada_por.orcado) AS orcado,
                         sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS empenhado,
                         sum(REDUCE(total=0,e IN vinculada_por.liquidado | total + e ))  AS liquidado,
                         sum(REDUCE(total=0,e IN vinculada_por.pago | total + e ))  AS pago
@@ -580,13 +587,12 @@ public class RelatorioService {
                     unidade.codigo + ' - ' + unidade.sigla AS unidadeOrcamentaria,
                     COALESCE(SUM(previsto), 0) AS previsto,
                     COALESCE(SUM(contratado), 0) AS contratado,
+                    COALESCE(SUM(orcado), 0) AS orcado,
                     COALESCE(SUM(autorizado), 0) AS autorizado,
                     COALESCE(SUM(empenhadoAnt), 0) AS empenhadoAnt,
                     COALESCE(SUM(empenhado), 0) AS empenhado,
                     COALESCE(SUM(liquidado), 0) AS liquidado,
-                    COALESCE(SUM(pago), 0) AS pago,
-                    COALESCE(SUM(autorizado), 0) - COALESCE(SUM(contratado), 0) AS difAutorizadoContratado,
-                    COALESCE(SUM(autorizadoAnt), 0) - COALESCE(SUM(empenhadoAnt), 0) AS difAutorizadoEmpenhadoAnt
+                    COALESCE(SUM(pago), 0) AS pago
                 ORDER BY codUnidade
                 """;
         
@@ -613,6 +619,7 @@ public class RelatorioService {
                         .previsto(record.get("previsto").asDouble())
                         .contratado(record.get("contratado").asDouble())
                         .autorizado(exec.get("autorizado").asDouble())
+                        .orcado(exec.get("orcado").asDouble())
                         .empenhadoAnt(execAnt.get("empenhado").asDouble())
                         .empenhado(exec.get("empenhado").asDouble())
                         .liquidado(exec.get("liquidado").asDouble())
@@ -659,7 +666,50 @@ public class RelatorioService {
         };
 
         this.createCell(colIndex++, "Total", style, row);
-        for(int col = colIndex; col <= 9; col++){
+        for(int col = colIndex; col <= 10; col++){
+            this.createCellFormula(col, gerarSum.apply(col), styleValor, row);
+        }
+
+
+    }
+
+    private void totalizacaoDetalhado(int indexTotal, int ultIndex, int ultCol, Sheet sheet) {
+        
+        XSSFWorkbook workbook = (XSSFWorkbook) sheet.getWorkbook();
+
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+
+
+        XSSFCellStyle style = workbook.createCellStyle();
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setFont(font);
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setFillForegroundColor(getColor(174, 170, 170));
+
+        
+        XSSFCellStyle styleValor = style.copy();
+        styleValor.setAlignment(HorizontalAlignment.RIGHT);
+
+        DataFormat format = workbook.createDataFormat();
+
+        styleValor.setDataFormat(format.getFormat("\"R$\" #,##0.00;-\"R$\" #,##0.00;\"-\""));
+
+        Row row = sheet.createRow(indexTotal);
+
+        int colIndex = 0;
+        Function<Integer, String> gerarSum = col -> {
+            String letraCol = CellReference.convertNumToColString(col);
+            return String.format("SUM(%s%d:%s%d)",letraCol, indexTotal+2, letraCol, ultIndex);
+        };
+
+        this.createCell(colIndex++, "Total", style, row);
+        for(int col = 0; col < 9; col++) this.createCell(colIndex++, "", style, row);
+        for(int col = colIndex; col <= ultCol-1; col++){
             this.createCellFormula(col, gerarSum.apply(col), styleValor, row);
         }
 
@@ -683,6 +733,8 @@ public class RelatorioService {
         styleEscuro.setFillForegroundColor(getColor(217, 217, 217));
 
         int colIndex = 0;
+        double minValor = Double.POSITIVE_INFINITY;
+        double maxValor = Double.NEGATIVE_INFINITY;
 
         for(RegistroDadoConsolidado registroDadoDetalhado : dados) {
 
@@ -702,6 +754,7 @@ public class RelatorioService {
             this.createCell(colIndex++, registroDadoDetalhado.previsto(), styleValor, row);
             String contratadoRef = String.format("%s%d", CellReference.convertNumToColString(colIndex), rowIndex);
             this.createCell(colIndex++, registroDadoDetalhado.contratado(), styleValor, row);
+            this.createCell(colIndex++, registroDadoDetalhado.orcado(), styleValor, row);
             String autorizadoRef = String.format("%s%d", CellReference.convertNumToColString(colIndex), rowIndex);
             this.createCell(colIndex++, registroDadoDetalhado.autorizado(), styleValor, row);
             String empenhadoAntRef = String.format("%s%d", CellReference.convertNumToColString(colIndex), rowIndex);
@@ -711,48 +764,91 @@ public class RelatorioService {
             this.createCell(colIndex++, registroDadoDetalhado.pago(), styleValor, row);
             this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, contratadoRef) , styleValor, row);
             this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, empenhadoAntRef) , styleValor, row);
-            
+            minValor = Math.min(minValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.contratado());
+            minValor = Math.min(minValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.empenhadoAnt());
+            maxValor = Math.max(maxValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.contratado());
+            maxValor = Math.max(maxValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.empenhadoAnt());
         }
 
         SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
 
-        ConditionalFormattingRule negStroke = sheetCF.createConditionalFormattingRule(ComparisonOperator.LT, "0");
+        XSSFColor minColor = getColor(248, 105, 107);
+        XSSFColor midColor =  getColor(255, 235, 132);
+        XSSFColor maxColor = getColor(99, 190, 123);
+        
+        double midValue = (minValor + maxValor)/2;
+        
+        FontFormatting stroke;
+        ConditionalFormattingRule midStroke;
+        ArrayList<ConditionalFormattingRule> rules = new ArrayList<>();
+        
+        midStroke = sheetCF.createConditionalFormattingRule(ComparisonOperator.EQUAL, String.valueOf(midValue));
 
-        FontFormatting stroke = negStroke.createFontFormatting();
+        stroke = midStroke.createFontFormatting();
         stroke.setFontStyle(true, true);
-
-        ConditionalFormattingRule scaleRule = sheetCF.createConditionalFormattingColorScaleRule();
-        ColorScaleFormatting colorScale = scaleRule.getColorScaleFormatting();
-
-        colorScale.setColors(new XSSFColor[]{
-            getColor(248, 105, 107),
-            getColor(255, 235, 132),
-            getColor(99, 190, 123)
-        });
-
-        ConditionalFormattingThreshold[] thresholds = new ConditionalFormattingThreshold[3];
-
-        thresholds[0] = colorScale.createThreshold();
-        thresholds[0].setRangeType(ConditionalFormattingThreshold.RangeType.MIN);
-
-        thresholds[1] = colorScale.createThreshold();
-        thresholds[1].setRangeType(ConditionalFormattingThreshold.RangeType.NUMBER);
-        thresholds[1].setValue(0d);
-
-        thresholds[2] = colorScale.createThreshold();
-        thresholds[2].setRangeType(ConditionalFormattingThreshold.RangeType.MAX);
-
-        colorScale.setThresholds(thresholds);
-
+        stroke.setFontColor(midColor);
+        
+        rules.add(midStroke);
+        
+        double passo;
+        
+        passo = (midValue - minValor) / 25;
+        
+        for(double frValue = midValue; frValue >= minValor; frValue -= passo) {
+            ConditionalFormattingRule frRule = sheetCF.createConditionalFormattingRule(ComparisonOperator.BETWEEN, String.valueOf(frValue - passo), String.valueOf(frValue));
+            FontFormatting frStroke = frRule.createFontFormatting();
+            frStroke.setFontStyle(true, true);
+            frStroke.setFontColor(this.lerpColor(midColor, minColor, Math.abs(midValue - frValue)/Math.abs(midValue - minValor)));
+            rules.add(frRule);
+        }
+        
+        passo = (maxValor - midValue) / 25;
+        
+        for(double frValue = midValue; frValue <= maxValor; frValue += passo) {
+            ConditionalFormattingRule frRule = sheetCF.createConditionalFormattingRule(ComparisonOperator.BETWEEN, String.valueOf(frValue), String.valueOf(frValue + passo));
+            FontFormatting frStroke = frRule.createFontFormatting();
+            frStroke.setFontStyle(true, true);
+            frStroke.setFontColor(this.lerpColor(midColor, maxColor, Math.abs(frValue - midValue)/Math.abs(maxValor - midValue)));
+            rules.add(frRule);
+        }
+        
         CellRangeAddress[] range = new CellRangeAddress[]{ new CellRangeAddress(indexInicial, rowIndex - 1, colIndex-2, colIndex - 1)};
+        
+        ConditionalFormattingRule[] arr = new ConditionalFormattingRule[rules.size()];
+        rules.toArray(arr);
 
-        sheetCF.addConditionalFormatting(range, negStroke);
-
-        sheetCF.addConditionalFormatting(range, scaleRule);
-
+        sheetCF.addConditionalFormatting(range, arr);
 
         return rowIndex;
 
+    }
+    
+    private XSSFColor lerpColor(XSSFColor c1, XSSFColor c2, double t) {
+        t = Math.max(0, Math.min(1, t)); // clamp
+
+        int[] rgb1 = toRGB(c1);
+        int[] rgb2 = toRGB(c2);
+
+        int r = (int) (rgb1[0] + (rgb2[0] - rgb1[0]) * t);
+        int g = (int) (rgb1[1] + (rgb2[1] - rgb1[1]) * t);
+        int b = (int) (rgb1[2] + (rgb2[2] - rgb1[2]) * t);
+
+        return getColor(r, g, b);
+    }
+    
+    private int[] toRGB(XSSFColor color) {
+        byte[] rgbBytes = color.getRGBWithTint();
+
+        // Assegurar que nunca venha null
+        if (rgbBytes == null || rgbBytes.length < 3) {
+            return new int[] {0, 0, 0};
+        }
+
+        return new int[]{
+            rgbBytes[0] & 0xFF,
+            rgbBytes[1] & 0xFF,
+            rgbBytes[2] & 0xFF
+        };
     }
 
 }

@@ -1,17 +1,5 @@
 package br.gov.es.invest.service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.data.neo4j.core.Neo4jOperations;
-import org.springframework.stereotype.Service;
-
 import br.gov.es.invest.dto.DadoConsolidadoDTO;
 import br.gov.es.invest.dto.DadosDetalhadoDTO;
 import br.gov.es.invest.dto.DadosDetalhadoValores;
@@ -20,7 +8,17 @@ import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ContaRepository;
 import br.gov.es.invest.utils.DataListResult;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jOperations;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +38,7 @@ public class ContaService {
         return Optional.ofNullable(conta)
                 .map(_conta -> repository.findById(_conta.getId()).get())
                 .orElseGet(() -> {
-                    Conta _conta = new Conta();
+                    Conta _conta = new Conta(null);
                     _conta.setNome("Conta sem PO da Unidade " + unidadeOrcamentaria.getCodigo());
                     _conta.setUnidadeOrcamentariaImplementadora(unidadeOrcamentaria);
                     return _conta;
@@ -58,7 +56,7 @@ public class ContaService {
     ){
         
         ExampleMatcher matcher = ExampleMatcher.matching();
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         
         if(nome != null){
             contaProbe.setNome(nome);
@@ -188,16 +186,16 @@ public class ContaService {
         Collection<DadosDetalhadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
         .fetchAs(DadosDetalhadoDTO.class)
         .mappedBy((typeSystem, record) -> new DadosDetalhadoDTO(
-            record.get("idUnidade").asString(),
+            record.get("idUnidade").asLong(),
             record.get("unidadeResponsavel").asString(),
-            record.get("idPO").asString(),
+            record.get("idPO").asLong(),
             record.get("codPO").asString(),
             record.get("nomePO").asString(),
             record.get("projEstrategico").asBoolean(),
             record.get("contrato").isNull() || record.get("contrato").isEmpty() ? "-" : record.get("contrato") .asString(),
             record.get("anoExercicio").asInt(),
             record.get("valores").asList(value -> new DadosDetalhadoValores(
-                value.get("idFonte").asString(),
+                value.get("idFonte").asLong(),
                 value.get("nomeFonte").asString(),
                 value.get("valorPrevisto").asDouble(),
                 value.get("valorContratado").asDouble()
