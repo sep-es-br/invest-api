@@ -18,8 +18,10 @@ import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.ColorScaleFormatting;
 import org.apache.poi.ss.usermodel.ComparisonOperator;
 import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
+import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontFormatting;
@@ -413,7 +415,7 @@ public class RelatorioService {
                         OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)
                         OPTIONAL MATCH (obj)-[:ATENDE]->(microrregiao:Localidade)
                         OPTIONAL MATCH (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)
-                        OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Usuario)
+                        OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Agente)
 
                         WITH 
                             unidade.codigo AS codUnidade,
@@ -733,8 +735,6 @@ public class RelatorioService {
         styleEscuro.setFillForegroundColor(getColor(217, 217, 217));
 
         int colIndex = 0;
-        double minValor = Double.POSITIVE_INFINITY;
-        double maxValor = Double.NEGATIVE_INFINITY;
 
         for(RegistroDadoConsolidado registroDadoDetalhado : dados) {
 
@@ -764,91 +764,46 @@ public class RelatorioService {
             this.createCell(colIndex++, registroDadoDetalhado.pago(), styleValor, row);
             this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, contratadoRef) , styleValor, row);
             this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, empenhadoAntRef) , styleValor, row);
-            minValor = Math.min(minValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.contratado());
-            minValor = Math.min(minValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.empenhadoAnt());
-            maxValor = Math.max(maxValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.contratado());
-            maxValor = Math.max(maxValor, registroDadoDetalhado.autorizado() - registroDadoDetalhado.empenhadoAnt());
         }
 
         SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
 
-        XSSFColor minColor = getColor(248, 105, 107);
-        XSSFColor midColor =  getColor(255, 235, 132);
-        XSSFColor maxColor = getColor(99, 190, 123);
-        
-        double midValue = (minValor + maxValor)/2;
-        
-        FontFormatting stroke;
-        ConditionalFormattingRule midStroke;
-        ArrayList<ConditionalFormattingRule> rules = new ArrayList<>();
-        
-        midStroke = sheetCF.createConditionalFormattingRule(ComparisonOperator.EQUAL, String.valueOf(midValue));
+        ConditionalFormattingRule negStroke = sheetCF.createConditionalFormattingRule(ComparisonOperator.LT, "0");
 
-        stroke = midStroke.createFontFormatting();
+        FontFormatting stroke = negStroke.createFontFormatting();
         stroke.setFontStyle(true, true);
-        stroke.setFontColor(midColor);
-        
-        rules.add(midStroke);
-        
-        double passo;
-        
-        passo = (midValue - minValor) / 25;
-        
-        for(double frValue = midValue; frValue >= minValor; frValue -= passo) {
-            ConditionalFormattingRule frRule = sheetCF.createConditionalFormattingRule(ComparisonOperator.BETWEEN, String.valueOf(frValue - passo), String.valueOf(frValue));
-            FontFormatting frStroke = frRule.createFontFormatting();
-            frStroke.setFontStyle(true, true);
-            frStroke.setFontColor(this.lerpColor(midColor, minColor, Math.abs(midValue - frValue)/Math.abs(midValue - minValor)));
-            rules.add(frRule);
-        }
-        
-        passo = (maxValor - midValue) / 25;
-        
-        for(double frValue = midValue; frValue <= maxValor; frValue += passo) {
-            ConditionalFormattingRule frRule = sheetCF.createConditionalFormattingRule(ComparisonOperator.BETWEEN, String.valueOf(frValue), String.valueOf(frValue + passo));
-            FontFormatting frStroke = frRule.createFontFormatting();
-            frStroke.setFontStyle(true, true);
-            frStroke.setFontColor(this.lerpColor(midColor, maxColor, Math.abs(frValue - midValue)/Math.abs(maxValor - midValue)));
-            rules.add(frRule);
-        }
-        
-        CellRangeAddress[] range = new CellRangeAddress[]{ new CellRangeAddress(indexInicial, rowIndex - 1, colIndex-2, colIndex - 1)};
-        
-        ConditionalFormattingRule[] arr = new ConditionalFormattingRule[rules.size()];
-        rules.toArray(arr);
 
-        sheetCF.addConditionalFormatting(range, arr);
+        ConditionalFormattingRule scaleRule = sheetCF.createConditionalFormattingColorScaleRule();
+        ColorScaleFormatting colorScale = scaleRule.getColorScaleFormatting();
+
+        colorScale.setColors(new XSSFColor[]{
+            getColor(248, 105, 107),
+            getColor(255, 235, 132),
+            getColor(99, 190, 123)
+        });
+
+        ConditionalFormattingThreshold[] thresholds = new ConditionalFormattingThreshold[3];
+
+        thresholds[0] = colorScale.createThreshold();
+        thresholds[0].setRangeType(ConditionalFormattingThreshold.RangeType.MIN);
+
+        thresholds[1] = colorScale.createThreshold();
+        thresholds[1].setRangeType(ConditionalFormattingThreshold.RangeType.NUMBER);
+        thresholds[1].setValue(0d);
+
+        thresholds[2] = colorScale.createThreshold();
+        thresholds[2].setRangeType(ConditionalFormattingThreshold.RangeType.MAX);
+
+        colorScale.setThresholds(thresholds);
+
+        CellRangeAddress[] range = new CellRangeAddress[]{ new CellRangeAddress(indexInicial, rowIndex - 1, colIndex-2, colIndex - 1)};
+
+        sheetCF.addConditionalFormatting(range, negStroke);
+
+        sheetCF.addConditionalFormatting(range, scaleRule);
+
 
         return rowIndex;
 
     }
-    
-    private XSSFColor lerpColor(XSSFColor c1, XSSFColor c2, double t) {
-        t = Math.max(0, Math.min(1, t)); // clamp
-
-        int[] rgb1 = toRGB(c1);
-        int[] rgb2 = toRGB(c2);
-
-        int r = (int) (rgb1[0] + (rgb2[0] - rgb1[0]) * t);
-        int g = (int) (rgb1[1] + (rgb2[1] - rgb1[1]) * t);
-        int b = (int) (rgb1[2] + (rgb2[2] - rgb1[2]) * t);
-
-        return getColor(r, g, b);
-    }
-    
-    private int[] toRGB(XSSFColor color) {
-        byte[] rgbBytes = color.getRGBWithTint();
-
-        // Assegurar que nunca venha null
-        if (rgbBytes == null || rgbBytes.length < 3) {
-            return new int[] {0, 0, 0};
-        }
-
-        return new int[]{
-            rgbBytes[0] & 0xFF,
-            rgbBytes[1] & 0xFF,
-            rgbBytes[2] & 0xFF
-        };
-    }
-
 }
