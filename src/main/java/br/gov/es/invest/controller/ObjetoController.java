@@ -8,9 +8,9 @@ import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.ObjetoFactory;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -64,7 +64,7 @@ public class ObjetoController {
     
             String sub = tokenService.validarToken(authToken);
                     
-            Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+            Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
             
             List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
@@ -111,7 +111,7 @@ public class ObjetoController {
         
                 String sub = tokenService.validarToken(authToken);
                         
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 
                 List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());

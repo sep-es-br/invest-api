@@ -1,16 +1,5 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.dto.ModuloDto;
 import br.gov.es.invest.dto.PodeDto;
@@ -19,14 +8,23 @@ import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Modulo;
 import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Pode;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.PodeService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/permissao")
@@ -53,7 +51,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
                 
-        Usuario usuario = usuarioService.getUserBySub(sub).orElseThrow();
+        Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
         
         String acToken = acSrv.getClientToken();
         
@@ -84,7 +82,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         
         return usuario == null ? false : testarFuncao(usuario.getRole(), "GESTOR_MASTER");
     }
@@ -99,7 +97,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) {
             return new PodeDto(
                 null, 
@@ -145,7 +143,7 @@ public class PermissaoController {
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
         
-        Usuario usuario = usuarioService.getUserBySub(sub).orElseThrow();
+        Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
         
         boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
         

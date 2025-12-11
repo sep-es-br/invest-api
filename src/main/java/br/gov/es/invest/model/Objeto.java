@@ -48,7 +48,7 @@ public class Objeto extends Entidade implements Serializable {
     private List<TipoPlano> tiposPlano;
 
     @Relationship(type = "RESPONSAVEL_POR", direction = Direction.INCOMING)
-    private Usuario responsavel;
+    private Agente responsavel;
 
     @Relationship(type = "ESTIMADO", direction = Direction.INCOMING)
     private ArrayList<Custo> custosEstimadores = new ArrayList<>();
@@ -82,7 +82,7 @@ public class Objeto extends Entidade implements Serializable {
 
         this.areaTematica = dto.areaTematica() == null ? null : new AreaTematica(dto.areaTematica());
         this.tiposPlano = dto.planos() == null ? null : dto.planos().stream().map(tipoDto -> new TipoPlano(tipoDto)).toList();
-        this.responsavel = dto.responsavel() == null ? null : new Usuario(dto.responsavel());
+        this.responsavel = dto.responsavel() == null ? null : new Agente(dto.responsavel());
         this.custosEstimadores = new ArrayList<>(dto.recursosFinanceiros().stream().map(custoDto -> new Custo(custoDto)).toList());
         this.microrregiao = dto.microregiaoAtendida() == null ? null : new Localidade(dto.microregiaoAtendida());
         this.apontamentos = dto.apontamentos() == null ? null : dto.apontamentos().stream().map(Apontamento::parse).toList();

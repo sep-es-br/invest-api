@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaBIService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -62,7 +62,7 @@ public class UnidadeOrcamentariaController {
         
         String sub = tokenService.validarToken(authToken);
                 
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
 
         List<UnidadeOrcamentaria> unidades = this.service.findByAgente(usuario.getId());
 

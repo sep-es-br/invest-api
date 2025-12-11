@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.RelatorioService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -64,7 +64,7 @@ public class RelatorioController {
         
                 String sub = tokenService.validarToken(authToken);
                         
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
@@ -115,7 +115,7 @@ public class RelatorioController {
         
                 String sub = tokenService.validarToken(authToken);
                         
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
@@ -159,7 +159,7 @@ public class RelatorioController {
         
                 String sub = tokenService.validarToken(authToken);
                         
-                Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
