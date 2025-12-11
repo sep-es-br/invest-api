@@ -1,20 +1,9 @@
 package br.gov.es.invest.controller;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.gov.es.invest.dto.ExecutarAcaoDTO;
-import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.exception.SemApontamentosException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.factory.ObjetoFactory;
 import br.gov.es.invest.model.Acao;
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.Objeto;
@@ -25,8 +14,16 @@ import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
-import br.gov.es.invest.service.ObjetoService;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 
@@ -34,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/acao")
 @RequiredArgsConstructor
 public class AcaoController {
+    
+    private final ObjetoFactory objFactory;
     
     private final EtapaService etapaService;
     private final AcaoService acaoService;
@@ -47,9 +46,9 @@ public class AcaoController {
         List<Apontamento> apontamentos = null;
         Parecer parecer = null;
 
-        Objeto objeto = Objeto.parse(executarAcaoDTO.objeto());
+        Objeto objeto = objFactory.fromDTO(executarAcaoDTO.objeto());
 
-        objeto.setEmEtapa(objetoService.findById(objeto.getId()).getEmEtapa());
+//        objeto.setEmEtapa(objetoService.findById(objeto.getId()).getEmEtapa());
 
         if(executarAcaoDTO.parecer() != null){
             parecer = Parecer.parse(executarAcaoDTO.parecer());
@@ -67,7 +66,7 @@ public class AcaoController {
             
             Objeto objetoFinal = acaoService.executarAcao(objeto, apontamentos, parecer, acao, usuario);
             
-            return ResponseEntity.ok(new ObjetoDto(objetoFinal));        
+            return ResponseEntity.ok(this.objFactory.fromModel(objetoFinal));        
         } catch(SemApontamentosException ex){
             return MensagemErroRest.asResponseEntity(
                 HttpStatus.UNPROCESSABLE_ENTITY, 
