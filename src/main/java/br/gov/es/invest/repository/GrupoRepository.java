@@ -88,7 +88,7 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
     public List<Grupo> getGrupoMembroDireto(Long userId);
     
     @Query("""
-           MATCH (agente:Agente)-[:POSSUI]->(papel:Papel)-[r:MEMBRO_DE]->(g:Grupo)
+           MATCH (agente:Agente)-[:POSSUI*0..1]->(papel)-[r:MEMBRO_DE]->(g:Grupo)
            WHERE id(agente) = $idAgente
            DELETE r           
            """)

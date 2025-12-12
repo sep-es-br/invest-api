@@ -90,7 +90,7 @@ public class UsuarioController {
     
     @DeleteMapping("/{id}")
     public ResponseEntity<UsuarioDto> removerAgente(
-            @RequestParam Long id
+            @PathVariable Long id
     ){
         return ResponseEntity.ok(UsuarioDto.parse(service.removerAgente(id)));
     }
