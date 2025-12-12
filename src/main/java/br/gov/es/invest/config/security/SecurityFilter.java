@@ -1,17 +1,30 @@
 package br.gov.es.invest.config.security;
 
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.Funcao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.service.ACService;
+import br.gov.es.invest.service.ModuloService;
+import br.gov.es.invest.service.TokenService;
+import br.gov.es.invest.service.UsuarioService;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,26 +32,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.Funcao;
-import br.gov.es.invest.model.Papel;
-import br.gov.es.invest.model.Usuario;
-import br.gov.es.invest.service.ACService;
-import br.gov.es.invest.service.ModuloService;
-import br.gov.es.invest.service.TokenService;
-import br.gov.es.invest.service.UsuarioService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -77,7 +70,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String sub = tokenService.validarToken(token);
 
-                Usuario user = usuarioService.getUserBySub(sub).orElse(null);
+                Agente user = usuarioService.getUserBySub(sub).orElse(null);
                 
                 Set<Funcao> funcoes = user.getRole();
                 

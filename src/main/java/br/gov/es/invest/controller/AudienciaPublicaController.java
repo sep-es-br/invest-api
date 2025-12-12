@@ -7,7 +7,7 @@ package br.gov.es.invest.controller;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.AreaTematica;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.AreaTematicaService;
 import br.gov.es.invest.service.AudienciaPublicaService;
 import br.gov.es.invest.service.TokenService;
@@ -65,7 +65,7 @@ public class AudienciaPublicaController {
 
             String sub = tokenService.validarToken(authToken);
 
-            Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+            Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
 
 
             List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());

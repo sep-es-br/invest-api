@@ -8,7 +8,7 @@ import br.gov.es.invest.model.Acao;
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.AcaoService;
 import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.service.ObjetoService;
@@ -60,7 +60,7 @@ public class AcaoController {
 
         String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
             
-        Usuario usuario = usuarioService.getUserBySub(sub).get();
+        Agente usuario = usuarioService.getUserBySub(sub).get();
 
         try {
             

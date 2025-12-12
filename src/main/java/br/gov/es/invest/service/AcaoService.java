@@ -16,7 +16,7 @@ import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 
 @Service
 public class AcaoService {
@@ -26,7 +26,7 @@ public class AcaoService {
     private ObjetoService objetoService;
 
     @Transactional
-    public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Usuario usuario) throws SemApontamentosException{
+    public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Agente usuario) throws SemApontamentosException{
         
 
         if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())

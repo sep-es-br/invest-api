@@ -1,13 +1,11 @@
 package br.gov.es.invest.repository;
 
+import br.gov.es.invest.model.Grupo;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
-
-import br.gov.es.invest.model.Grupo;
 
 public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
     
@@ -84,10 +82,17 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
     public void addMembro(Long grupoId, Long membroId);
 
 
-    @Query("MATCH (g:Grupo)<-[:MEMBRO_DE]-(u:Usuario)\r\n" + //
+    @Query("MATCH (g:Grupo)<-[:MEMBRO_DE]-(u:Agente)\r\n" + //
                 "WHERE id(u) = $userId\r\n" + //
                 "RETURN g")
     public List<Grupo> getGrupoMembroDireto(Long userId);
+    
+    @Query("""
+           MATCH (agente:Agente)-[:POSSUI*0..1]->(papel)-[r:MEMBRO_DE]->(g:Grupo)
+           WHERE id(agente) = $idAgente
+           DELETE r           
+           """)
+    public void limparGruposDoAgente(Long idAgente);
 
     
 

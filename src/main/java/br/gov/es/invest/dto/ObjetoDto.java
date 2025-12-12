@@ -1,17 +1,13 @@
 package br.gov.es.invest.dto;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
-import br.gov.es.invest.model.EmStatus;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.Parecer;
+
 
 public record ObjetoDto(
     Long id,

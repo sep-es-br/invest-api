@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 
 public record UsuarioDto(
         String token,
@@ -20,7 +20,7 @@ public record UsuarioDto(
         Set<PapelDto> papeis
 ){
         
-        public static UsuarioDto parse(Usuario usuario, String token){
+        public static UsuarioDto parse(Agente usuario, String token){
                 return Optional.ofNullable(usuario)
                         .map(_usuario ->  new UsuarioDto(
                                         token,
@@ -43,7 +43,7 @@ public record UsuarioDto(
      
         }
 
-        public static UsuarioDto parse(Usuario usuario){
+        public static UsuarioDto parse(Agente usuario){
                 return UsuarioDto.parse(usuario, null);
         }
 }

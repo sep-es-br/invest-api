@@ -28,7 +28,7 @@ public class Grupo extends Entidade {
     private String descricao;
 
     @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
-    private Set<Usuario> membros = new HashSet<>();
+    private Set<Agente> membros = new HashSet<>();
 
     @Relationship(type = "MEMBRO_DE", direction = Direction.INCOMING)
     private Set<Papel> papeisMembro = new HashSet<>();
@@ -51,7 +51,7 @@ public class Grupo extends Entidade {
         this.descricao = dto.descricao();
 
         this.membros = Optional.ofNullable(dto.membros())
-        .orElse(Collections.emptySet()).stream().map(Usuario::parse).collect(Collectors.toSet());
+        .orElse(Collections.emptySet()).stream().map(Agente::parse).collect(Collectors.toSet());
 
         
         if(dto.papeisMembro() != null)
