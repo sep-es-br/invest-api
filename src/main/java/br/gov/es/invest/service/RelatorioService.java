@@ -220,10 +220,12 @@ public class RelatorioService {
         return new int[]{rowIndex, colIndex};
     }
 
-    private void createCell(int index, String value, XSSFCellStyle style, Row row){
+    private Cell createCell(int index, String value, XSSFCellStyle style, Row row){
         Cell cell = row.createCell(index);
         cell.setCellStyle(style);
         cell.setCellValue(value);
+        
+        return cell;
         
 
     }
@@ -737,7 +739,7 @@ public class RelatorioService {
         int colIndex = 0;
 
         for(RegistroDadoConsolidado registroDadoDetalhado : dados) {
-
+            
             colIndex = 0;
 
             Row row = sheet.createRow(rowIndex++);    
@@ -765,6 +767,13 @@ public class RelatorioService {
             this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, contratadoRef) , styleValor, row);
             this.createCellFormula(colIndex++, String.format("%s - %s", autorizadoRef, empenhadoAntRef) , styleValor, row);
         }
+        
+        
+        XSSFColor vermelho = getColor(248, 105, 107);
+        XSSFColor amarelo = getColor(255, 235, 132);
+        XSSFColor verde = getColor(99, 190, 123);
+        
+        
 
         SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
 
@@ -777,9 +786,9 @@ public class RelatorioService {
         ColorScaleFormatting colorScale = scaleRule.getColorScaleFormatting();
 
         colorScale.setColors(new XSSFColor[]{
-            getColor(248, 105, 107),
-            getColor(255, 235, 132),
-            getColor(99, 190, 123)
+            vermelho,
+            amarelo,
+            verde
         });
 
         ConditionalFormattingThreshold[] thresholds = new ConditionalFormattingThreshold[3];
@@ -801,6 +810,35 @@ public class RelatorioService {
         sheetCF.addConditionalFormatting(range, negStroke);
 
         sheetCF.addConditionalFormatting(range, scaleRule);
+        
+        
+        colIndex++;
+        int rowIndexLegenda = 4;
+        Row row = sheet.getRow(rowIndexLegenda++);
+        row.getSheet().setColumnWidth(colIndex, pixelParaWidth(100));        
+        
+        XSSFFont negrito = workbook.createFont();
+        negrito.setBold(true);
+        
+        XSSFCellStyle redCellRefStyle = styleClaro.copy();
+        redCellRefStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        redCellRefStyle.setFillForegroundColor(vermelho);
+        redCellRefStyle.setFont(negrito);
+        
+        this.createCell(colIndex, "Valor Mínimo", redCellRefStyle, row);
+        
+        row = sheet.getRow(rowIndexLegenda++);
+        XSSFCellStyle yellowCellRefStyle = redCellRefStyle.copy();
+        yellowCellRefStyle.setFillForegroundColor(amarelo);
+        
+        this.createCell(colIndex, "0", yellowCellRefStyle, row);
+        
+        row = sheet.getRow(rowIndexLegenda++);
+        XSSFCellStyle greenCellRefStyle = redCellRefStyle.copy();
+        greenCellRefStyle.setFillForegroundColor(verde);
+        
+        this.createCell(colIndex, "Valor Máximo", greenCellRefStyle, row);
+        
 
 
         return rowIndex;
