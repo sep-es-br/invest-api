@@ -211,7 +211,7 @@ public class GrupoService {
     }
 
     public List<Grupo> getGruposBySetor(Long orgaoId){
-        return this.repository.getGruposByOrgao(orgaoId);
+        return this.repository.getGruposBySetor(orgaoId);
     }
 
     public List<Grupo> getGruposByPapel(Long papelId){
