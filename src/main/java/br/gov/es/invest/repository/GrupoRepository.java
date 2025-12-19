@@ -31,7 +31,11 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
             "RETURN grupo, collect(pode), collect(modulo)")
     public Optional<Grupo> findByGrupoModulo(Long moduloId, Long grupoId);
 
-    @Query("MATCH (usuario)-[:POSSUI]->(:Papel)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
+    @Query("MATCH (usuario)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
+            "WHERE id(usuario) = $usuarioId\r\n" + //
+            "RETURN grupo\r\n" + //
+            "UNION\r\n" + //
+            "MATCH (usuario)-[:POSSUI]->(:Papel)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
             "WHERE id(usuario) = $usuarioId\r\n" + //
             "RETURN grupo\r\n" + //
             "UNION\r\n" + //
