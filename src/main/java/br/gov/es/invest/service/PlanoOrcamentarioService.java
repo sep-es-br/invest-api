@@ -43,6 +43,10 @@ public class PlanoOrcamentarioService {
             .map(PlanoOrcamentario::getId)
             .orElse(null);
     }
+    
+    public Optional<PlanoOrcamentario> getByCodigo(String codigo) {
+        return repository.findByCodigo(codigo);
+    }
 
     public Map<String, String> getIdsByCod(List<String> cods) {
         

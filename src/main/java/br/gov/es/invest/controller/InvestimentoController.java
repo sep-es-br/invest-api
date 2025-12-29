@@ -4,8 +4,10 @@ import br.gov.es.invest.dto.FiltroInvestimentoDto;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.dto.investimento.InvestimentoDetailDto;
 import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
+import br.gov.es.invest.factory.InvestimentoFactory;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.InvestimentoService;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -35,6 +38,7 @@ public class InvestimentoController {
 
 
     private final InvestimentoService service;
+    private final InvestimentoFactory investimentoFactory;
 
     private final ObjetoService objetoService;
     private final UsuarioService usuarioService;
@@ -109,6 +113,15 @@ public class InvestimentoController {
         
         return service.findAllLista(term, idsUo, PageRequest.of(numPag, tamPag));
 
+    }
+    
+    @GetMapping("{id}")
+    public ResponseEntity<InvestimentoDetailDto> getInvestimento(
+            @PathVariable Long id
+    ){
+        
+        return ResponseEntity.of(service.getById(id).map(this.investimentoFactory::toInvestimentoDetalDto));
+        
     }
     
     

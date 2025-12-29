@@ -8,6 +8,7 @@ import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.EmStatusDTO;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.objeto.ObjetoDetailDto;
+import br.gov.es.invest.dto.objeto.ObjetoTiraSimplesDto;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
@@ -23,10 +24,12 @@ import br.gov.es.invest.service.LocalidadeService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,6 +39,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ObjetoFactory {
+    
+    private final Neo4jOperations neo4jOperations;
     
     private final ObjetoService objSrv;
     private final UnidadeOrcamentariaService unidadeSrv;
@@ -149,6 +154,29 @@ public class ObjetoFactory {
         
     }
     
+    public ObjetoTiraSimplesDto gerarTiraSimples(Long id) {
+        String cypher = """
+                        MATCH (objeto:Objeto)-[:CUSTEADO]-(conta:Conta)
+                        WHERE id(objeto) = $id
+                        CALL (objeto) {
+                          MATCH (objeto)-[]-(:Custo)-[vlr]->(:FonteOrcamentaria)
+                          RETURN
+                            sum(vlr.previsto) as previsto,
+                            sum(vlr.contratado) as contratado
+                        }
+                        RETURN 
+                          id(objeto) as id,
+                          objeto.nome as nome,
+                          previsto,
+                          contratado
+                        """;
+        
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("id", id);
+        
+        return this.neo4jOperations.findOne(cypher, param, ObjetoTiraSimplesDto.class).orElseThrow();
+    }
+    
     private ObjetoDetailDto.Custo from(IndicadaPor model) {
         return new ObjetoDetailDto.Custo(model.getPrevisto(), model.getContratado());
     }
@@ -156,6 +184,7 @@ public class ObjetoFactory {
     private String getCodFonte(IndicadaPor model) {
         return model.getFonteOrcamentaria().getCodigo();
     }
+    
     
     
     

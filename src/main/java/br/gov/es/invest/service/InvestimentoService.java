@@ -36,6 +36,10 @@ public class InvestimentoService {
     public Investimento save(Investimento investimento) {
         return repository.save(investimento);
     }
+    
+    public Optional<Investimento> getById(Long id) {
+        return repository.findById(id);
+    }
 
     public DataListResult<TiraInvestimentoProjection> findAllTiraBy(
             String nome, List<Long> codUnidade, List<Long> codPO,

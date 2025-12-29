@@ -1,14 +1,5 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
@@ -17,7 +8,15 @@ import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaBIService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/unidade")
@@ -69,6 +68,14 @@ public class UnidadeOrcamentariaController {
         return unidades.stream().map(UnidadeOrcamentariaDTO::new).toList();
 
 
+    }
+    
+    @GetMapping("byCodigo/{codigo}")
+    public ResponseEntity<UnidadeOrcamentariaDTO> getByCodigo(
+            @PathVariable String codigo
+    ){
+                
+        return ResponseEntity.of(this.service.getByCod(codigo).map(UnidadeOrcamentariaDTO::new));
     }
     
 }

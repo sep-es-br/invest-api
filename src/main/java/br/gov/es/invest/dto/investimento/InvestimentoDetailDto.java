@@ -4,10 +4,27 @@
  */
 package br.gov.es.invest.dto.investimento;
 
+import br.gov.es.invest.dto.ObjetoTiraDTO;
+import br.gov.es.invest.dto.objeto.ObjetoTiraSimplesDto;
+import br.gov.es.invest.model.Investimento;
+import java.util.List;
+import java.util.Optional;
+import lombok.Builder;
+
 /**
  *
  * @author gean.carneiro
  */
-public record InvestimentoDetailDto() {
-
+@Builder
+public record InvestimentoDetailDto(
+        Long id,
+        String tipo,
+        String nome,
+        String descricao,
+        String codUnidade,
+        String codPO,
+        List<ObjetoTiraSimplesDto> objetos
+    ) {
+    
+    
 }

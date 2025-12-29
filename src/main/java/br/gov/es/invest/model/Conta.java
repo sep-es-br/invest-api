@@ -67,6 +67,7 @@ public class Conta extends Entidade implements Serializable {
     private TIPO_CONTA tipoConta;
     private String status;
     private String nome;
+    private String descricao;
 
     @Relationship(type = "ORIENTA", direction = Direction.INCOMING)
     private PlanoOrcamentario planoOrcamentario;

@@ -42,6 +42,10 @@ public class UnidadeOrcamentariaService {
         .orElse(null);
         
     }
+    
+    public Optional<UnidadeOrcamentaria> getByCod(String codigo) {
+        return repository.findByCodigo(codigo);
+    }
 
     public UnidadeOrcamentaria findOrCreateByCod(UnidadeOrcamentaria unidade){
         

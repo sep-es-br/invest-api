@@ -1,16 +1,5 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.dto.ModuloDto;
 import br.gov.es.invest.dto.PodeDto;
@@ -26,7 +15,16 @@ import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.PodeService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/permissao")
@@ -172,7 +170,7 @@ public class PermissaoController {
                 new ItemMenu(
                 "Investimentos", 
                 null, 
-                false, // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", papeis), 
                 "/investimentos", 
                 null
                 ),
