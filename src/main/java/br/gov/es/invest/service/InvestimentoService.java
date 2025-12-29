@@ -1,25 +1,24 @@
 package br.gov.es.invest.service;
 
-import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.core.Neo4jOperations;
-import org.springframework.stereotype.Service;
-
 import br.gov.es.invest.dto.OrdemItemDto;
+import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.InvestimentoRepository;
 import br.gov.es.invest.utils.DataListResult;
+import java.text.Normalizer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.core.Neo4jOperations;
+import org.springframework.stereotype.Service;
 
 @Service
 public class InvestimentoService {
@@ -127,6 +126,88 @@ public class InvestimentoService {
 
         return new DataListResult<>(data, count);
 
+    }
+    
+    public DataListResult<InvestimentoListaDto> findAllLista(
+            String termo,
+            List<Long> idsUos,
+            Pageable pageable
+    ){
+        final String queryBase = """
+                                 MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Investimento)<-[:ORIENTA]-(po:PlanoOrcamentario),
+                                       (conta)<-[:CUSTEADO]-(objeto:Objeto)
+                                 WHERE 
+                                   ($uoIds IS NULL OR id(uo) = $uoIds)
+                                   AND (
+                                       $termo IS NULL OR
+                                       apoc.text.clean(coalesce(conta.nome, po.nome)) CONTAINS apoc.text.clean($termo) OR
+                                       uo.codigo CONTAINS $termo OR
+                                       uo.sigla CONTAINS toUpper($termo) OR
+                                       po.codigo CONTAINS $termo
+                                   )
+                                 CALL (conta) {
+                                   MATCH (conta)-[]-(exec:ExecucaoOrcamentaria)-[vlr]-(:FonteOrcamentaria)
+                                   WHERE exec.anoExercicio = date().year
+                                   RETURN 
+                                     sum(vlr.autorizado) AS autorizado,
+                                     sum(vlr.orcado) AS orcado,
+                                     sum(reduce(total = 0, e IN vlr.empenhado | total + e)) AS empenhado,
+                                     sum(vlr.dispSemReserva) as dispSemReserva
+                                 }
+                                 CALL (objeto) {
+                                   MATCH (objeto)-[]-(custo:Custo)-[vlr]-(:FonteOrcamentaria)
+                                   WHERE custo.anoExercicio = date().year
+                                   RETURN 
+                                     sum(vlr.previsto) as previsto,
+                                     sum(vlr.contratado) as contratado
+                                 }
+                                 
+                                 """;
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("uoIds", idsUos);
+        params.put("termo", termo);
+        
+        String query = queryBase 
+              + """
+                RETURN 
+                  id(conta) as id,
+                  uo.codigo as codUnidade,
+                  uo.sigla as siglaUnidade,
+                  po.codigo as codPO,
+                  coalesce(conta.nome, po.nome) as nome,
+                  head([l IN labels(conta) WHERE l <> 'Conta']) as tipo,
+                  previsto as totalPrevisto,
+                  contratado as totalContratado,
+                  autorizado as totalAutorizado,
+                  orcado AS totalOrcado,
+                  empenhado AS totalEmpenhado,
+                  dispSemReserva as totalDisponivel
+                
+                """;
+        
+        if(pageable != null) {
+            query = query 
+              + """
+                SKIP $skip
+                LIMIT $limit
+                """;
+            
+            params.put("skip", pageable.getOffset());
+            params.put("limit", pageable.getPageSize());
+        }
+        
+        String countQuery = queryBase
+              + """
+                RETURN COUNT(DISTINCT conta)
+                """;
+        
+        int count = (int) this.neo4jOperations.count(countQuery, params);
+        
+        List<InvestimentoListaDto> resultQuery = this.neo4jOperations.findAll(query, params, InvestimentoListaDto.class);
+        
+        return new DataListResult<>(resultQuery, count);
+        
+        
     }
 
     public String clean(String input) {

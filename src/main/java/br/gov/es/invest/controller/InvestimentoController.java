@@ -1,31 +1,30 @@
 package br.gov.es.invest.controller;
 
-import java.util.List;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import br.gov.es.invest.dto.FiltroInvestimentoDto;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
+import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
+import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import br.gov.es.invest.dto.FiltroInvestimentoDto;
-import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
-import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 
@@ -83,6 +82,33 @@ public class InvestimentoController {
             );
 
             return ResponseEntity.ok(dataListDto);
+    }
+    
+    
+    @GetMapping
+    public DataListResult<InvestimentoListaDto> getInvestimentos(
+            @RequestParam Boolean podeVerUnidades,
+            @RequestParam(required = false) String term,
+            @RequestParam Integer numPag,
+            @RequestParam Integer tamPag,
+            @RequestHeader("Authorization") String authToken
+    ) {
+        List<Long> idsUo = null;
+        if(!podeVerUnidades) {
+
+            authToken = authToken.replace("Bearer ", "");
+
+            String sub = tokenService.validarToken(authToken);
+
+            Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
+
+            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+
+            idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
+        }
+        
+        return service.findAllLista(term, idsUo, PageRequest.of(numPag, tamPag));
+
     }
     
     
