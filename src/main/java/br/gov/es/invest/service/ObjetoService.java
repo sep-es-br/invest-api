@@ -420,8 +420,8 @@ public class ObjetoService {
         Optional<Objeto> optObjeto = repository.findById(id);
         
         if(optObjeto.isPresent() 
-            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO) 
-            && updateStatus){
+            && updateStatus
+            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO)){
             Status novoStatus = statusService.getByStatusId(StatusEnum.EM_ANALISE.name()).get();
 
             statusService.aplicarStatus(optObjeto.get(), novoStatus);

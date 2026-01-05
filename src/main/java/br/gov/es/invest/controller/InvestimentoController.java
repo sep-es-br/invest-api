@@ -4,10 +4,13 @@ import br.gov.es.invest.dto.FiltroInvestimentoDto;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
+import br.gov.es.invest.dto.investimento.InvestimentoCadastroDto;
 import br.gov.es.invest.dto.investimento.InvestimentoDetailDto;
 import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.InvestimentoFactory;
+import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.InvestimentoService;
@@ -16,10 +19,13 @@ import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -121,6 +127,43 @@ public class InvestimentoController {
     ){
         
         return ResponseEntity.of(service.getById(id).map(this.investimentoFactory::toInvestimentoDetalDto));
+        
+    }
+    
+    @PostMapping("")
+    public ResponseEntity<InvestimentoDetailDto> setInvestimento(
+            @RequestBody InvestimentoCadastroDto novoInvestimento,
+            @RequestHeader("Authorization") String authToken
+    ) {
+        
+        authToken = authToken.replace("Bearer ", "");
+
+        String sub = tokenService.validarToken(authToken);
+
+        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        
+        Investimento investimento = investimentoFactory.toInvestimento(novoInvestimento, usuario);
+        
+        return ResponseEntity.ok(investimentoFactory.toInvestimentoDetalDto(service.save(investimento)));
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> removerInvestimento(
+            @PathVariable Long id
+    ){
+        Investimento investimento = service.getById(id).orElseThrow();
+        
+        if(investimento.getObjetos() != null && !investimento.getObjetos().isEmpty()) {
+            return MensagemErroRest.asResponseEntity(
+                    HttpStatus.UNPROCESSABLE_ENTITY, 
+                    "Não pode remover investimentos com objetos", 
+                    Arrays.asList("Não pode remover investimentos com objetos")
+            );
+        }
+        
+        this.service.removerInvestimento(id);
+        
+        return ResponseEntity.ok(null);
         
     }
     

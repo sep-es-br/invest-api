@@ -40,7 +40,7 @@ public class InvestimentoService {
     public Optional<Investimento> getById(Long id) {
         return repository.findById(id);
     }
-
+    
     public DataListResult<TiraInvestimentoProjection> findAllTiraBy(
             String nome, List<Long> codUnidade, List<Long> codPO,
             Integer exercicio, Long idFonte, Integer gnd, List<OrdemItemDto> ordem,
@@ -138,8 +138,8 @@ public class InvestimentoService {
             Pageable pageable
     ){
         final String queryBase = """
-                                 MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Investimento)<-[:ORIENTA]-(po:PlanoOrcamentario),
-                                       (conta)<-[:CUSTEADO]-(objeto:Objeto)
+                                 MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Investimento)<-[:ORIENTA]-(po:PlanoOrcamentario)
+                                 OPTIONAL MATCH (conta)<-[:CUSTEADO]-(objeto:Objeto)      
                                  WHERE 
                                    ($uoIds IS NULL OR id(uo) = $uoIds)
                                    AND (
@@ -240,5 +240,9 @@ public class InvestimentoService {
 
 
         return repository.findBy(Example.of(probeInvestimento), query -> query.first());
+    }
+    
+    public void removerInvestimento(Long idInvestimento) {
+        this.repository.removerInvestimento(idInvestimento);
     }
 }

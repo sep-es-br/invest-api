@@ -5,6 +5,7 @@
 package br.gov.es.invest.dto.investimento;
 
 import br.gov.es.invest.dto.ObjetoTiraDTO;
+import br.gov.es.invest.dto.objeto.ObjetoDetailDto;
 import br.gov.es.invest.dto.objeto.ObjetoTiraSimplesDto;
 import br.gov.es.invest.model.Investimento;
 import java.util.List;
@@ -23,7 +24,7 @@ public record InvestimentoDetailDto(
         String descricao,
         String codUnidade,
         String codPO,
-        List<ObjetoTiraSimplesDto> objetos
+        List<ObjetoDetailDto> objetos
     ) {
     
     

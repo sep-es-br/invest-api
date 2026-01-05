@@ -78,6 +78,9 @@ public class Conta extends Entidade implements Serializable {
     @Relationship(type = "DELIMITA", direction = Direction.INCOMING)
     private List<ExecucaoOrcamentaria> execucoesOrcamentaria;
     
+    @Relationship(type = "CUSTEADO", direction = Direction.INCOMING)
+    private List<Objeto> objetos;
+    
     public Conta(TIPO_CONTA tipoConta) {
         this();
         this.setTipoConta(tipoConta);

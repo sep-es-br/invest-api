@@ -61,7 +61,7 @@ public class ObjetoFactory {
                 .descricao(model.getDescricao())
                 .codUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getCodigo())
                 .siglaUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getSigla())
-                .responsavel(model.getResponsavel().getNomeCompleto())
+                //.responsavel(model.getResponsavel().getNomeCompleto())
                 .microrregiaoId(model.getMicrorregiao().getId())
                 .microrregiaoNome(model.getMicrorregiao().getNome())
                 .infoComplementar(model.getInfoComplementares())
@@ -89,7 +89,7 @@ public class ObjetoFactory {
                 .build();
     }
     
-    public Objeto fromDTO(ObjetoCadastroFormDto dto) {
+    public Objeto fromDTO(ObjetoCadastroFormDto dto, Conta conta) {
         
         Objeto obj = Optional.ofNullable(dto.id())
                         .flatMap(id -> objSrv.getById(id))
@@ -118,39 +118,47 @@ public class ObjetoFactory {
 
         // se não tiver PO usa o investimento generico
 
-        Conta conta;
-        if(dto.planoOrcamentario() == null) {
-            conta = contaSrv.getGenericoByCodUnidade(unidade);
-        } else { // se não, busca o investimento
+        if(conta == null) {
+            if(dto.planoOrcamentario() == null) {
+                conta = contaSrv.getGenericoByCodUnidade(unidade);
+            } else { // se não, busca o investimento
 
-            Optional<Investimento> optInvestimento = investimentoSrv.getByCodUoPo(
-                dto.unidadeOrcamentaria().codigo(), 
-                dto.planoOrcamentario().codigo()
-            );
-            Investimento investimento;
+                Optional<Investimento> optInvestimento = investimentoSrv.getByCodUoPo(
+                    dto.unidadeOrcamentaria().codigo(), 
+                    dto.planoOrcamentario().codigo()
+                );
+                Investimento investimento;
 
-            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
+                if(optInvestimento.isEmpty()){ // se não existir, cria um novo
 
-                    PlanoOrcamentario plano = planoSrv.findOrCreateByCod(new PlanoOrcamentario(dto.planoOrcamentario()));
+                        PlanoOrcamentario plano = planoSrv.findOrCreateByCod(new PlanoOrcamentario(dto.planoOrcamentario()));
 
-                    
-                    investimento = new Investimento();
-                    investimento.setNome(dto.nome());
-                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentario(plano);
-            } else { // se existir usa o existente
-                investimento = optInvestimento.get();
+
+                        investimento = new Investimento();
+                        investimento.setNome(dto.nome());
+                        investimento.setUnidadeOrcamentariaImplementadora(unidade);
+                        investimento.setPlanoOrcamentario(plano);
+                } else { // se existir usa o existente
+                    investimento = optInvestimento.get();
+                }
+
+                conta = investimento;
+
             }
-            
-            conta = investimento;
-
-        }
+        }   
+        
         
         obj.setConta(conta);
         
         obj.setCustosEstimadores(dto.recursos().stream().map(custo -> custoFactory.fromDto(custo, obj.getId())).collect(Collectors.toList()));
         
         return obj;
+        
+    }
+    
+    public Objeto fromDTO(ObjetoCadastroFormDto dto) {
+        
+        return this.fromDTO(dto, null);
         
     }
     
