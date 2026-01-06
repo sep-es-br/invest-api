@@ -7,6 +7,7 @@ package br.gov.es.invest.factory;
 import br.gov.es.invest.dto.investimento.InvestimentoCadastroDto;
 import br.gov.es.invest.dto.investimento.InvestimentoDetailDto;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
@@ -17,7 +18,6 @@ import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.FluxoService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
@@ -74,7 +74,7 @@ public class InvestimentoFactory {
                 .build();
     }
     
-    public Investimento toInvestimento(InvestimentoCadastroDto cadastroDto, Usuario usuarioAtual) {
+    public Investimento toInvestimento(InvestimentoCadastroDto cadastroDto, Agente usuarioAtual) {
         
         if(cadastroDto == null) return null;
         

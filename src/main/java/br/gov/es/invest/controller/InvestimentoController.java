@@ -10,9 +10,9 @@ import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.InvestimentoFactory;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
@@ -112,7 +112,7 @@ public class InvestimentoController {
 
             String sub = tokenService.validarToken(authToken);
 
-            Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+            Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
 
             List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
@@ -142,7 +142,7 @@ public class InvestimentoController {
 
         String sub = tokenService.validarToken(authToken);
 
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         
         Investimento investimento = investimentoFactory.toInvestimento(novoInvestimento, usuario);
         
