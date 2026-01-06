@@ -28,9 +28,6 @@ import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -53,11 +50,11 @@ public class JobsComponent {
     @Value("${server.job.importarPentaho.ano}")
     private Integer importarAno;
 
-    @EventListener(ApplicationReadyEvent.class)
-    @Async
-    public void init() {
-//        this.doImportarPentaho(Optional.ofNullable(importarAno).orElse(LocalDate.now().getYear()));;
-    }
+//    @EventListener(ApplicationReadyEvent.class);
+//    @Async
+//    public void init() {
+//        this.doImportarPentaho(Optional.ofNullable(importarAno).orElse(LocalDate.now().getYear()));
+//    }
 
     @Scheduled(cron = "${server.job.importarPentaho.cron}")
     public void triggerImportarPentaho() {

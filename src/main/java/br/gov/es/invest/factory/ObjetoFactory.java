@@ -8,6 +8,7 @@ import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.EmStatusDTO;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.objeto.ObjetoDetailDto;
+import br.gov.es.invest.dto.objeto.ObjetoTiraSimplesDto;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
@@ -23,10 +24,12 @@ import br.gov.es.invest.service.LocalidadeService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,6 +39,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ObjetoFactory {
+    
+    private final Neo4jOperations neo4jOperations;
     
     private final ObjetoService objSrv;
     private final UnidadeOrcamentariaService unidadeSrv;
@@ -56,7 +61,7 @@ public class ObjetoFactory {
                 .descricao(model.getDescricao())
                 .codUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getCodigo())
                 .siglaUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getSigla())
-                .responsavel(model.getResponsavel().getNomeCompleto())
+                //.responsavel(model.getResponsavel().getNomeCompleto())
                 .microrregiaoId(model.getMicrorregiao().getId())
                 .microrregiaoNome(model.getMicrorregiao().getNome())
                 .infoComplementar(model.getInfoComplementares())
@@ -84,7 +89,7 @@ public class ObjetoFactory {
                 .build();
     }
     
-    public Objeto fromDTO(ObjetoCadastroFormDto dto) {
+    public Objeto fromDTO(ObjetoCadastroFormDto dto, Conta conta) {
         
         Objeto obj = Optional.ofNullable(dto.id())
                         .flatMap(id -> objSrv.getById(id))
@@ -113,33 +118,35 @@ public class ObjetoFactory {
 
         // se não tiver PO usa o investimento generico
 
-        Conta conta;
-        if(dto.planoOrcamentario() == null) {
-            conta = contaSrv.getGenericoByCodUnidade(unidade);
-        } else { // se não, busca o investimento
+        if(conta == null) {
+            if(dto.planoOrcamentario() == null) {
+                conta = contaSrv.getGenericoByCodUnidade(unidade);
+            } else { // se não, busca o investimento
 
-            Optional<Investimento> optInvestimento = investimentoSrv.getByCodUoPo(
-                dto.unidadeOrcamentaria().codigo(), 
-                dto.planoOrcamentario().codigo()
-            );
-            Investimento investimento;
+                Optional<Investimento> optInvestimento = investimentoSrv.getByCodUoPo(
+                    dto.unidadeOrcamentaria().codigo(), 
+                    dto.planoOrcamentario().codigo()
+                );
+                Investimento investimento;
 
-            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
+                if(optInvestimento.isEmpty()){ // se não existir, cria um novo
 
-                    PlanoOrcamentario plano = planoSrv.findOrCreateByCod(new PlanoOrcamentario(dto.planoOrcamentario()));
+                        PlanoOrcamentario plano = planoSrv.findOrCreateByCod(new PlanoOrcamentario(dto.planoOrcamentario()));
 
-                    
-                    investimento = new Investimento();
-                    investimento.setNome(dto.nome());
-                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentario(plano);
-            } else { // se existir usa o existente
-                investimento = optInvestimento.get();
+
+                        investimento = new Investimento();
+                        investimento.setNome(dto.nome());
+                        investimento.setUnidadeOrcamentariaImplementadora(unidade);
+                        investimento.setPlanoOrcamentario(plano);
+                } else { // se existir usa o existente
+                    investimento = optInvestimento.get();
+                }
+
+                conta = investimento;
+
             }
-            
-            conta = investimento;
-
-        }
+        }   
+        
         
         obj.setConta(conta);
         
@@ -149,6 +156,35 @@ public class ObjetoFactory {
         
     }
     
+    public Objeto fromDTO(ObjetoCadastroFormDto dto) {
+        
+        return this.fromDTO(dto, null);
+        
+    }
+    
+    public ObjetoTiraSimplesDto gerarTiraSimples(Long id) {
+        String cypher = """
+                        MATCH (objeto:Objeto)-[:CUSTEADO]-(conta:Conta)
+                        WHERE id(objeto) = $id
+                        CALL (objeto) {
+                          MATCH (objeto)-[]-(:Custo)-[vlr]->(:FonteOrcamentaria)
+                          RETURN
+                            sum(vlr.previsto) as previsto,
+                            sum(vlr.contratado) as contratado
+                        }
+                        RETURN 
+                          id(objeto) as id,
+                          objeto.nome as nome,
+                          previsto,
+                          contratado
+                        """;
+        
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("id", id);
+        
+        return this.neo4jOperations.findOne(cypher, param, ObjetoTiraSimplesDto.class).orElseThrow();
+    }
+    
     private ObjetoDetailDto.Custo from(IndicadaPor model) {
         return new ObjetoDetailDto.Custo(model.getPrevisto(), model.getContratado());
     }
@@ -156,6 +192,7 @@ public class ObjetoFactory {
     private String getCodFonte(IndicadaPor model) {
         return model.getFonteOrcamentaria().getCodigo();
     }
+    
     
     
     

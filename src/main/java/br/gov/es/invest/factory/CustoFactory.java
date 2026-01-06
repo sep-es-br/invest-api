@@ -53,7 +53,7 @@ public class CustoFactory {
 
             }
 
-            ip.setContratado(vf.contratado());
+            if(vf.contratado() != null) ip.setContratado(vf.contratado());
             ip.setPrevisto(vf.previsto());
 
 

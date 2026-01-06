@@ -170,7 +170,7 @@ public class PermissaoController {
                 new ItemMenu(
                 "Investimentos", 
                 null, 
-                false, // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", papeis), 
                 "/investimentos", 
                 null
                 ),

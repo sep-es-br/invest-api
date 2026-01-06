@@ -1,12 +1,10 @@
 package br.gov.es.invest.repository;
 
+import br.gov.es.invest.model.Investimento;
 import java.util.List;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
-
-import br.gov.es.invest.model.Investimento;
 
 public interface InvestimentoRepository extends  Neo4jRepository<Investimento, Long> {
 
@@ -79,7 +77,23 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, L
                 "CREATE (investimento)<-[:DELIMITA]-(exec)")
     public void addExecucao(Long investimentoId, Long execId);
 
-
+    @Query(
+            """
+            MATCH (n:Conta)
+            WHERE id(n) = $idInvestimento
+            OPTIONAL MATCH (n)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)
+            DETACH DELETE n, exec
+            """
+    )
+    public void removerInvestimento(Long idInvestimento);
     
+    @Query("""
+           MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)<-[:ORIENTA]-(po:PlanoOrcamentario)
+           WHERE
+               (uo.codigo = $codUo AND po.codigo = $codPo)
+           RETURN id(conta)
+           """ 
+    )
+    public Long checarPar(String codPo, String codUo);
     
 } 
