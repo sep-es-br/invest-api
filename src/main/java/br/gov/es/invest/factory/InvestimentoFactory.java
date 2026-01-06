@@ -8,15 +8,23 @@ import br.gov.es.invest.dto.investimento.InvestimentoCadastroDto;
 import br.gov.es.invest.dto.investimento.InvestimentoDetailDto;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.model.Conta;
+import br.gov.es.invest.model.EmEtapa;
+import br.gov.es.invest.model.EmStatus;
+import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
+import br.gov.es.invest.model.Status;
+import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.FluxoService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
+import br.gov.es.invest.service.StatusService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,6 +52,12 @@ public class InvestimentoFactory {
     
     @Autowired
     private PlanoOrcamentarioService planoSrv;
+    
+    @Autowired
+    private FluxoService fluxoService;
+    
+    @Autowired
+    private StatusService statusService;
     
     
     public InvestimentoDetailDto toInvestimentoDetalDto(Investimento model){
@@ -92,6 +106,30 @@ public class InvestimentoFactory {
         
         for(ObjetoCadastroFormDto objCadastro : cadastroDto.objetos()) {
             Objeto novo = objFactory.fromDTO(objCadastro, investimentoParcial);
+            
+            if(novo.getEmStatus() == null) {
+            
+                Status novoStatus = statusService.getByStatusId(StatusEnum.SOLICITADO.name()).get();
+
+                EmStatus emStatus = new EmStatus();
+
+                emStatus.setStatus(novoStatus);
+                emStatus.setTimestamp(ZonedDateTime.now());
+
+                novo.setEmStatus(emStatus);
+
+                Fluxo fluxo = fluxoService.findByFluxoId("avaliacaoPip");
+
+                EmEtapa emEtapa = new EmEtapa();
+                emEtapa.setAtividade("Avaliar Solicitação");
+                emEtapa.setDevolvido(false);
+                emEtapa.setEtapa(fluxo.getEtapaInicial());
+
+                novo.setEmEtapa(emEtapa);
+
+            }
+            
+            
             if(novo.getResponsavel() == null) {
                 novo.setResponsavel(usuarioAtual);
             }

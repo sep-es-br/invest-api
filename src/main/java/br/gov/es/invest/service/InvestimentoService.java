@@ -139,7 +139,8 @@ public class InvestimentoService {
     ){
         final String queryBase = """
                                  MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Investimento)<-[:ORIENTA]-(po:PlanoOrcamentario)
-                                 OPTIONAL MATCH (conta)<-[:CUSTEADO]-(objeto:Objeto)      
+                                 OPTIONAL MATCH (conta)<-[:CUSTEADO]-(objeto:Objeto)   
+                                 WITH *
                                  WHERE 
                                    ($uoIds IS NULL OR id(uo) = $uoIds)
                                    AND (
@@ -244,5 +245,9 @@ public class InvestimentoService {
     
     public void removerInvestimento(Long idInvestimento) {
         this.repository.removerInvestimento(idInvestimento);
+    }
+    
+    public Long checarPar(String codPo, String codUo) {
+        return this.repository.checarPar(codPo, codUo);
     }
 }

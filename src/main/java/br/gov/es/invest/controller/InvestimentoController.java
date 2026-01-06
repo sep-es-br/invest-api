@@ -21,6 +21,8 @@ import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -165,6 +167,16 @@ public class InvestimentoController {
         
         return ResponseEntity.ok(null);
         
+    }
+    
+    @GetMapping("/checarPar/{poCod}/{uoCod}")
+    public Map<String, Optional<Long>> checarPar(
+            @PathVariable String poCod,
+            @PathVariable String uoCod
+    ){  
+        
+        
+        return Map.of("existe", Optional.ofNullable(this.service.checarPar(poCod, uoCod)));
     }
     
     

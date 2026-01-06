@@ -87,5 +87,13 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, L
     )
     public void removerInvestimento(Long idInvestimento);
     
+    @Query("""
+           MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)<-[:ORIENTA]-(po:PlanoOrcamentario)
+           WHERE
+               (uo.codigo = $codUo AND po.codigo = $codPo)
+           RETURN id(conta)
+           """ 
+    )
+    public Long checarPar(String codPo, String codUo);
     
 } 
