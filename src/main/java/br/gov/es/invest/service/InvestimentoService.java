@@ -139,7 +139,6 @@ public class InvestimentoService {
     ){
         final String queryBase = """
                                  MATCH (uo:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Investimento)<-[:ORIENTA]-(po:PlanoOrcamentario)
-                                 OPTIONAL MATCH (conta)<-[:CUSTEADO]-(objeto:Objeto)   
                                  WITH *
                                  WHERE 
                                    ($uoIds IS NULL OR id(uo) = $uoIds)
@@ -159,8 +158,8 @@ public class InvestimentoService {
                                      sum(reduce(total = 0, e IN vlr.empenhado | total + e)) AS empenhado,
                                      sum(vlr.dispSemReserva) as dispSemReserva
                                  }
-                                 CALL (objeto) {
-                                   MATCH (objeto)-[]-(custo:Custo)-[vlr]-(:FonteOrcamentaria)
+                                 CALL (conta) {
+                                   MATCH (conta)<-[:CUSTEADO]-(objeto:Objeto)-[]-(custo:Custo)-[vlr]-(:FonteOrcamentaria)
                                    WHERE custo.anoExercicio = date().year
                                    RETURN 
                                      sum(vlr.previsto) as previsto,
