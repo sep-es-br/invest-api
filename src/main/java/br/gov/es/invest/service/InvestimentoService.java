@@ -174,7 +174,7 @@ public class InvestimentoService {
         
         String query = queryBase 
               + """
-                RETURN 
+                RETURN DISTINCT
                   id(conta) as id,
                   uo.codigo as codUnidade,
                   uo.sigla as siglaUnidade,
