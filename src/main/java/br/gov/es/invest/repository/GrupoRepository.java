@@ -16,7 +16,7 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
 
     @Query("MATCH (grupo:Grupo)<-[md:MEMBRO_DE]-(membro)\r\n" + //
                 "WHERE id(grupo) = $grupoId\r\n" + //
-                "RETURN count(membro)")
+                "RETURN count(DISTINCT membro)")
     public int quantidadeDeMembros(Long grupoId);
 
     @Query("MATCH (grupo:Grupo)<-[md:MEMBRO_DE]-(elemento)\r\n" + //

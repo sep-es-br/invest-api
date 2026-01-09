@@ -1,5 +1,16 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.dto.ACUserInfoDto;
+import br.gov.es.invest.dto.UsuarioDto;
+import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
+import br.gov.es.invest.exception.UsuarioSemPermissaoException;
+import br.gov.es.invest.exception.service.InfoplanServiceException;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -7,24 +18,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import br.gov.es.invest.dto.ACUserInfoDto;
-import br.gov.es.invest.dto.UsuarioDto;
-import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
-import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
-import br.gov.es.invest.exception.UsuarioSemPermissaoException;
-import br.gov.es.invest.exception.service.InfoplanServiceException;
-import br.gov.es.invest.model.Orgao;
-import br.gov.es.invest.model.Papel;
-import br.gov.es.invest.model.Setor;
-import br.gov.es.invest.model.Agente;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -91,10 +88,10 @@ public class AutenticacaoService {
          * 
          * objetivo dessa etapa não é definir acessos especificos, é apenas saber se tem ou não algum acesso
          * acesso especifico é validado em seus respectivos módulos
-         * 
+         * .stream().filter(p -> p.Prioritario()).toList()
          */
         
-        for(PapelACResponseDto papelAc : papeisAc.stream().filter(p -> p.Prioritario()).toList() ){
+        for(PapelACResponseDto papelAc : papeisAc ){
             
             Optional<Papel> papelBanco = papelSrv.findByGuid(papelAc.Guid());
             
