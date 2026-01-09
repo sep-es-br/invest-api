@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.gov.es.invest.dto.EtapaDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Etapa;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
@@ -52,7 +52,7 @@ public class EtapaController {
         if(userId == null) {
             String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
             
-            Usuario usuario = usuarioService.getUserBySub(sub).get();
+            Agente usuario = usuarioService.getUserBySub(sub).get();
 
             userId = usuario.getId();
         }

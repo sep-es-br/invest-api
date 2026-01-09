@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
-import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Grupo;
@@ -82,7 +80,7 @@ public class GrupoController {
     }
 
     @GetMapping("/quantidadeMembros")
-    public int getMethodName(@RequestParam Long grupoId) {
+    public int getQuantidadeMembros(@RequestParam Long grupoId) {
         return service.quantidadeDeMembros(grupoId);
     }
     

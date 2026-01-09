@@ -4,7 +4,6 @@
  */
 package br.gov.es.invest.jobs;
 
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 import br.gov.es.invest.model.FonteOrcamentaria;
 import br.gov.es.invest.model.Investimento;
@@ -15,31 +14,20 @@ import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.InvestimentosBIService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -62,11 +50,11 @@ public class JobsComponent {
     @Value("${server.job.importarPentaho.ano}")
     private Integer importarAno;
 
-    @EventListener(ApplicationReadyEvent.class)
-    @Async
-    public void init() {
-        this.doImportarPentaho(Optional.ofNullable(importarAno).orElse(LocalDate.now().getYear()));
-    }
+//    @EventListener(ApplicationReadyEvent.class);
+//    @Async
+//    public void init() {
+//        this.doImportarPentaho(Optional.ofNullable(importarAno).orElse(LocalDate.now().getYear()));
+//    }
 
     @Scheduled(cron = "${server.job.importarPentaho.cron}")
     public void triggerImportarPentaho() {

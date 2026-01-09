@@ -1,13 +1,12 @@
 package br.gov.es.invest.service;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.repository.ApontamentoRepository;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ApontamentoService {
@@ -37,6 +36,12 @@ public class ApontamentoService {
         apontamento = apontamentoRepository.save(apontamento);
 
         apontamentoRepository.mergeObjetoApontamento(objeto.getId(), apontamento.getId());
+    }
+    
+    public List<Apontamento> findByObjeto(Long idObjeto) {
+        List<Long> ids = this.apontamentoRepository.findIdsByObjeto(idObjeto);
+        
+        return this.apontamentoRepository.findAllById(ids);
     }
 
 }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Pode;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.repository.GrupoRepository;
 
 @Service

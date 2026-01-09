@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.repository.PapelRepository;
-import java.util.List;
 
 @Service
 public class PapelService {
@@ -29,6 +28,10 @@ public class PapelService {
         if(papel == null) return null;
         
         return repository.save(papel);
+    }
+    
+    public void limparLixo(){
+        this.repository.limparLixo();
     }
 
 

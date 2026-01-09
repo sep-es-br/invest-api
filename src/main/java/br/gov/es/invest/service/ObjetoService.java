@@ -1,19 +1,5 @@
 package br.gov.es.invest.service;
 
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.core.Neo4jOperations;
-import org.springframework.stereotype.Service;
-
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.OrdemItemDto;
 import br.gov.es.invest.dto.projection.TiraObjetoProjection;
@@ -21,19 +7,28 @@ import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Fluxo;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.StatusEnum;
-import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 import br.gov.es.invest.utils.DataListResult;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jOperations;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -63,40 +58,7 @@ public class ObjetoService {
     }
 
     public Objeto save(Objeto objeto) {
-        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(objeto.getConta().getUnidadeOrcamentariaImplementadora());
         
-        // define o Investimento que vai ser associado
-
-        // se não tiver PO usa o investimento generico
-
-        Conta conta = null;
-        if(objeto.getConta().getPlanoOrcamentario() == null) {
-            conta = contaService.getGenericoByCodUnidade(unidade);
-        } else { // se não, busca o investimento
-
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(
-                objeto.getConta().getUnidadeOrcamentariaImplementadora().getCodigo(), 
-                objeto.getConta().getPlanoOrcamentario().getCodigo()
-            );
-            Investimento investimento;
-
-            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
-
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(objeto.getConta().getPlanoOrcamentario());
-
-                    investimento = new Investimento();
-                    investimento.setNome(objeto.getNome());
-                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentario(plano);
-            } else { // se existir usa o existente
-                investimento = optInvestimento.get();
-            }
-            
-            conta = investimento;
-
-        }
-        
-        objeto.setConta(conta);
 
         if(objeto.getEmStatus() == null) {
             
@@ -118,19 +80,6 @@ public class ObjetoService {
             
             objeto.setEmEtapa(emEtapa);
             
-        }
-        
-        if(objeto.getId() != null) {
-            List<TipoPlano> filhoAtuais = repository.findById(objeto.getId()).get().getTiposPlano();
-
-            List<Long> idsFilhoFinal = objeto.getTiposPlano().stream().map( filho -> filho.getId()).toList();
-
-            List<TipoPlano> orfaos = filhoAtuais.stream().filter(filho -> !idsFilhoFinal.contains(filho.getId())).toList();
-
-            if (!orfaos.isEmpty()) {
-                repository.removerTipos(orfaos.stream().map(orfao -> orfao.getId()).toList());
-            }
-
         }
 
         return repository.save(objeto);
@@ -258,12 +207,12 @@ public class ObjetoService {
          
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
-                    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)
+                    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta), (obj)-[:EM]->(etapa:Etapa)
                 WHERE
                     ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
                      AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
                      AND ($idStatus IS NULL OR id(status) = $idStatus)
-                     AND EXISTS((obj)-[:EM]->(:Etapa))
+                     AND ($idEtapa IS NULL OR id(etapa) = $idEtapa)
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR id(plano) IN $idsPo
@@ -303,6 +252,7 @@ public class ObjetoService {
         params.put("nome", nome);
         params.put("idsUnidade", idUnidade);
         params.put("idStatus", statusId);
+        params.put("idEtapa", etapaId);
         params.put("idsPo", idPo);
         params.put("idFonte", fonteId);
 
@@ -356,7 +306,7 @@ public class ObjetoService {
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
 
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         objetoProbe.setConta(contaProbe);
 
         if(nome != null) {
@@ -420,7 +370,7 @@ public class ObjetoService {
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
 
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         objetoProbe.setConta(contaProbe);
 
         if(nome != null) {
@@ -470,8 +420,8 @@ public class ObjetoService {
         Optional<Objeto> optObjeto = repository.findById(id);
         
         if(optObjeto.isPresent() 
-            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO) 
-            && updateStatus){
+            && updateStatus
+            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO)){
             Status novoStatus = statusService.getByStatusId(StatusEnum.EM_ANALISE.name()).get();
 
             statusService.aplicarStatus(optObjeto.get(), novoStatus);
@@ -505,7 +455,7 @@ public class ObjetoService {
 
     public List<Objeto> findObjetoByConta(Long contaId) {
         Objeto objetoProbe = new Objeto();
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         contaProbe.setId(contaId);
         objetoProbe.setConta(contaProbe);
 

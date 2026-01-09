@@ -1,7 +1,6 @@
 package br.gov.es.invest.dto;
 
 import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DadosDetalhadoDTO {
-    private String idUnidade;
+    private Long idUnidade;
     private String unidadeResponsavel;
-    private String idPO;
+    private Long idPO;
     private String codPO;
     private String nomePO;
     private Boolean projEstrategico;

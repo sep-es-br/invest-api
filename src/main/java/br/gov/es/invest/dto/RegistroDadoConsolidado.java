@@ -8,6 +8,7 @@ public record  RegistroDadoConsolidado(
     Double previsto,
     Double contratado,
     Double autorizado,
+    Double orcado,
     Double empenhadoAnt,
     Double empenhado,
     Double liquidado,

@@ -1,17 +1,18 @@
 package br.gov.es.invest.repository;
 
+import br.gov.es.invest.model.Modulo;
 import java.util.List;
-
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 
-import br.gov.es.invest.model.Modulo;
-
 public interface ModuloRepository extends Neo4jRepository<Modulo, Long> {
     
-    @Query("MATCH (m:Modulo)<-[r:FILHO_DE*]-(n:Modulo) \r\n" + //
-                "WHERE NOT EXISTS((m)-[:FILHO_DE]->(:Modulo))\r\n" + //
-                "RETURN m, collect(r), collect(n)")
+    @Query("""
+           MATCH (m:Modulo)
+           WHERE NOT EXISTS((m)-[:FILHO_DE]->(:Modulo))
+           OPTIONAL MATCH (m)<-[r:FILHO_DE*]-(n:Modulo)
+           RETURN m, collect(r), collect(n)
+           """)
     public List<Modulo> findAll();
 
     @Query("MATCH (modulo:Modulo)\r\n" + //

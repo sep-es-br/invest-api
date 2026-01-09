@@ -1,10 +1,19 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.dto.PapelDto;
+import br.gov.es.invest.dto.projection.MembroGrupo;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.Grupo;
+import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
+import br.gov.es.invest.repository.GrupoRepository;
+import br.gov.es.invest.repository.ModuloRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
@@ -13,18 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.dto.PapelDto;
-import br.gov.es.invest.dto.projection.MembroGrupo;
-import br.gov.es.invest.model.Grupo;
-import br.gov.es.invest.model.Orgao;
-import br.gov.es.invest.model.Papel;
-import br.gov.es.invest.model.Setor;
-import br.gov.es.invest.model.Usuario;
-import br.gov.es.invest.repository.GrupoRepository;
-import br.gov.es.invest.repository.ModuloRepository;
-import br.gov.es.invest.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -114,7 +111,7 @@ public class GrupoService {
             UNION
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)-[:MEMBRO_DE]->(g:Grupo),
                     (papel)<-[:POSSUI]-(agente:Agente)
-            WHERE id(g) = $grupoId
+            WHERE id(g) = $grupoId AND agente.deletadoEm IS NULL
             OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
             RETURN {
                 id: id(papel),
@@ -126,7 +123,7 @@ public class GrupoService {
             } AS membros
             UNION
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:MEMBRO_DE]-(agente:Agente)-[:MEMBRO_DE]->(g:Grupo)
-            WHERE id(g) = $grupoId
+            WHERE id(g) = $grupoId AND agente.deletadoEm IS NULL
             OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
             RETURN {
                 id: id(agente),
@@ -165,12 +162,13 @@ public class GrupoService {
                 papelMembro.setNome(papelDto.nome());
                 papelMembro.setSetor(setor);
 
-                Optional<Usuario> usuarioBanco = usuarioService.getUserBySub(papelDto.agenteSub());
-                Usuario membro = new Usuario();
+                Optional<Agente> usuarioBanco = usuarioService.getUserBySub(papelDto.agenteSub());
+                Agente membro = new Agente();
                 ArrayList<Papel> papeisDoUsuario = new ArrayList<>();
     
                 if(usuarioBanco.isPresent()){
                     membro = usuarioBanco.get();
+                    membro.setDeletadoEm(null);
                     papeisDoUsuario = new ArrayList<>(membro.getPapeis());
                 } else {
                     membro.setSub(papelDto.agenteSub());
@@ -192,6 +190,7 @@ public class GrupoService {
     }
 
     public int quantidadeDeMembros(Long grupoId){
+        this.papelService.limparLixo();
         return this.repository.quantidadeDeMembros(grupoId);
     }
 
@@ -216,6 +215,10 @@ public class GrupoService {
 
     public List<Grupo> getGruposByPapel(Long papelId){
         return this.repository.getGruposByPapel(papelId);
+    }
+    
+    public void limparGruposDoAgente(Long idAgente){
+        this.repository.limparGruposDoAgente(idAgente);
     }
 
 }
