@@ -190,6 +190,7 @@ public class GrupoService {
     }
 
     public int quantidadeDeMembros(Long grupoId){
+        this.papelService.limparLixo();
         return this.repository.quantidadeDeMembros(grupoId);
     }
 
