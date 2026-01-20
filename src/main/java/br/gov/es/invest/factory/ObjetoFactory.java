@@ -79,7 +79,10 @@ public class ObjetoFactory {
                         custo -> custo.getIndicadaPor().stream()
                             .collect(Collectors.toMap(
                                     this::getCodFonte,
-                                    this::from
+                                    this::from,
+                                    (c1, c2) -> {
+                                        return new br.gov.es.invest.dto.objeto.ObjetoDetailDto.Custo(c1.previsto() + c2.previsto(), c1.contratado() + c2.contratado());
+                                    }
                                 ))
                         )))
                 .emEtapa(EmEtapaDTO.parse(model.getEmEtapa()))

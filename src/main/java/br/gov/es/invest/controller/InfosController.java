@@ -1,34 +1,13 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-
 import br.gov.es.invest.dto.CardsTotaisDto;
 import br.gov.es.invest.dto.OrgaoDto;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.AnoService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
@@ -38,8 +17,28 @@ import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -58,6 +57,13 @@ public class InfosController {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    
+    @PostMapping("/frontendError")
+    public void printFrontendError(
+            @RequestBody String error
+    ){
+        Logger.getGlobal().severe("frontend error: " + error);
+    }
 
     @GetMapping("/allAnos")
     public ResponseEntity<Set<Integer>> getTodosAnos() {
