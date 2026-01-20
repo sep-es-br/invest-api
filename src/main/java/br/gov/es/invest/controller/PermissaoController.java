@@ -58,6 +58,8 @@ public class PermissaoController {
         List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
+                
+        papeis = papeis.stream().filter(p -> p.getPrioritario()).toList();
 
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) 
             return true;
@@ -142,6 +144,8 @@ public class PermissaoController {
         List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
+                
+        papeis = papeis.stream().filter(p -> p.getPrioritario()).toList();
         
         Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
         

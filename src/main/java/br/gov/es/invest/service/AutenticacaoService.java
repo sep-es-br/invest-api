@@ -88,10 +88,12 @@ public class AutenticacaoService {
          * 
          * objetivo dessa etapa não é definir acessos especificos, é apenas saber se tem ou não algum acesso
          * acesso especifico é validado em seus respectivos módulos
-         * .stream().filter(p -> p.Prioritario()).toList()
+         * 
          */
         
-        for(PapelACResponseDto papelAc : papeisAc ){
+        List<PapelACResponseDto> papeisPrioritarios = papeisAc.stream().filter(p -> p.Prioritario()).toList();
+        
+        for(PapelACResponseDto papelAc : papeisPrioritarios.isEmpty() ? papeisAc : papeisPrioritarios ){
             
             Optional<Papel> papelBanco = papelSrv.findByGuid(papelAc.Guid());
             
