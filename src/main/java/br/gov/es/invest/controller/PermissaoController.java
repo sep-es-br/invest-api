@@ -18,6 +18,7 @@ import br.gov.es.invest.service.UsuarioService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,7 +60,7 @@ public class PermissaoController {
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
                 
-        papeis = papeis.stream().filter(p -> p.getPrioritario()).toList();
+        papeis = papeis.stream().filter(p -> Optional.ofNullable(p.getPrioritario()).orElse(Boolean.FALSE)).toList();
 
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) 
             return true;
@@ -141,7 +142,7 @@ public class PermissaoController {
         
         String acToken = acSrv.getClientToken();
         
-        List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
+        List<Papel> papeis = acSrv.getPapeisBySub("e0473535-05af-4659-bae6-bfa84fbf50a3", acToken).stream()
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
                 
