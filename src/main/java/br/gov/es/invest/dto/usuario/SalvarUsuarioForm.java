@@ -13,7 +13,8 @@ public record SalvarUsuarioForm(
             String nomeCompleto,
             String email,
             String telefone,
-            String sub
+            String sub,
+            String imgPerfil
         ) {
 
 }

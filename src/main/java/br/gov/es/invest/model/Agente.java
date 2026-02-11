@@ -82,6 +82,15 @@ public class Agente extends Entidade {
         this.nomeCompleto = form.nomeCompleto();
         this.email = form.email();
         this.telefone = form.telefone();
+        if(form.imgPerfil() != null) {
+            if(this.imgPerfil != null) {
+                this.imgPerfil.setBlob(form.imgPerfil());
+            } else {
+                this.imgPerfil = new Avatar(form.imgPerfil());
+            }
+        } else {
+            this.imgPerfil = null;
+        }
     }
 
     @Override
