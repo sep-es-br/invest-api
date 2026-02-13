@@ -5,6 +5,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 
 import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.projection.EmEtapaProjection;
+import java.time.ZonedDateTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -21,6 +22,8 @@ public class EmEtapa extends Entidade {
     private String atividade;
 
     private boolean devolvido;
+    
+    private ZonedDateTime timestamp;
 
     public static EmEtapa parse(EmEtapaDTO dto) {
         if(dto == null) {

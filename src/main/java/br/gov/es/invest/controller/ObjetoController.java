@@ -154,8 +154,8 @@ public class ObjetoController {
             Objeto objeto = optObjeto.get();
             
             if(objeto.getEmEtapa() != null){
-                objeto.getEmEtapa().getEtapa().setAcoes(
-                    objeto.getEmEtapa().getEtapa().getAcoes().stream().sorted((acao1, acao2) -> 
+                objeto.getEtapaAtual().getEtapa().setAcoes(
+                    objeto.getEtapaAtual().getEtapa().getAcoes().stream().sorted((acao1, acao2) -> 
                         getAsNumberValue(acao1.getPositivo()) - getAsNumberValue(acao2.getPositivo())
                     
                     ).toList()

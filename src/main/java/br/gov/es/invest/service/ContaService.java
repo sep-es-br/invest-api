@@ -142,7 +142,7 @@ public class ContaService {
                         "    obj,\r\n" + //
                         "    custo,\r\n" + //
                         "    tipoPlano,\r\n" + //
-                        "    sum(indicada_por.previsto) AS valorPrevisto,\r\n" + //
+                        "    sum(indicada_por.planejado) AS valorPlanejado,\r\n" + //
                         "    sum(indicada_por.contratado) AS valorContratado,\r\n" + //
                         "    id(fonte) AS idFonte,\r\n" + //
                         "    fonte.nome AS nomeFonte\r\n" + //
@@ -154,7 +154,7 @@ public class ContaService {
                         "    custo,\r\n" + //
                         "    tipoPlano,\r\n" + //
                         "    collect({\r\n" + //
-                        "        valorPrevisto: valorPrevisto,\r\n" + //
+                        "        valorPlanejado: valorPlanejado,\r\n" + //
                         "        valorContratado: valorContratado,\r\n" + //
                         "        idFonte: idFonte,\r\n" + //
                         "        nomeFonte: nomeFonte\r\n" + //
@@ -197,7 +197,7 @@ public class ContaService {
             record.get("valores").asList(value -> new DadosDetalhadoValores(
                 value.get("idFonte").asLong(),
                 value.get("nomeFonte").asString(),
-                value.get("valorPrevisto").asDouble(),
+                value.get("valorPlanejado").asDouble(),
                 value.get("valorContratado").asDouble()
             ))
         ))
@@ -225,38 +225,40 @@ public class ContaService {
         paramMap.put("idsUnidade", idsUnidade);
 
         String cypherBase = 
-                        "MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
-                                "WHERE \r\n" + //
-                                "    $tipoDespesa IN labels(conta)\r\n" + //
-                                "    AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)\r\n" + //
-                                "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                                "\r\n" + //
-                                "CALL {\r\n" + //
-                                "    WITH obj\r\n" + //
-                                "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                                "    WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r\n" + //
-                                "        AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio)\r\n" + //
-                                "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
-                                "    RETURN\r\n" + //
-                                "        SUM(indicada_por.previsto) AS totalPrevisto,\r\n" + //
-                                "        SUM(indicada_por.contratado) AS totalContratado\r\n" + //
-                                "}\r\n" + //
-                                "\r\n" + //
-                                "CALL {\r\n" + //
-                                "    WITH conta\r\n" + //
-                                "    MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                                "    WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r\n" + //
-                                "        AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio)\r\n" + //
-                                "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
-                                "    RETURN\r\n" + //
-                                "        SUM(vinculada_por.autorizado) AS totalAutorizado\r\n" + //
-                                "}\r\n";
+                        """
+                        MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status{statusId: 'CADASTRADO'})
+                        WHERE 
+                            $tipoDespesa IN labels(conta)
+                            AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
+                        
+                        CALL {
+                            WITH obj
+                            MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
+                            WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
+                                AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio)
+                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                            RETURN
+                                SUM(indicada_por.planejado) AS totalPlanejado,
+                                SUM(indicada_por.contratado) AS totalContratado
+                        }
+                        
+                        CALL {
+                            WITH conta
+                            MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)
+                            WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)
+                                AND ($exercicioInicio <= exec.anoExercicio AND $exercicioFim >= exec.anoExercicio)
+                                AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)
+                            RETURN\r
+                                SUM(vinculada_por.autorizado) AS totalAutorizado
+                        }\r
+                        """ 
+        ;
         
         String cypherQuery = cypherBase + 
-                            "RETURN\r\n" + //
+                            "RETURN DISTINCT \r\n" + //
                             "    unidade.codigo AS codUnidade,\r\n" + //
                             "    unidade.codigo + ' - ' + unidade.sigla AS unidadeOperacional,\r\n" + //
-                            "    COALESCE(SUM(totalPrevisto), 0) AS previsto,\r\n" + //
+                            "    COALESCE(SUM(totalPlanejado), 0) AS planejado,\r\n" + //
                             "    COALESCE(SUM(totalContratado), 0) AS contratado,\r\n" + //
                             "    COALESCE(SUM(totalAutorizado), 0) AS autorizado,\r\n" + //
                             "    COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado\r\n" + //
@@ -274,7 +276,7 @@ public class ContaService {
         .fetchAs(DadoConsolidadoDTO.class)
         .mappedBy((typeSystem, record) -> DadoConsolidadoDTO.builder()
                                             .unidadeOrcamentaria(record.get("unidadeOperacional").asString())
-                                            .previsto(record.get("previsto").asDouble() )
+                                            .planejado(record.get("planejado").asDouble() )
                                             .contratado(record.get("contratado").asDouble())
                                             .autorizado(record.get("autorizado").asDouble())
                                             .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())

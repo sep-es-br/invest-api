@@ -1,35 +1,22 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.Status;
+import br.gov.es.invest.model.StatusEnum;
+import br.gov.es.invest.repository.StatusRepository;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.neo4j.cypherdsl.core.Cypher;
 import org.neo4j.cypherdsl.core.Node;
-import org.neo4j.cypherdsl.core.Statement;
-import org.neo4j.cypherdsl.core.renderer.Configuration;
-import org.neo4j.cypherdsl.core.renderer.Dialect;
-import org.neo4j.cypherdsl.core.renderer.Renderer;
-
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
-import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.Status;
-import br.gov.es.invest.model.StatusEnum;
-import br.gov.es.invest.repository.StatusRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +47,10 @@ public class StatusService {
 
     public List<Status> findAll(){
         return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
+    }
+    
+    public List<Status> findAllForFluxo(){
+        return repository.findAllForFluxo();
     }
 
     public Optional<Status> getByStatusId(String statusId){

@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record  RegistroDadoConsolidado(
     String unidadeOrcamentaria,
-    Double previsto,
+    Double planejado,
     Double contratado,
     Double autorizado,
     Double orcado,

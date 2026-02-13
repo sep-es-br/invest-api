@@ -18,7 +18,7 @@ public class ContaTiraDTO {
     private String nome;
     private String codPO;
     private String unidadeOrcamentaria;
-    private Double totalPrevisto;
+    private Double totalPlanejado;
     private Double totalHomologado;
     private Double totalOrcado;
     private Double totalAutorizado;
@@ -36,14 +36,14 @@ public class ContaTiraDTO {
 
         this.objetos = objetos.stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList());
 
-        this.totalPrevisto = 0d;
+        this.totalPlanejado = 0d;
         this.totalHomologado = 0d;
         this.totalOrcado = 0d;
         this.totalAutorizado = 0d;
         this.totalDisponivel = 0d;
 
         this.objetos.forEach(obj -> {
-            this.totalPrevisto += obj.totalPrevisto();
+            this.totalPlanejado += obj.totalPlanejado();
             this.totalHomologado += obj.totalContratado();
             this.totalOrcado += obj.totalOrcado();
             this.totalAutorizado += obj.totalAutorizado();

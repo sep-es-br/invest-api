@@ -12,12 +12,17 @@ import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Transient;
+import org.springframework.util.comparator.Comparators;
 
 @Getter
 @Setter
@@ -34,12 +39,14 @@ public class Objeto extends Entidade implements Serializable {
     private String infoComplementares;
     private String contrato;
     private String possuiOrcamento;
+    
+    private ZonedDateTime timestamp;
 
     @Relationship(type = "EM")
     private EmStatus emStatus;
 
     @Relationship(type = "EM")
-    private EmEtapa emEtapa;
+    private List<EmEtapa> emEtapa = new ArrayList<>();
 
     @Relationship(type = "SOBRE", direction = Direction.OUTGOING)
     private AreaTematica areaTematica;
@@ -72,7 +79,7 @@ public class Objeto extends Entidade implements Serializable {
         this.descricao = dto.descricao();
         this.tipo = dto.tipo();
         this.emStatus = EmStatus.parse(dto.emStatus());
-        this.emEtapa = EmEtapa.parse(dto.emEtapa());
+        this.emEtapa = Optional.ofNullable(dto.emEtapa()).map(l -> l.stream().map(EmEtapa::parse).toList()).orElse(null);
         this.conta = Conta.parse(dto.conta());
         
         this.infoComplementares = dto.infoComplementares();
@@ -124,7 +131,7 @@ public class Objeto extends Entidade implements Serializable {
         obj.setNome(projection.getNome());
         obj.setTipo(projection.getTipo());
         obj.setEmStatus(projection.getEmStatus());
-        obj.setEmEtapa(EmEtapa.parse(projection.getEmEtapa()));
+        obj.setEmEtapa(Optional.ofNullable(projection.getEmEtapa()).map(l -> l.stream().map(EmEtapa::parse).toList()).orElse(null));
         obj.setCustosEstimadores(projection.getCustosEstimadores());
         obj.setConta(projection.getConta());
 
@@ -152,12 +159,23 @@ public class Objeto extends Entidade implements Serializable {
                         .indicadaPor(custo.valoresFontes().stream().map(
                                 valores -> IndicadaPor.builder()
                                             .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
-                                            .previsto(Optional.ofNullable(valores.previsto()).orElse(Double.valueOf(0)))
+                                            .planejado(Optional.ofNullable(valores.planejado()).orElse(Double.valueOf(0)))
                                             .contratado(Optional.ofNullable(valores.contratado()).orElse(Double.valueOf(0)))
                                             .build()
                         ).collect(Collectors.toSet())).build()
         ).collect(Collectors.toList()));
         
+    }
+    
+    @Transient
+    public EmEtapa getEtapaAtual() {
+        if(this.getEmEtapa() == null || this.getEmEtapa().isEmpty()) {
+            return null;
+        }
+        
+        return this.getEmEtapa().stream()
+                .max(Comparator.comparing(EmEtapa::getTimestamp, Comparator.nullsLast(Comparator.naturalOrder())))
+                .orElse(null);
     }
 
 }

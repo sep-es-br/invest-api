@@ -5,7 +5,7 @@ import br.gov.es.invest.model.IndicadaPor;
 public record IndicadaPorDto(
     Long id,
     FonteOrcamentariaDTO fonteOrcamentaria,
-    Double previsto,
+    Double planejado,
     Double contratado,
     Integer gnd
 ) {
@@ -14,7 +14,7 @@ public record IndicadaPorDto(
         this(
             model.getId(),
             new FonteOrcamentariaDTO(model.getFonteOrcamentaria()), 
-            model.getPrevisto(), 
+            model.getPlanejado(), 
             model.getContratado(),
             model.getGnd()
         );

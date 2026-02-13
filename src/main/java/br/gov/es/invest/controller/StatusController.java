@@ -1,16 +1,17 @@
 package br.gov.es.invest.controller;
 
+import br.gov.es.invest.dto.StatusDTO;
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.model.Status;
+import br.gov.es.invest.service.StatusService;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import br.gov.es.invest.dto.StatusDTO;
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.service.StatusService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/status")
@@ -20,10 +21,24 @@ public class StatusController {
     private final StatusService statusService;
 
     @GetMapping("")
-    public ResponseEntity<?> getStatus(@RequestParam(required = false) String id) {
+    public ResponseEntity<?> getStatus(
+            @RequestParam(required = false) String id, 
+            @RequestParam(required = false, defaultValue = "") String version
+    ) {
         
         if(id == null) {
-            return ResponseEntity.ok().body(statusService.findAll().stream().map(StatusDTO::parse).toList());
+            
+            List<Status> result;
+                        
+            switch (version) {
+                case "fluxo" -> result = statusService.findAllForFluxo();
+                default -> {
+                    result = statusService.findAll();
+                }
+            }
+            
+            
+            return ResponseEntity.ok().body(result.stream().map(StatusDTO::parse).toList());
         }
 
         return MensagemErroRest.asResponseEntity(

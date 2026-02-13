@@ -155,7 +155,7 @@ public class InfosController {
                 
                 
                  return ResponseEntity.ok(new CardsTotaisDto(
-                    totaisCusto.previsto(), 
+                    totaisCusto.planejado(), 
                     totaisCusto.contratado(), 
                     linhaResultado.get("orcado").asDouble(), 
                     linhaResultado.get("autorizado").asDouble(), 

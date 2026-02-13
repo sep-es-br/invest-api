@@ -20,14 +20,14 @@ public class IndicadaPor extends Entidade {
     @TargetNode
     private FonteOrcamentaria fonteOrcamentaria;
 
-    private double previsto;
+    private double planejado;
     private double contratado;
     private int gnd;
 
     public IndicadaPor(IndicadaPorDto dto) {
         this.setId(dto.id());
         this.fonteOrcamentaria = new FonteOrcamentaria(dto.fonteOrcamentaria());
-        this.previsto = Optional.ofNullable(dto.previsto()).orElse(0d);
+        this.planejado = Optional.ofNullable(dto.planejado()).orElse(0d);
         this.contratado = Optional.ofNullable(dto.contratado()).orElse(0d);
         this.gnd = dto.gnd();
     }

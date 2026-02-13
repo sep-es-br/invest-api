@@ -125,7 +125,7 @@ public class InvestimentoFactory {
                 emEtapa.setDevolvido(false);
                 emEtapa.setEtapa(fluxo.getEtapaInicial());
 
-                novo.setEmEtapa(emEtapa);
+                novo.getEmEtapa().add(emEtapa);
 
             }
             

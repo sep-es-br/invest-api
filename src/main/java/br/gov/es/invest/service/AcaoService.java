@@ -1,22 +1,20 @@
 package br.gov.es.invest.service;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import br.gov.es.invest.exception.SemApontamentosException;
 import br.gov.es.invest.model.Acao;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
-import br.gov.es.invest.model.Agente;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AcaoService {
@@ -47,7 +45,6 @@ public class AcaoService {
                 emStatusTarget.setTimestamp(agora);
 
                 objeto.setEmStatus(emStatusTarget); // aplica status final
-                objeto.setEmEtapa(null); // remove objeto do fluxo
 
                 return objetoService.save(objeto);
             } else { // se não significa que o fluxo foi cancelado
@@ -60,7 +57,7 @@ public class AcaoService {
                 if(parecer != null) {
 
                     parecer.setEtapa(acao.getProxEtapa());
-                    parecer.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
+                    parecer.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
                     parecer.setTimestamp(agora);
                     parecer.setUsuario(usuario);
 
@@ -87,7 +84,7 @@ public class AcaoService {
                     for(Apontamento apontamento : apontamentos.stream().filter(a -> a.getId() == null).toList()) {
     
                         apontamento.setEtapa(acao.getProxEtapa());
-                        apontamento.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
+                        apontamento.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
                         apontamento.setTimestamp(agora);
                         apontamento.setUsuario(usuario);
                         apontamento.setActive(true);
@@ -104,8 +101,9 @@ public class AcaoService {
             emEtapaTarget.setDevolvido(!acao.getPositivo());
             emEtapaTarget.setEtapa(acao.getProxEtapa());
             emEtapaTarget.setAtividade(acao.getAtividadeFinal());
+            emEtapaTarget.setTimestamp(agora);
             
-            objeto.setEmEtapa(emEtapaTarget);
+            objeto.getEmEtapa().add(emEtapaTarget);
             
              
             EmStatus emStatusTarget = new EmStatus();

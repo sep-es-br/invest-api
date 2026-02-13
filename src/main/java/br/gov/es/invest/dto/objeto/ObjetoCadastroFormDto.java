@@ -35,7 +35,7 @@ public record ObjetoCadastroFormDto(
         ) {
     public static record Custo(Integer ano, List<ValoresFonte> valoresFontes){}
     
-    public static record ValoresFonte(FonteOrcamentariaDTO fonte, Double previsto, Double contratado){}
+    public static record ValoresFonte(FonteOrcamentariaDTO fonte, Double planejado, Double contratado){}
 }
 
 

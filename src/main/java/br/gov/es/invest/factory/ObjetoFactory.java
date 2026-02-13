@@ -24,6 +24,7 @@ import br.gov.es.invest.service.LocalidadeService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import br.gov.es.invest.utils.DateTimeUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +62,7 @@ public class ObjetoFactory {
                 .descricao(model.getDescricao())
                 .codUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getCodigo())
                 .siglaUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getSigla())
-                //.responsavel(model.getResponsavel().getNomeCompleto())
+                .responsavel(model.getResponsavel().getNomeCompleto())
                 .microrregiaoId(model.getMicrorregiao().getId())
                 .microrregiaoNome(model.getMicrorregiao().getNome())
                 .infoComplementar(model.getInfoComplementares())
@@ -81,14 +82,15 @@ public class ObjetoFactory {
                                     this::getCodFonte,
                                     this::from,
                                     (c1, c2) -> {
-                                        return new br.gov.es.invest.dto.objeto.ObjetoDetailDto.Custo(c1.previsto() + c2.previsto(), c1.contratado() + c2.contratado());
+                                        return new br.gov.es.invest.dto.objeto.ObjetoDetailDto.Custo(c1.planejado() + c2.planejado(), c1.contratado() + c2.contratado());
                                     }
                                 ))
                         )))
-                .emEtapa(EmEtapaDTO.parse(model.getEmEtapa()))
+                .emEtapa(Optional.ofNullable(model.getEmEtapa()).map(l -> l.stream().map(EmEtapaDTO::parse).toList()).orElse(null))
                 .emStatus(EmStatusDTO.parse(model.getEmStatus()))
                 .hashProposta(model.getHashProposta())
                 .possuiOrcamento(model.getPossuiOrcamento())
+                .timestamp(DateTimeUtils.formatZonedDateTime(model.getTimestamp()))
                 .build();
     }
     
@@ -172,13 +174,13 @@ public class ObjetoFactory {
                         CALL (objeto) {
                           MATCH (objeto)-[]-(:Custo)-[vlr]->(:FonteOrcamentaria)
                           RETURN
-                            sum(vlr.previsto) as previsto,
+                            sum(vlr.planejado) as planejado,
                             sum(vlr.contratado) as contratado
                         }
                         RETURN 
                           id(objeto) as id,
                           objeto.nome as nome,
-                          previsto,
+                          planejado,
                           contratado
                         """;
         
@@ -189,7 +191,7 @@ public class ObjetoFactory {
     }
     
     private ObjetoDetailDto.Custo from(IndicadaPor model) {
-        return new ObjetoDetailDto.Custo(model.getPrevisto(), model.getContratado());
+        return new ObjetoDetailDto.Custo(model.getPlanejado(), model.getContratado());
     }
     
     private String getCodFonte(IndicadaPor model) {

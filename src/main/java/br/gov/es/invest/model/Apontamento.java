@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.neo4j.core.schema.Node;
 
 @Getter
@@ -20,7 +21,9 @@ import org.springframework.data.neo4j.core.schema.Node;
 @SuperBuilder
 public class Apontamento extends Entidade{
     
+    @CreatedDate
     private ZonedDateTime timestamp;
+    
     private String texto;
     private boolean active;
 
@@ -35,6 +38,7 @@ public class Apontamento extends Entidade{
 
     @Relationship("FEITO_POR")
     private Grupo grupo;
+    
 
     public static Apontamento parse(ApontamentoDTO dto) {
         if (dto == null) 

@@ -6,6 +6,7 @@ import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
+import br.gov.es.invest.model.EtapaEnum;
 import br.gov.es.invest.model.Fluxo;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
@@ -46,6 +47,7 @@ public class ObjetoService {
     private final ContaService contaService;
     
     private final StatusService statusService;
+    private final EtapaService etapaSrv;
 
     private final FluxoService fluxoService;
     
@@ -62,12 +64,14 @@ public class ObjetoService {
 
         if(objeto.getEmStatus() == null) {
             
+            ZonedDateTime agora = ZonedDateTime.now();
+            
             Status novoStatus = statusService.getByStatusId(StatusEnum.SOLICITADO.name()).get();
 
             EmStatus emStatus = new EmStatus();
 
             emStatus.setStatus(novoStatus);
-            emStatus.setTimestamp(ZonedDateTime.now());
+            emStatus.setTimestamp(agora);
 
             objeto.setEmStatus(emStatus);
 
@@ -77,8 +81,9 @@ public class ObjetoService {
             emEtapa.setAtividade("Avaliar Solicitação");
             emEtapa.setDevolvido(false);
             emEtapa.setEtapa(fluxo.getEtapaInicial());
+            emEtapa.setTimestamp(agora);
             
-            objeto.setEmEtapa(emEtapa);
+            objeto.getEmEtapa().add(emEtapa);
             
         }
 
@@ -145,7 +150,7 @@ public class ObjetoService {
                         custo.anoExercicio = $exercicio
                         AND ($idFonte IS NULL OR $idFonte = id(fonte))
                     RETURN
-                        sum(ip.previsto) AS totalPrevisto, 
+                        sum(ip.planejado) AS totalPlanejado, 
                         sum(ip.contratado) AS totalContratado 
                 }
 
@@ -161,7 +166,7 @@ public class ObjetoService {
 
         String cypherQuery = cypherBase +
                         """
-                        RETURN
+                        RETURN DISTINCT
                             id(obj) AS id,
                             unidade.codigo AS codUnidade,
                             unidade.sigla AS siglaUnidade,
@@ -169,7 +174,7 @@ public class ObjetoService {
                             plano.codigo AS codPO,
                             obj.nome AS nome,
                             obj.tipo AS tipo,
-                            totalPrevisto,
+                            totalPlanejado,
                             totalContratado,
                             totalOrcado,
                             totalAutorizado,
@@ -241,7 +246,7 @@ public class ObjetoService {
                         custo.anoExercicio = $exercicio
                         AND ($idFonte IS NULL OR $idFonte = id(fonte))
                     RETURN
-                        sum(ip.previsto) AS totalPrevisto, 
+                        sum(ip.planejado) AS totalPlanejado, 
                         sum(ip.contratado) AS totalContratado 
                 }
 
@@ -258,7 +263,7 @@ public class ObjetoService {
 
         String cypherQuery = cypherBase +
                         """
-                        RETURN
+                        RETURN DISTINCT
                             id(obj) AS id,
                             unidade.codigo AS codUnidade,
                             unidade.sigla AS siglaUnidade,
@@ -266,7 +271,7 @@ public class ObjetoService {
                             plano.codigo AS codPO,
                             obj.nome AS nome,
                             obj.tipo AS tipo,
-                            totalPrevisto,
+                            totalPlanejado,
                             totalContratado,
                             totalOrcado,
                             totalAutorizado,
@@ -423,8 +428,18 @@ public class ObjetoService {
             && updateStatus
             && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO)){
             Status novoStatus = statusService.getByStatusId(StatusEnum.EM_ANALISE.name()).get();
-
+            
+            
             statusService.aplicarStatus(optObjeto.get(), novoStatus);
+            
+            EmEtapa emEtapa = new EmEtapa();
+            emEtapa.setAtividade("Avaliar Solicitação");
+            emEtapa.setDevolvido(false);
+            emEtapa.setEtapa(etapaSrv.getEtapaByEtapaId(EtapaEnum.ANALISE_TECNICA));
+            emEtapa.setTimestamp(ZonedDateTime.now());
+            
+            etapaSrv.addEmEtapa(optObjeto.get(), emEtapa);
+            
             optObjeto = repository.findById(id);
         }
 
@@ -465,31 +480,32 @@ public class ObjetoService {
     public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
             Long idConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
     ) {
-        String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
-                        "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
-                        "WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                        "    AND (id(inv) = $idConta)\r\n" + //
-                        "CALL (obj) {\r\n" + //
-                        "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r\n" + //
-                        "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
-                        "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
-                        "    RETURN \r\n" + //
-                        "        ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r\n" + //
-                        "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
-                        "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
-                        "}\r\n" + //
-                        "CALL (inv) {\r\n" + //
-                        "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r\n" + //
-                        "        AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r\n" + //
-                        "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
-                        "    RETURN\r\n" + //
-                        "        sum(vinculada_por.orcado) AS totalOrcado,\r\n" + //
-                        "        sum(vinculada_por.autorizado) AS totalAutorizado,\r\n" + //
-                        "        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r\n" + //
-                        "        sum(vinculada_por.dispSemReserva) AS totalDisponivel\r\n" + //
-                        "}\r\n";
+        String cypher = """
+                        MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status{statusId: 'CADASTRADO'}),\r
+                                (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r
+                        WHERE (id(inv) = $idConta)\r
+                        CALL (obj) {\r
+                            MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r
+                            WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r
+                                AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r
+                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r
+                            RETURN \r
+                                ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r
+                                sum(indicada_por.planejado) AS totalPlanejado,\r
+                                sum(indicada_por.contratado) AS totalContratado \r
+                        }\r
+                        CALL (inv) {\r
+                            MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r
+                            WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r
+                                AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r
+                                AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r
+                            RETURN\r
+                                sum(vinculada_por.orcado) AS totalOrcado,\r
+                                sum(vinculada_por.autorizado) AS totalAutorizado,\r
+                                sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r
+                                sum(vinculada_por.dispSemReserva) AS totalDisponivel\r
+                        }\r
+                        """ ;
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("idConta", idConta);
@@ -501,14 +517,14 @@ public class ObjetoService {
 
         int count = (int) this.neo4jOperations.count(cypherCount, params);
         
-        String cypherQuery = cypher + "RETURN\r\n" + //
+        String cypherQuery = cypher + "RETURN DISTINCT \r\n" + //
                         "        id(obj) AS id,\r\n" + //
                         "        obj.nome AS nome,\r\n" + //
                         "        po.codigo AS codPO,\r\n" + //
                         "        unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria,\r\n" + //
                         "        status.nome AS status,\r\n" + //
                         "        obj.tipo AS tipo,\r\n" + //
-                        "        totalPrevisto,\r\n" + //
+                        "        totalPlanejado,\r\n" + //
                         "        totalContratado,\r\n" + //
                         "        totalOrcado,\r\n" + //
                         "        totalAutorizado,\r\n" + //

@@ -5,7 +5,7 @@ public record TiraInvestimentoProjection(
     String nome,
     String codPO,
     String unidadeOrcamentaria,
-    Double totalPrevisto,
+    Double totalPlanejado,
     Double totalContratado,
     Double totalOrcado,
     Double totalAutorizado,

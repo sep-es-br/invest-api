@@ -22,7 +22,7 @@ public record ObjetoTiraDTO (
     String codPO,
     String nome,
     String tipo,
-    Double totalPrevisto,
+    Double totalPlanejado,
     Double totalContratado,
     Double totalOrcado,
     Double totalAutorizado,
@@ -37,14 +37,14 @@ public record ObjetoTiraDTO (
 
         UnidadeOrcamentaria unidadeOrcamentaria = objeto.getConta().getUnidadeOrcamentariaImplementadora();
 
-        double totalPrevisto = 0d;
+        double totalPlanejado = 0d;
         double totalHomologado = 0d;
 
 
         for(Custo custo : objeto.getCustosEstimadores()){
 
             for( IndicadaPor indicadaPor : custo.getIndicadaPor() ){
-                totalPrevisto += indicadaPor.getPrevisto();
+                totalPlanejado += indicadaPor.getPlanejado();
                 totalHomologado += indicadaPor.getContratado();
             }
 
@@ -70,10 +70,10 @@ public record ObjetoTiraDTO (
         return ObjetoTiraDTO.builder()
                 .id(objeto.getId())
                 .unidadeResponsavel(unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla())
-                .codPO(objeto.getConta().getPlanoOrcamentario() == null ? "Sem P.O." : objeto.getConta().getPlanoOrcamentario().getCodigo())
+                .codPO(objeto.getConta().getPlanoOrcamentario() == null ? "Sem PO." : objeto.getConta().getPlanoOrcamentario().getCodigo())
                 .nome(objeto.getNome())
                 .tipo(objeto.getTipo())
-                .totalPrevisto(totalPrevisto)
+                .totalPlanejado(totalPlanejado)
                 .totalContratado(totalHomologado)
                 .totalOrcado(totalOrcado)
                 .totalAutorizado(totalAutorizado)
@@ -93,7 +93,7 @@ public record ObjetoTiraDTO (
                         .codPO(projection.codPo())
                         .nome(projection.nome())
                         .tipo(projection.tipo())
-                        .totalPrevisto(projection.totalPrevisto())
+                        .totalPlanejado(projection.totalPlanejado())
                         .totalContratado(projection.totalContratado())
                         .totalOrcado(projection.totalOrcado())
                         .totalAutorizado(projection.totalAutorizado())

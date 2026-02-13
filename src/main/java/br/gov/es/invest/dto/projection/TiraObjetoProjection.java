@@ -7,7 +7,7 @@ public record TiraObjetoProjection(
     String unidadeOrcamentaria,
     String status,
     String tipo,
-    Double totalPrevisto,
+    Double totalPlanejado,
     Double totalContratado,
     Double totalOrcado,
     Double totalAutorizado,

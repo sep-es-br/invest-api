@@ -12,6 +12,6 @@ import lombok.Setter;
 public class DadosDetalhadoValores {
     private Long idFonte;
     private String nomeFonte;
-    private Double valorPrevisto;
+    private Double valorPlanejado;
     private Double valorContratado;
 }

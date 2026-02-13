@@ -11,7 +11,7 @@ package br.gov.es.invest.dto.objeto;
 public record ObjetoTiraSimplesDto(
         Long id,
         String nome,
-        Double previsto,
+        Double planejado,
         Double contratado
     
     ) {

@@ -10,6 +10,6 @@ import lombok.Setter;
 public class RegistroDadoDetalhadoValoresPorAno {
     private int ano;
     private double contratado;
-    private double previsto;
+    private double planejado;
     
 }
