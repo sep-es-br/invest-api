@@ -90,7 +90,7 @@ public class ObjetoFactory {
                 .emStatus(EmStatusDTO.parse(model.getEmStatus()))
                 .hashProposta(model.getHashProposta())
                 .possuiOrcamento(model.getPossuiOrcamento())
-                .timestamp(DateTimeUtils.formatZonedDateTime(model.getTimestamp()))
+                .timestamp(Optional.ofNullable(model.getTimestamp()).map(DateTimeUtils::formatZonedDateTime).orElse(null))
                 .build();
     }
     
