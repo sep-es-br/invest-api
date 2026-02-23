@@ -85,10 +85,15 @@ public class GrupoService {
     }
 
 
-    public List<MembroGrupo> getListaMembros(Long grupoId) {
+    public List<MembroGrupo> getListaMembros(Long grupoId, String termo) {
         String cypher = """
             MATCH (orgao:Orgao)-[:MEMBRO_DE]->(g:Grupo)
-            WHERE id(g) = $grupoId
+            WHERE id(g) = $grupoId 
+                        AND (
+                            $termo IS NULL 
+                            OR apoc.text.clean(orgao.sigla) CONTAINS apoc.text.clean($termo)
+                            OR apoc.text.clean(orgao.nome) CONTAINS apoc.text.clean($termo)
+                        )
             RETURN {
                 id: id(orgao),
                 icone: 'todos',
@@ -99,7 +104,13 @@ public class GrupoService {
             } AS membros
             UNION
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)-[:MEMBRO_DE]->(g:Grupo)
-            WHERE id(g) = $grupoId
+            WHERE id(g) = $grupoId 
+                    AND (
+                        $termo IS NULL 
+                        OR apoc.text.clean(orgao.sigla) CONTAINS apoc.text.clean($termo)
+                        OR apoc.text.clean(orgao.nome) CONTAINS apoc.text.clean($termo)
+                        OR apoc.text.clean(setor.sigla) CONTAINS apoc.text.clean($termo)
+                    )
             RETURN {
                 id: id(setor),
                 icone: 'todos',
@@ -112,6 +123,14 @@ public class GrupoService {
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:ATUA_EM]-(papel:Papel)-[:MEMBRO_DE]->(g:Grupo),
                     (papel)<-[:POSSUI]-(agente:Agente)
             WHERE id(g) = $grupoId AND agente.deletadoEm IS NULL
+                    AND (
+                        $termo IS NULL 
+                        OR apoc.text.clean(orgao.sigla) CONTAINS apoc.text.clean($termo)
+                        OR apoc.text.clean(orgao.nome) CONTAINS apoc.text.clean($termo)
+                        OR apoc.text.clean(setor.sigla) CONTAINS apoc.text.clean($termo)
+                        OR apoc.text.clean(papel.nome) CONTAINS apoc.text.clean($termo)
+                        OR apoc.text.clean(agente.nomeCompleto) CONTAINS apoc.text.clean($termo)
+                    )
             OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
             RETURN {
                 id: id(papel),
@@ -124,6 +143,14 @@ public class GrupoService {
             UNION
             MATCH (orgao:Orgao)<-[:PERTENCE_A]-(setor:Setor)<-[:MEMBRO_DE]-(agente:Agente)-[:MEMBRO_DE]->(g:Grupo)
             WHERE id(g) = $grupoId AND agente.deletadoEm IS NULL
+                AND (
+                    $termo IS NULL 
+                    OR apoc.text.clean(orgao.sigla) CONTAINS apoc.text.clean($termo)
+                    OR apoc.text.clean(orgao.nome) CONTAINS apoc.text.clean($termo)
+                    OR apoc.text.clean(setor.sigla) CONTAINS apoc.text.clean($termo)
+                    OR apoc.text.clean(agente.papel) CONTAINS apoc.text.clean($termo)
+                    OR apoc.text.clean(agente.nomeCompleto) CONTAINS apoc.text.clean($termo)
+                )
             OPTIONAL MATCH (agente)-[:POSSUI]->(avatar:Avatar)
             RETURN {
                 id: id(agente),
@@ -137,6 +164,7 @@ public class GrupoService {
         
         HashMap<String, Object> params = new HashMap<>();
         params.put("grupoId", grupoId);
+        params.put("termo", termo);
 
         return neo4jOperations.findAll(cypher, params, MembroGrupo.class);
     }

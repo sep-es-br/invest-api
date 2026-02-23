@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
+import br.gov.es.invest.dto.projection.MembroGrupo;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Grupo;
@@ -25,6 +26,7 @@ import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.OrgaoService;
 import br.gov.es.invest.service.SetorService;
+import br.gov.es.invest.utils.DataListResult;
 import lombok.RequiredArgsConstructor;
 
 
@@ -75,8 +77,10 @@ public class GrupoController {
     }
 
     @GetMapping("/membros")
-    public ResponseEntity<?> getMembros(@RequestParam Long grupoId){
-        return ResponseEntity.ok(service.getListaMembros(grupoId));
+    public ResponseEntity<?> getMembros(@RequestParam Long grupoId, @RequestParam(required = false) String termo){
+        List<MembroGrupo> membros = service.getListaMembros(grupoId, termo);
+        
+        return ResponseEntity.ok(new DataListResult(membros, membros.size()));
     }
 
     @GetMapping("/quantidadeMembros")

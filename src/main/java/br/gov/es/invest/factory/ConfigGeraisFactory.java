@@ -8,6 +8,7 @@ import br.gov.es.invest.dto.configGerais.ConfigGeraisFormDto;
 import br.gov.es.invest.model.ConfigGerais;
 import br.gov.es.invest.service.ConfigGeraisService;
 import br.gov.es.invest.utils.DateTimeUtils;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,8 +37,8 @@ public class ConfigGeraisFactory {
     
     public ConfigGeraisFormDto toFormDto(ConfigGerais model) {
         return new ConfigGeraisFormDto(
-                DateTimeUtils.formatZonedDateTime(model.getInicioRevisaoPip()), 
-                DateTimeUtils.formatZonedDateTime(model.getFimRevisaoPip())
+                Optional.ofNullable(model.getInicioRevisaoPip()).map(DateTimeUtils::formatZonedDateTime).orElse(null), 
+                Optional.ofNullable(model.getFimRevisaoPip()).map(DateTimeUtils::formatZonedDateTime).orElse(null)
         );
     }
 }
