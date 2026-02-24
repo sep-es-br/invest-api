@@ -9,10 +9,13 @@ import br.gov.es.invest.dto.EmStatusDTO;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.objeto.ObjetoDetailDto;
 import br.gov.es.invest.dto.objeto.ObjetoTiraSimplesDto;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.AreaTematica;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
 import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.Localidade;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.TipoPlano;
@@ -62,30 +65,47 @@ public class ObjetoFactory {
                 .descricao(model.getDescricao())
                 .codUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getCodigo())
                 .siglaUnidade(model.getConta().getUnidadeOrcamentariaImplementadora().getSigla())
-                .responsavel(model.getResponsavel().getNomeCompleto())
-                .microrregiaoId(model.getMicrorregiao().getId())
-                .microrregiaoNome(model.getMicrorregiao().getNome())
+                .responsavel(Optional.ofNullable(model.getResponsavel()).map((Agente::getNomeCompleto)).orElse(null))
+                .microrregiaoId(Optional.ofNullable(model.getMicrorregiao()).map(Localidade::getId).orElse(null))
+                .microrregiaoNome(Optional.ofNullable(model.getMicrorregiao()).map(Localidade::getNome).orElse(null))
                 .infoComplementar(model.getInfoComplementares())
                 .codPlano(Optional.ofNullable(model.getConta().getPlanoOrcamentario()).map(PlanoOrcamentario::getCodigo).orElse(null))
                 .nomePlano(Optional.ofNullable(model.getConta().getPlanoOrcamentario()).map(PlanoOrcamentario::getNome).orElse(null))
-                .idArea(model.getAreaTematica().getId())
-                .nomeArea(model.getAreaTematica().getNome())
+                .idArea(Optional.ofNullable(model.getAreaTematica()).map(AreaTematica::getId).orElse(null))
+                .nomeArea(Optional.ofNullable(model.getAreaTematica()).map(AreaTematica::getNome).orElse(null))
                 .contrato(model.getContrato())
                 .tiposPlano(model.getTiposPlano().stream().map(
                         tpPlano -> new ObjetoDetailDto.TipoPlano(tpPlano.getId(), tpPlano.getNome(), tpPlano.getSigla())
                 ).collect(Collectors.toList()))
-                .custos(model.getCustosEstimadores().stream()
-                    .collect(Collectors.toMap(
-                        Custo::getAnoExercicio, 
-                        custo -> custo.getIndicadaPor().stream()
-                            .collect(Collectors.toMap(
+                .custos(
+                    model.getCustosEstimadores().stream()
+                        .collect(Collectors.toMap(
+                            Custo::getAnoExercicio,
+                            custo -> custo.getIndicadaPor().stream()
+                                .collect(Collectors.toMap(
                                     this::getCodFonte,
                                     this::from,
-                                    (c1, c2) -> {
-                                        return new br.gov.es.invest.dto.objeto.ObjetoDetailDto.Custo(c1.planejado() + c2.planejado(), c1.contratado() + c2.contratado());
-                                    }
-                                ))
-                        )))
+                                    (c1, c2) ->
+                                        new br.gov.es.invest.dto.objeto.ObjetoDetailDto.Custo(
+                                            c1.planejado() + c2.planejado(),
+                                            c1.contratado() + c2.contratado()
+                                        )
+                                )),
+                            (map1, map2) -> {  // ← MERGE DO ANO DUPLICADO
+                                map2.forEach((key, value) ->
+                                    map1.merge(
+                                        key,
+                                        value,
+                                        (c1, c2) -> new br.gov.es.invest.dto.objeto.ObjetoDetailDto.Custo(
+                                            c1.planejado() + c2.planejado(),
+                                            c1.contratado() + c2.contratado()
+                                        )
+                                    )
+                                );
+                                return map1;
+                            }
+                        ))
+                )
                 .emEtapa(Optional.ofNullable(model.getEmEtapa()).map(l -> l.stream().map(EmEtapaDTO::parse).toList()).orElse(null))
                 .emStatus(EmStatusDTO.parse(model.getEmStatus()))
                 .hashProposta(model.getHashProposta())

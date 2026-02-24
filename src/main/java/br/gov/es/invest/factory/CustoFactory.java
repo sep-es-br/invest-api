@@ -54,7 +54,7 @@ public class CustoFactory {
             }
 
             if(vf.contratado() != null) ip.setContratado(vf.contratado());
-            ip.setPlanejado(vf.planejado());
+            ip.setPlanejado(Optional.ofNullable(vf.planejado()).orElse(Double.valueOf(0)));
 
 
             setIndicadaPor.add(ip);

@@ -43,12 +43,12 @@ public class UnidadeOrcamentariaController {
             default -> result = service.getAllSimples();
         }
         
-        for(UnidadeOrcamentariaDTOProjection unidade: result) {
-            if(!unidade.codigo().startsWith("0") && !unidade.codigo().startsWith("8"))
-                unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.codigo(), unidade.nome(), unidade.sigla()));
-        }
+//        for(UnidadeOrcamentariaDTOProjection unidade: result) {;
+//            if(!unidade.codigo().startsWith("0") && !unidade.codigo().startsWith("8"))
+//                unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.codigo(), unidade.nome(), unidade.sigla()));
+//        }
 
-        return ResponseEntity.ok(unidadesDTO);
+        return ResponseEntity.ok(result.stream().map(unidade -> new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.codigo(), unidade.nome(), unidade.sigla())).toList());
         
 
     }

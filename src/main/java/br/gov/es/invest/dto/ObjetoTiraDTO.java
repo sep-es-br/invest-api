@@ -70,7 +70,7 @@ public record ObjetoTiraDTO (
         return ObjetoTiraDTO.builder()
                 .id(objeto.getId())
                 .unidadeResponsavel(unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla())
-                .codPO(objeto.getConta().getPlanoOrcamentario() == null ? "Sem PO." : objeto.getConta().getPlanoOrcamentario().getCodigo())
+                .codPO(objeto.getConta().getPlanoOrcamentario() == null ? "Sem PO" : objeto.getConta().getPlanoOrcamentario().getCodigo())
                 .nome(objeto.getNome())
                 .tipo(objeto.getTipo())
                 .totalPlanejado(totalPlanejado)

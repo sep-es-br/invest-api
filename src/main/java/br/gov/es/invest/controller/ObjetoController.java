@@ -211,7 +211,7 @@ public class ObjetoController {
             objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
         }
         
-        service.save(objeto);
+        objeto = service.save(objeto);
         
         return ResponseEntity.ok(objFactory.fromModel(objeto));
     }

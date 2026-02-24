@@ -37,7 +37,7 @@ public class AutenticacaoService {
     private final OrgaoService orgaoService;
 
     public UsuarioDto autenticar(String accessToken) {
-        logger.info("Autenticar usuário SPO.");
+        logger.info("Autenticar usuário SPO");
 
         ACUserInfoDto userInfo = getUserInfo(accessToken);
         String token = tokenService.gerarToken(userInfo, accessToken);
