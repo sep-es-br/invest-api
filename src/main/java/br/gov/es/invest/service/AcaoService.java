@@ -26,17 +26,15 @@ public class AcaoService {
     @Transactional
     public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Agente usuario) throws SemApontamentosException{
         
-
         if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())
             throw new SemApontamentosException();
 
         ZonedDateTime agora = ZonedDateTime.now();
         
-
         Objeto objetoOriginal = objetoService.findById(objeto.getId());
-        objeto.setApontamentos(objetoOriginal.getApontamentos());
-        objeto.setPareceres(objetoOriginal.getPareceres());
-
+        objetoOriginal.aplicar(objeto);
+        
+        
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
                 
@@ -44,9 +42,9 @@ public class AcaoService {
                 emStatusTarget.setStatus(acao.getStatusFinal());
                 emStatusTarget.setTimestamp(agora);
 
-                objeto.setEmStatus(emStatusTarget); // aplica status final
+                objetoOriginal.setEmStatus(emStatusTarget); // aplica status final
 
-                return objetoService.save(objeto);
+                return objetoService.save(objetoOriginal);
             } else { // se não significa que o fluxo foi cancelado
                 return objetoService.removerObjeto(objeto.getId());
             }
@@ -65,7 +63,7 @@ public class AcaoService {
                         objeto.getPareceres() == null ? Arrays.asList() : objeto.getPareceres()
                     ); 
                     todosPareceres.add(parecer);
-                    objeto.setPareceres(todosPareceres);
+                    objetoOriginal.setPareceres(todosPareceres);
 
 
                 } else if(apontamentos != null) {
@@ -91,7 +89,7 @@ public class AcaoService {
                         
                     }
     
-                    objeto.setApontamentos(apontamentos);
+                    objetoOriginal.setApontamentos(apontamentos);
                 }
 
                 
@@ -103,15 +101,15 @@ public class AcaoService {
             emEtapaTarget.setAtividade(acao.getAtividadeFinal());
             emEtapaTarget.setTimestamp(agora);
             
-            objeto.getEmEtapa().add(emEtapaTarget);
+            objetoOriginal.getEmEtapa().add(emEtapaTarget);
             
              
             EmStatus emStatusTarget = new EmStatus();
             emStatusTarget.setStatus(acao.getStatusFinal());
             emStatusTarget.setTimestamp(agora);
 
-            objeto.setEmStatus(emStatusTarget);
-            objetoService.save(objeto);
+            objetoOriginal.setEmStatus(emStatusTarget);
+            objetoService.save(objetoOriginal);
             return objetoService.findById(objeto.getId());
         }
         

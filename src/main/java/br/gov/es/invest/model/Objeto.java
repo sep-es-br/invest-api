@@ -98,6 +98,29 @@ public class Objeto extends Entidade implements Serializable {
         this.pareceres = dto.pareceres() == null ? null : dto.pareceres().stream().map(Parecer::parse).toList();
         
     }
+    
+    public Objeto aplicar(Objeto src) {
+        this.gnd = src.getGnd();
+        this.nome = src.getNome();
+        this.hashProposta = src.getHashProposta();
+        this.descricao = src.getDescricao();
+        this.tipo = src.getTipo();
+        this.conta = src.getConta();
+        
+        this.infoComplementares = src.getInfoComplementares();
+        this.contrato = src.getContrato();
+
+        this.possuiOrcamento = src.getPossuiOrcamento();
+
+        this.areaTematica = src.getAreaTematica();
+        this.tiposPlano = src.getTiposPlano();
+        this.custosEstimadores = src.getCustosEstimadores();
+        this.microrregiao = src.getMicrorregiao();
+        this.apontamentos = src.getApontamentos();
+        this.pareceres = src.getPareceres();
+        
+        return this;
+    }
 
     public void filtrar(Integer anoExercicio, Long fonteId) {
         
