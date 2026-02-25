@@ -113,7 +113,7 @@ public class ObjetoService {
         
     }
 
-    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){
+    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, Integer gnd, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){
         
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
@@ -122,6 +122,7 @@ public class ObjetoService {
                     ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
                     AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
                     AND ($idStatus IS NULL OR id(status) = $idStatus)
+                    AND ($gnd IS NULL OR obj.gnd = $gnd)
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR id(plano) IN $idsPo
@@ -163,6 +164,7 @@ public class ObjetoService {
         params.put("idStatus", statusId);
         params.put("idsPo", idPo);
         params.put("idFonte", fonteId);
+        params.put("gnd", gnd);
 
         String cypherQuery = cypherBase +
                         """
@@ -208,7 +210,7 @@ public class ObjetoService {
 
     }
 
-    public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long etapaId, Long fonteId, Pageable pageable){
+    public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, Integer gnd, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long etapaId, Long fonteId, Pageable pageable){
          
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
@@ -219,6 +221,7 @@ public class ObjetoService {
                      AND ($idStatus IS NULL OR id(status) = $idStatus)
                      AND ($idEtapa IS NULL OR id(etapa) = $idEtapa)
                      AND NOT EXISTS ((obj)-[:EM]->(:Status{statusId: 'CADASTRADO'}))
+                     AND ($gnd IS NULL OR obj.gnd = $gnd)
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR id(plano) IN $idsPo
@@ -261,6 +264,7 @@ public class ObjetoService {
         params.put("idEtapa", etapaId);
         params.put("idsPo", idPo);
         params.put("idFonte", fonteId);
+        params.put("gnd", gnd);
 
         String cypherQuery = cypherBase +
                         """
@@ -283,9 +287,6 @@ public class ObjetoService {
                         
                         """;
 
-        // if(ordem != null && !ordem.isEmpty())
-        //     cypherQuery += "ORDER BY " + ordem.stream().map(item -> item.campo() + " " + item.direcao()).collect(Collectors.joining(", ")) + "\n";
-       
         if(pageable != null) {
             cypherQuery += "SKIP $skip LIMIT $limit";
             params.put("skip", pageable.getOffset());
