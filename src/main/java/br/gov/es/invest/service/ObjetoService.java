@@ -218,7 +218,7 @@ public class ObjetoService {
                      AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
                      AND ($idStatus IS NULL OR id(status) = $idStatus)
                      AND ($idEtapa IS NULL OR id(etapa) = $idEtapa)
-                     AND (status.statusId <> 'CADASTRADO')
+                     AND NOT EXISTS ((obj)-[:EM]->(:Status{statusId: 'CADASTRADO'})
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR id(plano) IN $idsPo
