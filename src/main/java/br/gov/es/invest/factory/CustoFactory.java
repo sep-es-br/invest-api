@@ -49,7 +49,6 @@ public class CustoFactory {
                 ip = new IndicadaPor();
 
                 ip.setFonteOrcamentaria(fonteFactory.fromDto(vf.fonte()));
-                ip.setGnd(4);
 
             }
 

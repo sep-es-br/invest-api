@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public record ObjetoDto(
     Long id,
+    Integer gnd,
     String tipoConta,
     String tipo,
     String hashProposta,
@@ -33,7 +34,8 @@ public record ObjetoDto(
     
     public ObjetoDto(Objeto model) {
         this(
-            model.getId(), 
+            model.getId(),
+            model.getGnd(),
             "Investimento", 
             model.getTipo(), 
             model.getHashProposta(),

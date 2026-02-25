@@ -22,14 +22,12 @@ public class IndicadaPor extends Entidade {
 
     private double planejado;
     private double contratado;
-    private int gnd;
 
     public IndicadaPor(IndicadaPorDto dto) {
         this.setId(dto.id());
         this.fonteOrcamentaria = new FonteOrcamentaria(dto.fonteOrcamentaria());
         this.planejado = Optional.ofNullable(dto.planejado()).orElse(0d);
         this.contratado = Optional.ofNullable(dto.contratado()).orElse(0d);
-        this.gnd = dto.gnd();
     }
 
     public static IndicadaPor parse(IndicadaPorDto dto) {

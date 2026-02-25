@@ -18,6 +18,7 @@ import lombok.Builder;
 @Builder
 public record ObjetoCadastroFormDto(
             Long id,
+            Integer gnd,
             String tipoConta,
             String tipo,
             String hashProposta,

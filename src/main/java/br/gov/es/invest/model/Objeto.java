@@ -31,6 +31,7 @@ import org.springframework.util.comparator.Comparators;
 @SuperBuilder
 public class Objeto extends Entidade implements Serializable {
     
+    private Integer gnd;
     private String nome;
     private String hashProposta;
     private String descricao;
@@ -74,6 +75,7 @@ public class Objeto extends Entidade implements Serializable {
 
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
+        this.gnd = dto.gnd();
         this.nome = dto.nome();
         this.hashProposta = dto.hashProposta();
         this.descricao = dto.descricao();

@@ -59,6 +59,7 @@ public class ObjetoFactory {
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
                 .id(model.getId())
+                .gnd(model.getGnd())
                 .tipoInvestimento(Optional.ofNullable(model.getConta().getTipoConta()).orElse(Conta.TIPO_CONTA.INVESTIMENTO).toString())
                 .tipoObjeto(model.getTipo())
                 .nome(model.getNome())
@@ -121,6 +122,7 @@ public class ObjetoFactory {
                         .orElse(new Objeto());
                         
         obj.setTipo(dto.tipo());
+        obj.setGnd(dto.gnd());
         obj.setHashProposta(dto.hashProposta());
         obj.setNome(dto.nome());
         obj.setDescricao(dto.descricao());

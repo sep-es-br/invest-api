@@ -18,6 +18,7 @@ import lombok.Builder;
 @Builder
 public record ObjetoDetailDto(
         Long id,
+        Integer gnd,
         String hashProposta,
         String tipoInvestimento,
         String tipoObjeto,
