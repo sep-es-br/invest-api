@@ -8,6 +8,7 @@ import br.gov.es.invest.dto.configGerais.ConfigGeraisFormDto;
 import br.gov.es.invest.model.ConfigGerais;
 import br.gov.es.invest.service.ConfigGeraisService;
 import br.gov.es.invest.utils.DateTimeUtils;
+import java.time.LocalTime;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class ConfigGeraisFactory {
         ConfigGerais config = this.srv.getConfig();
         config.setRevisaoPip(
                 Optional.ofNullable(form.inicioRevisaoPip()).map(DateTimeUtils::getZonedDateTime).orElse(null),
-                Optional.ofNullable(form.fimRevisaoPip()).map(DateTimeUtils::getZonedDateTime).orElse(null)
+                Optional.ofNullable(form.fimRevisaoPip()).map(DateTimeUtils::getZonedDateTime).map(data -> data.toLocalDate().atTime(LocalTime.MAX).atZone(data.getZone())).orElse(null)
         );
         
         return config;       
