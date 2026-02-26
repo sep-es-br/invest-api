@@ -52,7 +52,12 @@ public class InvestimentoService {
                                     (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
                             WHERE ($idPo IS NULL OR id(po) IN $idPo)
                                 AND ( $idUnidade IS NULL OR id(unidade) IN $idUnidade )
-                                AND ($nome IS NULL OR apoc.text.clean(po.nome) CONTAINS apoc.text.clean($nome))
+                                AND ($nome IS NULL OR CASE 
+                                                        WHEN inv.nome IS NULL 
+                                                            THEN apoc.text.clean(po.nome) CONTAINS apoc.text.clean($nome) 
+                                                        ELSE 
+                                                            apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome) 
+                                                       END )
                             CALL (obj) {
                                 MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                                 WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
@@ -80,7 +85,7 @@ public class InvestimentoService {
                             """
                             RETURN DISTINCT
                                 id(inv) AS id,
-                                po.nome AS nome, 
+                                coalesce(inv.nome, po.nome) AS nome, 
                                 po.codigo AS codPO,
                                 unidade.codigo AS codUnidade,
                                 unidade.sigla AS siglaUnidade,
