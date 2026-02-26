@@ -34,9 +34,8 @@ public class ConfigGerais extends Entidade {
             ZonedDateTime inicio,
             ZonedDateTime fim
     ) {
-        Assert.notNull(inicio, "Data inicial não pode ser nula");
-        Assert.notNull(fim, "Data final não pode ser nula");
-        Assert.isTrue(fim.isAfter(inicio) || fim.equals(inicio), "não faz sentido a data inicial ser posterior a final");
+        if(fim != null && inicio != null)
+            Assert.isTrue((fim.isAfter(inicio) || fim.equals(inicio)), "não faz sentido a data inicial ser posterior a final");
         
         this.inicioRevisaoPip = inicio;
         this.fimRevisaoPip = fim;

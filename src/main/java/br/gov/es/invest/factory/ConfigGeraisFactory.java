@@ -29,7 +29,10 @@ public class ConfigGeraisFactory {
     public ConfigGerais toModel(ConfigGeraisFormDto form) {
         
         ConfigGerais config = this.srv.getConfig();
-        config.setRevisaoPip(DateTimeUtils.getZonedDateTime(form.inicioRevisaoPip()), DateTimeUtils.getZonedDateTime(form.fimRevisaoPip()));
+        config.setRevisaoPip(
+                Optional.ofNullable(form.inicioRevisaoPip()).map(DateTimeUtils::getZonedDateTime).orElse(null),
+                Optional.ofNullable(form.fimRevisaoPip()).map(DateTimeUtils::getZonedDateTime).orElse(null)
+        );
         
         return config;       
         
