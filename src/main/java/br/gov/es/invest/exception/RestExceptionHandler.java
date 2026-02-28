@@ -73,11 +73,33 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     private ResponseEntity<MensagemErroRest> excecaoGenericaHandler(Exception e) {
+        int stackIndex = 0;
+        StackTraceElement element;
+        
+
+        do { 
+            element = e.getStackTrace()[stackIndex++];
+        } while (!element.toString().startsWith("br.gov.es.invest"));
+        
+        String stackAsString = element.toString();
+        
+        String msg = stackAsString.substring(stackAsString.lastIndexOf("(")) + " " + e.getLocalizedMessage();
+        
         logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
         return MensagemErroRest.asResponseEntity(
             HttpStatus.INTERNAL_SERVER_ERROR, 
             "Ocorreu um erro desconhecido", 
-            Collections.singletonList(e.getLocalizedMessage())
+            Collections.singletonList(msg)
+        );
+    }
+
+    @ExceptionHandler(PapelInvalidoException.class)
+    private ResponseEntity<MensagemErroRest> papelInvalidoHandler(PapelInvalidoException ex) {
+        logger.log(Level.INFO, ex.getLocalizedMessage(), ex);
+        return MensagemErroRest.asResponseEntity(
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            ex.getLocalizedMessage(), 
+            null
         );
     }
 

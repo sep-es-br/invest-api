@@ -4,6 +4,6 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 
 import br.gov.es.invest.model.Localidade;
 
-public interface LocalidadeRepository extends Neo4jRepository<Localidade, String> {
+public interface LocalidadeRepository extends Neo4jRepository<Localidade, Long> {
     
 }

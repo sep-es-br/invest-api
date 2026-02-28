@@ -1,27 +1,33 @@
 package br.gov.es.invest.service;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.repository.StatusRepository;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.map.HashedMap;
+import org.neo4j.cypherdsl.core.Cypher;
+import org.neo4j.cypherdsl.core.Node;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 @Service
+@RequiredArgsConstructor
 public class StatusService {
-    
-    @Autowired
-    private StatusRepository repository;
 
-    private ObjetoService objetoService;
+    private final StatusRepository repository;
+
+    private final Neo4jClient neo4jClient;
+
+    private Node statusNode = Cypher.node("Status").named("status");
+
 
     public Status findOrCreate(Status status) {
         
@@ -38,8 +44,13 @@ public class StatusService {
         return repository.findAllStatusObjeto();
     }
 
+
     public List<Status> findAll(){
         return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
+    }
+    
+    public List<Status> findAllForFluxo(){
+        return repository.findAllForFluxo();
     }
 
     public Optional<Status> getByStatusId(String statusId){
@@ -51,23 +62,35 @@ public class StatusService {
 
     }
 
-    public Status findById(String statusId) {
+    public Status findById(Long statusId) {
         return repository.findById(statusId).orElse(null);
     }
 
     public void aplicarStatus(Objeto objeto, Status status) {
+
+        Assert.notNull(objeto.getId(), "Objeto não está salvo no Banco");
+        Assert.notNull(status.getId(), "Status não está salvo no Banco");
         
-        EmStatus emStatus = new EmStatus();
-        emStatus.setStatus(status);
-        emStatus.setTimestamp(ZonedDateTime.now());
+        String cypher = """
+                MATCH (objeto:Objeto), (status:Status)
+                WHERE id(objeto) = $objetoId
+                AND id(status) = $statusId
 
-        objeto.setEmStatus(emStatus);
+                OPTIONAL MATCH (objeto)-[oldRel:EM]->(:Status)
+                DELETE oldRel
 
-        objetoService.save(objeto);
-    }
+                MERGE (objeto)-[rel:EM]->(status)
+                SET rel.timestamp = $timestamp
+                """;
 
-    @Autowired
-    public void setObjetoService(ObjetoService objetoService) {
-        this.objetoService = objetoService;
+        Map<String, Object> params = new HashedMap<>();
+        params.put("objetoId", objeto.getId());
+        params.put("statusId", status.getId());
+        params.put("timestamp", ZonedDateTime.now());
+
+        neo4jClient.query(cypher)
+                    .bindAll(params)
+                    .run();
+
     }
 }

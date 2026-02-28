@@ -1,39 +1,37 @@
 package br.gov.es.invest.config.security;
 
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.Funcao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.service.ACService;
+import br.gov.es.invest.service.ModuloService;
+import br.gov.es.invest.service.TokenService;
+import br.gov.es.invest.service.UsuarioService;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.Funcao;
-import br.gov.es.invest.model.Usuario;
-import br.gov.es.invest.service.ModuloService;
-import br.gov.es.invest.service.TokenService;
-import br.gov.es.invest.service.UsuarioService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -42,24 +40,22 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final ModuloService moduloService;
-       
+    private final ACService acSrv;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
         if (checarWhiteList(request, Arrays.asList(
             "/user-info",
             "/oauth2/authorization",
             "/acesso-cidadao-response",
             "acesso-cidadao-response.html",
-            "importarPentaho" 
+            "/importarPentaho"
         ))) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // enviarMensagemTokenInvalido(Arrays.asList(), response, HttpStatus.UNAUTHORIZED);
-        // return;
-
+        
         String token = recuperarToken(request);
         if(token == null) {
             
@@ -74,22 +70,18 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String sub = tokenService.validarToken(token);
 
-                Usuario user = usuarioService.getUserBySub(sub).orElse(null);
+                Agente user = usuarioService.getUserBySub(sub).orElse(null);
                 
-                if(user == null) {
-                    MensagemErroRest erro = new MensagemErroRest(
-                        HttpStatus.FORBIDDEN,
-                        "Usuário não existe", 
-                        Arrays.asList("Usuário não existe", "Favor incluir o usuario em algum grupo")
-                    );
-                    enviarMensagemErro(erro, response);
-                    return;
-                }
-
                 Set<Funcao> funcoes = user.getRole();
                 
+                String acToken = acSrv.getClientToken();
+                
+                List<Papel> papeisAtualizados = acSrv.getPapeisBySub(sub, acSrv.getClientToken()).stream()
+                            .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
+                            .collect(Collectors.toList());
+                       
                 if(!Funcao.testarFuncao(funcoes, "GESTOR_MASTER")
-                && !checarAcesso(request, user.getId())) {
+                && !checarAcesso(request, papeisAtualizados)) {
                     MensagemErroRest erro = new MensagemErroRest(
                         HttpStatus.FORBIDDEN,
                         "Usuário sem permissão", 
@@ -110,16 +102,17 @@ public class SecurityFilter extends OncePerRequestFilter {
                 var expiresAt = LocalDateTime.ofInstant(JWT.decode(token).getExpiresAt().toInstant(), ZoneOffset.of("-03:00"));
                 List<String> erros = new ArrayList<>();
                 erros.add("Por favor, faça o login novamente.");
-                if (LocalDateTime.now().isAfter((ChronoLocalDateTime<?>) expiresAt))
+                if (LocalDateTime.now().isAfter(expiresAt))
                     erros.add("Token expirado em " + expiresAt);
-                    enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
+
+                enviarMensagemTokenInvalido(erros, response, HttpStatus.UNAUTHORIZED);
+
                 return;
             }
         }
         filterChain.doFilter(request, response);
     }
-
-    private boolean checarAcesso(HttpServletRequest request, String userId){
+    private boolean checarAcesso(HttpServletRequest request, List<Papel> papeis){
         String url = request.getHeader("Origin-URL");
 
         if(url == null) return false;
@@ -129,7 +122,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         for(int i = 0; i < paths.length-1; i++){
             String pathId = paths[i] + paths[i+1];
             
-            if(!moduloService.checarAcessoUsuario(pathId, userId))
+            if(!moduloService.checarAcessoUsuario(pathId, papeis))
                 return false;
         }
 
@@ -147,13 +140,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         return false;
     }
 
-    private boolean checarPermissao(String permissoes, List<String> roles) {
-        for(String permissao : permissoes.split(",")) {
-            if(roles.contains(permissao.trim())) return true;
-        }
-        return false;
-    }
-
     private String recuperarToken(HttpServletRequest request) {
         var authHeader = request.getHeader("Authorization");
         if (authHeader == null) return null;
@@ -166,9 +152,10 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
     
     private void enviarMensagemErro(MensagemErroRest objetoErro, HttpServletResponse response) throws IOException {
-        String mensagem = ToStringBuilder.reflectionToString(objetoErro, ToStringStyle.JSON_STYLE);
-        response.setHeader("Content-Type", "application/json");
+        response.setContentType("application/json;charset=UTF-8");
         response.setStatus(objetoErro.codigo());
-        response.getWriter().write(mensagem);
+        
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(response.getWriter(), objetoErro);
     }
 }

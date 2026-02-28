@@ -1,43 +1,45 @@
 package br.gov.es.invest.service;
 
-import java.io.IOException;
+import br.gov.es.invest.dto.PapelDto;
+import br.gov.es.invest.dto.SetorDto;
+import br.gov.es.invest.dto.acessocidadaoapi.EmailResponseACDto;
+import br.gov.es.invest.dto.acessocidadaoapi.OrganizacaoACResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.SetorACResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.TokenResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.UnidadeACResponseDto;
+import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
+import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Base64;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-
-import br.gov.es.invest.dto.PapelDto;
-import br.gov.es.invest.dto.SetorDto;
-import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
-import br.gov.es.invest.dto.acessocidadaoapi.PapelACResponseDto;
-import br.gov.es.invest.dto.acessocidadaoapi.SetorACResponseDto;
-import br.gov.es.invest.dto.acessocidadaoapi.TokenResponseDto;
-import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
-import br.gov.es.invest.model.Orgao;
-import net.minidev.json.JSONObject;
-
 @Service
+@RequiredArgsConstructor
 public class ACService {
     
   private static final String GUID_GOVES = "fe88eb2a-a1f3-4cb1-a684-87317baf5a57";
-
+  
+  private final PapelService papelSrv;
+  private final SetorService setorSrv;
+  private final OrgaoService orgaoSrv;
+  
   @Value("${acessocidadao.tokenUrl}")
   private String ACTokenUrl;
 
@@ -93,9 +95,7 @@ public class ACService {
     return null;
   }
 
-  public List<Orgao> getOrgaos(){
-
-    String token = getClientToken();
+  public List<Orgao> getOrgaos(String token){
 
     HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -127,7 +127,252 @@ public class ACService {
     return null;
   }
 
+  public List<Orgao> getOrgaos(){
+
+    String token = getClientToken();
+
+    return this.getOrgaos(token);
+  }
   
+  public List<PapelACResponseDto> getPapeisBySub(String sub, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.webApiUrl + "/agentepublico/" + sub + "/papeis"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          List<PapelACResponseDto> papeisResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<PapelACResponseDto>>(){});
+          return papeisResponse;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public String getEmailPrincipalBySub(String sub, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.webApiUrl + "/cidadao/" + sub + "/email"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+            EmailResponseACDto emailResponse = new JsonMapper().readValue(response.body(), new TypeReference<EmailResponseACDto>(){});
+          return Optional.ofNullable(emailResponse.corporativo()).orElse(emailResponse.email())  ;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public PapelACResponseDto getPapelByGuid(String guid, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.webApiUrl + "/papel/" + guid))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          PapelACResponseDto papelResponse = new JsonMapper().readValue(response.body(), new TypeReference<PapelACResponseDto>(){});
+          return papelResponse;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public UnidadeACResponseDto getUnidadeInfoByGuid(String guid, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.organogramaUrl + "/unidades/" + guid + "/info"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          UnidadeACResponseDto resp = new JsonMapper().readValue(response.body(), new TypeReference<UnidadeACResponseDto>(){});
+          return resp;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+  
+  public Papel gerarPapelFromResp(PapelACResponseDto papelAc, String token){
+      
+      
+      String papelGuid = papelAc.Guid();
+      String setorGuid = papelAc.LotacaoGuid();
+      
+      UnidadeACResponseDto setorAc = Optional.ofNullable(setorGuid)
+                                        .map(lot -> getUnidadeInfoByGuid(lot, token))
+                                        .orElse(null);
+      
+      String orgaoGuid = Optional.ofNullable(setorAc)
+                            .map(setor -> setor.guidOrganizacao())
+                            .orElse(null);
+      
+      OrganizacaoACResponseDto orgaoAc = Optional.ofNullable(orgaoGuid)
+                                            .map(orgao -> getOrgaoInfoByGuid(orgao, token))
+                                            .orElse(null);
+      
+      Orgao orgao = Optional.ofNullable(orgaoGuid)
+                        .flatMap((guid) -> orgaoSrv.findByGuid(guid.toLowerCase()))
+                        .or(() -> Optional.ofNullable(orgaoAc)
+                                .map(Orgao::new)
+                                .map(_orgao -> orgaoSrv.save(_orgao)))
+                        .orElse(null);
+              
+
+      Setor setor = Optional.ofNullable(setorGuid)
+                        .flatMap((guid) -> setorSrv.findByGuid(guid.toLowerCase()))
+                        .orElseGet(() -> setorSrv.save(Setor.parse(setorAc, orgao)));
+      
+      return Optional.ofNullable(papelGuid)
+                .flatMap(guid -> papelSrv.findByGuid(guid.toLowerCase()))
+                .map(_papel -> {
+                      _papel.setNome(papelAc.Nome());
+                      _papel.setPrioritario(papelAc.Prioritario());
+                      return _papel;
+                })
+                .orElseGet(() -> Papel.parse(papelAc, setor));
+      
+      
+      
+      
+  }
+  
+  public Papel gerarPapelFromRespSemSalvar(PapelACResponseDto papelAc, String token){
+      
+      
+      String papelGuid = papelAc.Guid();
+      String setorGuid = papelAc.LotacaoGuid();
+      
+      UnidadeACResponseDto setorAc = Optional.ofNullable(setorGuid)
+                                        .map(lot -> getUnidadeInfoByGuid(lot, token))
+                                        .orElse(null);
+      
+      String orgaoGuid = Optional.ofNullable(setorAc)
+                            .map(setor -> setor.guidOrganizacao())
+                            .orElse(null);
+      
+      OrganizacaoACResponseDto orgaoAc = Optional.ofNullable(orgaoGuid)
+                                            .map(orgao -> getOrgaoInfoByGuid(orgao, token))
+                                            .orElse(null);
+      
+      Orgao orgao = Optional.ofNullable(orgaoGuid)
+                        .flatMap((guid) -> orgaoSrv.findByGuid(guid.toLowerCase()))
+                        .or(() -> Optional.ofNullable(orgaoAc)
+                                .map(Orgao::new))
+                        .orElse(null);
+              
+
+      Setor setor = Optional.ofNullable(setorGuid)
+                        .flatMap((guid) -> setorSrv.findByGuid(guid.toLowerCase()))
+                        .orElseGet(() -> Setor.parse(setorAc, orgao));
+      
+      return Optional.ofNullable(papelGuid)
+                .flatMap(guid -> papelSrv.findByGuid(guid.toLowerCase()))
+                .orElseGet(() -> Papel.parse(papelAc, setor));
+      
+      
+  }
+  
+  public OrganizacaoACResponseDto getOrgaoInfoByGuid(String guid, String token){
+
+    HttpClient httpClient = HttpClient.newHttpClient();
+
+    HttpRequest request;
+    try {
+        request = HttpRequest.newBuilder()
+                                .header("Content-type", "application/json")
+                                .header("Authorization", "Bearer " + token)
+                                .uri(new URI(this.organogramaUrl + "/organizacoes/" + guid + "/info"))
+                                .GET().build();
+
+                                  
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(Charset.forName("UTF-8")));
+
+        if(response.statusCode() == HttpStatus.OK.value()) {
+          OrganizacaoACResponseDto resp = new JsonMapper().readValue(response.body(), new TypeReference<OrganizacaoACResponseDto>(){});
+          return resp;
+        } else {
+          Logger.getGlobal().severe("token: " + token);
+          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      Logger.getGlobal().info("token: " + token);
+      e.printStackTrace();
+    }
+
+    return null;
+  }
 
   public List<SetorDto> getSetores(String unidadeGuid){
 
@@ -150,8 +395,8 @@ public class ACService {
           List<SetorACResponseDto> setoresResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<SetorACResponseDto>>(){});
           return setoresResponse.stream().map(setorResp -> new SetorDto(setorResp)).toList();
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
     } catch (Exception e) {
@@ -174,7 +419,7 @@ public class ACService {
         request = HttpRequest.newBuilder()
                                 .header("Content-type", "application/json")
                                 .header("Authorization", "Bearer " + token)
-                                .uri(new URI(this.webApiUrl + "/conjunto/" + setorGuid + "/papeis"))
+                                .uri(new URI(this.webApiUrl + "/conjunto/" + setorGuid + "/papeis?operacional=true"))
                                 .GET().build();
 
                                   
@@ -184,14 +429,13 @@ public class ACService {
           List<PapelACResponseDto> papeisResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<PapelACResponseDto>>(){});
           return papeisResponse.stream().map(papelResp -> new PapelDto(papelResp)).toList();
         } else {
-          Logger.getGlobal().severe("token: " + token);
           Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          
         }
 
     } catch (Exception e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.SEVERE, e.getLocalizedMessage(), e);
     }
 
     return null;

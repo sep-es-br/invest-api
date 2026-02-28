@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import lombok.Getter;
@@ -19,7 +18,7 @@ public class ContaTiraDTO {
     private String nome;
     private String codPO;
     private String unidadeOrcamentaria;
-    private Double totalPrevisto;
+    private Double totalPlanejado;
     private Double totalHomologado;
     private Double totalOrcado;
     private Double totalAutorizado;
@@ -35,22 +34,20 @@ public class ContaTiraDTO {
         UnidadeOrcamentaria unidadeOrcamentaria = conta.getUnidadeOrcamentariaImplementadora();
         this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
-        this.objetos = objetos.stream().map(objeto -> {
-            return new ObjetoTiraDTO(objeto);
-        }).collect(Collectors.toList());
+        this.objetos = objetos.stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList());
 
-        this.totalPrevisto = 0d;
+        this.totalPlanejado = 0d;
         this.totalHomologado = 0d;
         this.totalOrcado = 0d;
         this.totalAutorizado = 0d;
         this.totalDisponivel = 0d;
 
         this.objetos.forEach(obj -> {
-            this.totalPrevisto += obj.getTotalPrevisto();
-            this.totalHomologado += obj.getTotalHomologado();
-            this.totalOrcado += obj.getTotalOrcado();
-            this.totalAutorizado += obj.getTotalAutorizado();
-            this.totalDisponivel += obj.getTotalDisponivel();
+            this.totalPlanejado += obj.totalPlanejado();
+            this.totalHomologado += obj.totalContratado();
+            this.totalOrcado += obj.totalOrcado();
+            this.totalAutorizado += obj.totalAutorizado();
+            this.totalDisponivel += obj.totalDisponivel();
         });
 
     }

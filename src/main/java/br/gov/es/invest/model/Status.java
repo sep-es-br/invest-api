@@ -6,11 +6,13 @@ import br.gov.es.invest.dto.StatusDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Status extends Entidade {
     
     private String nome;

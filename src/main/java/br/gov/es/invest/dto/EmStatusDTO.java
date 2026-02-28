@@ -6,7 +6,7 @@ import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.utils.DateTimeUtils;
 
 public record EmStatusDTO(
-    String id,
+    Long id,
     StatusDTO status,
     String timestamp    
 ) {

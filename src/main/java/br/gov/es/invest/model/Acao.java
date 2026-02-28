@@ -1,26 +1,21 @@
 package br.gov.es.invest.model;
 
-import java.util.List;
-
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
 import br.gov.es.invest.dto.AcaoDTO;
-import br.gov.es.invest.dto.StatusDTO;
-import br.gov.es.invest.service.EtapaService;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Acao extends Entidade {
     
-
-
     private String nome;
     private String atividadeFinal;
     private AcaoEnum acaoId;

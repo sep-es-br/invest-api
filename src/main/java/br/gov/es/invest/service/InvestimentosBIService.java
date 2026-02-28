@@ -64,7 +64,7 @@ public class InvestimentosBIService extends PentahoBIService {
         return sb.toString();
     }
 
-    private List<Map<String, JsonNode>> extrairDados(String path) {
+    private List<Map<String, JsonNode>> extrairDados(String path) throws RuntimeException{
         
         return extractDataFromResponse(getFileContent(path));
 
@@ -93,7 +93,7 @@ public class InvestimentosBIService extends PentahoBIService {
             return extractDataFromResponse(doRequest(url));
         } catch (Exception ex){
             Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-            return Arrays.asList();
+            throw new RuntimeException(ex);
         }
     }
 

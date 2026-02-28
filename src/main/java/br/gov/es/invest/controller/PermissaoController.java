@@ -1,38 +1,32 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.dto.ModuloDto;
 import br.gov.es.invest.dto.PodeDto;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Modulo;
+import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Pode;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.GrupoService;
 import br.gov.es.invest.service.ModuloService;
 import br.gov.es.invest.service.PodeService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/permissao")
 @RequiredArgsConstructor
@@ -47,26 +41,9 @@ public class PermissaoController {
     private final GrupoService grupoService;
 
     private final TokenService tokenService;
-
-    @PutMapping("/acessoTeste")
-    public void testeDeAcesso(@RequestBody Map<String, String> map) {
-
-        for(Entry<String, String> entry : map.entrySet()){
-            Logger.getGlobal().info(entry.getKey() + " : " + entry.getValue());
-        }
-
-        System.out.println();
-
-    }
     
-
-
-    @GetMapping("/grupoTemAcesso")
-    public boolean checarAcesso(@RequestParam String grupoId,@RequestParam String path){
-        
-        return moduloService.checarAcesso(grupoId, path);
-        
-    }
+    private final ACService acSrv;
+    
 
     @GetMapping("/usuarioTemAcesso")
     public boolean checarAcessoUsuario(@RequestParam String path, @RequestHeader("Authorization") String authToken){
@@ -75,23 +52,44 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
                 
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
+        
+        String acToken = acSrv.getClientToken();
+        
+        List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
+                                .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
+                                .toList();
+                
+        papeis = papeis.stream().filter(p -> Optional.ofNullable(p.getPrioritario()).orElse(Boolean.FALSE)).toList();
 
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) 
             return true;
         
-        return moduloService.checarAcessoUsuario(path, usuario.getId());
+        return moduloService.checarAcessoUsuario(path, papeis);
         
     }
 
     @GetMapping("/byModuloGrupo")
-    public PodeDto getByModuloGrupo(@RequestParam String idModulo, @RequestParam String idGrupo) {
+    public PodeDto getByModuloGrupo(@RequestParam Long idModulo, @RequestParam Long idGrupo) {
 
 
         Pode pode = podeService.findByGrupoModulo(idModulo, idGrupo);
 
         return pode == null ? null : new PodeDto(pode);
     }
+
+    @GetMapping("/isGestorMaster")
+    public Boolean isGestorMaster(@RequestHeader("Authorization") String authToken) {
+
+        authToken = authToken.replace("Bearer ", "");
+        
+        String sub = tokenService.validarToken(authToken);
+        
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
+        
+        return usuario == null ? false : testarFuncao(usuario.getRole(), "GESTOR_MASTER");
+    }
+    
 
     @GetMapping("")
     public PodeDto getPermissao(@RequestParam String path, @RequestHeader("Authorization") String authToken){
@@ -102,7 +100,7 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         if(testarFuncao(usuario.getRole(), "GESTOR_MASTER")) {
             return new PodeDto(
                 null, 
@@ -142,8 +140,16 @@ public class PermissaoController {
         
         String sub = tokenService.validarToken(authToken);
         
-        Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
-
+        String acToken = acSrv.getClientToken();
+        
+        List<Papel> papeis = acSrv.getPapeisBySub("e0473535-05af-4659-bae6-bfa84fbf50a3", acToken).stream()
+                                .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
+                                .toList();
+                
+        papeis = papeis.stream().filter(p -> p.getPrioritario()).toList();
+        
+        Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
+        
         boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
         
         // boolean isGestorMaster = false;
@@ -151,36 +157,62 @@ public class PermissaoController {
         return Arrays.asList(new ItemMenu(
             "Inventário", 
             "home", 
-            isGestorMaster || moduloService.checarAcessoUsuario("inventario", usuario.getId()), 
+            isGestorMaster || moduloService.checarAcessoUsuario("inventario", papeis), 
             "/inventario", 
             Arrays.asList(new ItemMenu(
                 "Investimentos", 
                 null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("inventarioinvestimentos", usuario.getId()), 
+                isGestorMaster || moduloService.checarAcessoUsuario("inventarioinvestimentos", papeis), 
                 "/investimentos", 
                 null
             ))
         ), new ItemMenu(
             "Minha Carteira", 
             "archive", 
-            isGestorMaster || moduloService.checarAcessoUsuario("carteira", usuario.getId()), 
+            isGestorMaster || moduloService.checarAcessoUsuario("carteira", papeis), 
             "/carteira", 
             Arrays.asList( 
-                // new ItemMenu(
-                // "Investimentos", 
-                // null, 
-                // isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", usuario.getId()), 
-                // "/investimentos", 
-                // null
-                // ),
-             new ItemMenu(
-                "Objetos", 
+                new ItemMenu(
+                "Investimentos", 
                 null, 
-                isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", usuario.getId()), 
-                "/objetos", 
+                isGestorMaster || moduloService.checarAcessoUsuario("carteirainvestimentos", papeis), 
+                "/investimentos", 
                 null
+                ),
+                new ItemMenu(
+                   "Objetos", 
+                   null, 
+                   isGestorMaster || moduloService.checarAcessoUsuario("carteiraobjetos", papeis), 
+                   "/objetos", 
+                   null
+               ),
+                new ItemMenu(
+                   "Propostas de Audiência Pública", 
+                   null, 
+                   isGestorMaster || moduloService.checarAcessoUsuario("carteiraaudiencia-publica", papeis), 
+                   "/audiencia-publica", 
+                   null
+               )
             )
-
+        ), new ItemMenu(
+            "Relatório", 
+            "file-stats-report", 
+            isGestorMaster || moduloService.checarAcessoUsuario("relatorios", papeis), 
+            "/relatorio", 
+            Arrays.asList(
+                new ItemMenu(
+                    "Consolidado", 
+                    null, 
+                    true, 
+                    "/consolidado", 
+                    null
+                ), new ItemMenu(
+                    "Detalhado", 
+                    null, 
+                    true, 
+                    "/detalhado", 
+                    null
+                )
             )
         ), new ItemMenu(
             null ,

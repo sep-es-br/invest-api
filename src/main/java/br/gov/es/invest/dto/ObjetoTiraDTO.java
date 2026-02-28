@@ -4,89 +4,104 @@ import java.util.Arrays;
 
 import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
+import br.gov.es.invest.model.Custo;
+import br.gov.es.invest.model.ExecucaoOrcamentaria;
+import br.gov.es.invest.model.IndicadaPor;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.model.VinculadaPor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class ObjetoTiraDTO {
+@Builder
+public record ObjetoTiraDTO (
+    Long id,
+    String unidadeResponsavel,
+    String codPO,
+    String nome,
+    String tipo,
+    Double totalPlanejado,
+    Double totalContratado,
+    Double totalOrcado,
+    Double totalAutorizado,
+    Double totalEmpenhado,
+    Double totalDisponivel,
+    String status
+) {
     
-    private String id;
-    private String unidadeResponsavel;
-    private String codPlano;
-    private String nome;
-    private String tipo;
-    private Double totalPrevisto;
-    private Double totalHomologado;
-    private Double totalOrcado;
-    private Double totalAutorizado;
-    private Double totalEmpenhado;
-    private Double totalDisponivel;
-    private String status;
-
-    public ObjetoTiraDTO(Objeto objeto) {
-
-        this.id = objeto.getId();
-        this.nome = objeto.getNome();
-        this.tipo = objeto.getTipo();
+    public static ObjetoTiraDTO parse(Objeto objeto){
+        
+        if(objeto == null) return null;
 
         UnidadeOrcamentaria unidadeOrcamentaria = objeto.getConta().getUnidadeOrcamentariaImplementadora();
-        this.unidadeResponsavel = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
-        this.codPlano = objeto.getConta().getPlanoOrcamentario() == null ? "Sem P.O." : objeto.getConta().getPlanoOrcamentario().getCodigo();
 
-        this.totalPrevisto = 0d;
-        this.totalHomologado = 0d;
-        this.status = objeto.getEmStatus() == null ? "null" : objeto.getEmStatus().getStatus().getNome();
+        double totalPlanejado = 0d;
+        double totalHomologado = 0d;
 
-        objeto.getCustosEstimadores().forEach(custo -> {
 
-            custo.getIndicadaPor().forEach(indicadaPor -> {
+        for(Custo custo : objeto.getCustosEstimadores()){
 
-                this.totalPrevisto += indicadaPor.getPrevisto();
-                this.totalHomologado += indicadaPor.getContratado();
-            });
+            for( IndicadaPor indicadaPor : custo.getIndicadaPor() ){
+                totalPlanejado += indicadaPor.getPlanejado();
+                totalHomologado += indicadaPor.getContratado();
+            }
 
-        });
+        }
         
-        this.totalOrcado = 0d;
-        this.totalAutorizado = 0d;
-        this.totalDisponivel = 0d;
-        this.totalEmpenhado = 0d;
+        double totalOrcado = 0d;
+        double totalAutorizado = 0d;
+        double totalDisponivel = 0d;
+        double totalEmpenhado = 0d;
 
-        objeto.getConta().getExecucoesOrcamentaria().forEach(exec -> {
+        for ( ExecucaoOrcamentaria exec : objeto.getConta().getExecucoesOrcamentaria() ) {
 
-            exec.getVinculadaPor().forEach(vinculadaPor -> {
-                this.totalOrcado += vinculadaPor.getOrcado();
-                this.totalAutorizado += vinculadaPor.getAutorizado();
-                this.totalDisponivel += vinculadaPor.getDispSemReserva();
-                this.totalEmpenhado += Arrays.stream(vinculadaPor.getEmpenhado()).reduce(0, Double::sum); 
-            });
+            for ( VinculadaPor vinculadaPor : exec.getVinculadaPor() ) {
+                totalOrcado += vinculadaPor.getOrcado();
+                totalAutorizado += vinculadaPor.getAutorizado();
+                totalDisponivel += vinculadaPor.getDispSemReserva();
+                totalEmpenhado += Arrays.stream(vinculadaPor.getEmpenhado()).reduce(0, Double::sum); 
+            }
 
-            
-        });
+        }
+
+
+        return ObjetoTiraDTO.builder()
+                .id(objeto.getId())
+                .unidadeResponsavel(unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla())
+                .codPO(objeto.getConta().getPlanoOrcamentario() == null ? "Sem PO" : objeto.getConta().getPlanoOrcamentario().getCodigo())
+                .nome(objeto.getNome())
+                .tipo(objeto.getTipo())
+                .totalPlanejado(totalPlanejado)
+                .totalContratado(totalHomologado)
+                .totalOrcado(totalOrcado)
+                .totalAutorizado(totalAutorizado)
+                .totalEmpenhado(totalEmpenhado)
+                .totalDisponivel(totalDisponivel)
+                .status(objeto.getEmStatus() == null ? "null" : objeto.getEmStatus().getStatus().getNome())
+                .build();
+        
     }
 
     public static ObjetoTiraDTO parse(TiraObjetoProjection projection) {
-        if(projection == null) return null;
+        
+        return projection == null ? null
+        : ObjetoTiraDTO.builder()
+                        .id(projection.id())
+                        .unidadeResponsavel(projection.unidadeOrcamentaria())
+                        .codPO(projection.codPo())
+                        .nome(projection.nome())
+                        .tipo(projection.tipo())
+                        .totalPlanejado(projection.totalPlanejado())
+                        .totalContratado(projection.totalContratado())
+                        .totalOrcado(projection.totalOrcado())
+                        .totalAutorizado(projection.totalAutorizado())
+                        .totalEmpenhado(projection.totalEmpenhado())
+                        .totalDisponivel(projection.totalDisponivel())
+                        .status(projection.status())
+                        .build();
 
-        ObjetoTiraDTO dto = new ObjetoTiraDTO();
-        dto.setId(projection.id());
-        dto.setUnidadeResponsavel(projection.unidadeOrcamentaria());
-        dto.setCodPlano(projection.codPo());
-        dto.setNome(projection.nome());
-        dto.setTipo(projection.tipo());
-        dto.setTotalPrevisto(projection.totalPrevisto());
-        dto.setTotalHomologado(projection.totalContratado());
-        dto.setTotalOrcado(projection.totalOrcado());
-        dto.setTotalAutorizado(projection.totalAutorizado());
-        dto.setTotalEmpenhado(projection.totalEmpenhado());
-        dto.setTotalDisponivel(projection.totalDisponivel());
-        dto.setStatus(projection.status());
 
-        return dto;
     }
 }

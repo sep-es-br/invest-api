@@ -1,20 +1,22 @@
 package br.gov.es.invest.dto;
 
-import java.util.List;
-
-import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.EmStatus;
-import br.gov.es.invest.model.Investimento;
+import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.Parecer;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 
 public record ObjetoDto(
-    String id,
+    Long id,
+    Integer gnd,
     String tipoConta,
     String tipo,
+    String hashProposta,
     String nome,
     EmStatusDTO emStatus,
-    EmEtapaDTO emEtapa, 
+    List<EmEtapaDTO> emEtapa, 
     String descricao,
     LocalidadeDto microregiaoAtendida,
     String infoComplementares,
@@ -32,23 +34,28 @@ public record ObjetoDto(
     
     public ObjetoDto(Objeto model) {
         this(
-            model.getId(), 
+            model.getId(),
+            model.getGnd(),
             "Investimento", 
             model.getTipo(), 
+            model.getHashProposta(),
             model.getNome(), 
             EmStatusDTO.parse(model.getEmStatus()),
-            EmEtapaDTO.parse(model.getEmEtapa()),
+            model.getEmEtapa().stream().map(EmEtapaDTO::parse).toList(),
             model.getDescricao(), 
-            model.getMicrorregiao() == null ? null : new LocalidadeDto(model.getMicrorregiao()), 
+            Optional.ofNullable(model.getMicrorregiao()).map(LocalidadeDto::new).orElse(null), 
             model.getInfoComplementares(), 
-            model.getTiposPlano() == null ? null : model.getTiposPlano().stream().map(tipo -> new TipoPlanoDto(tipo)).toList(),
+            Optional.ofNullable(model.getTiposPlano()).map(list -> list.stream().map(TipoPlanoDto::new).toList()).orElse(null),
             model.getContrato(),
-            model.getAreaTematica() == null ? null : new AreaTematicaDto(model.getAreaTematica()),
-            model.getCustosEstimadores().stream().map(custo -> new CustoDTO(custo)).sorted((c1, c2) -> c1.getAnoExercicio().compareTo(c2.getAnoExercicio())).toList(),
-            model.getResponsavel() == null ? null : new UsuarioDto(model.getResponsavel()),
+            Optional.ofNullable(model.getAreaTematica()).map(AreaTematicaDto::new).orElse(null),
+
+            Optional.ofNullable(model.getCustosEstimadores()).orElse(new ArrayList<>()).stream()
+                    .sorted(Comparator.comparing(Custo::getAnoExercicio)).map(CustoDTO::parse).toList(),
+
+            UsuarioDto.parse(model.getResponsavel()),
             new ContaDto(model.getConta()),
-            model.getApontamentos() == null ? null : model.getApontamentos().stream().map(ApontamentoDTO::parse).toList(),
-            model.getPareceres() == null ? null : model.getPareceres().stream().map(ParecerDTO::parse).toList(),
+            Optional.ofNullable(model.getApontamentos()).map(list -> list.stream().map(ApontamentoDTO::parse).toList()).orElse(null),
+            Optional.ofNullable(model.getPareceres()).map(list -> list.stream().map(ParecerDTO::parse).toList()).orElse(null),
             model.getPossuiOrcamento()
         );
     }

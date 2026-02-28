@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.VinculadaPor;
 
 public record VinculadaPorDto(
-    String id,
+    Long id,
     FonteOrcamentariaDTO fonteOrcamentaria,
     double autorizado,
     double dispSemReserva,

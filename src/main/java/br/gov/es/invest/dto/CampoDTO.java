@@ -3,7 +3,7 @@ package br.gov.es.invest.dto;
 import br.gov.es.invest.model.Campo;
 
 public record CampoDTO(
-    String id,
+    Long id,
     String campoId,
     String nome
 ) {

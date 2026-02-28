@@ -1,15 +1,13 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.model.FonteOrcamentaria;
+import br.gov.es.invest.repository.FonteOrcamentariaRepository;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.model.FonteOrcamentaria;
-import br.gov.es.invest.repository.FonteOrcamentariaRepository;
 
 @Service
 public class FonteOrcamentariaService {
@@ -33,38 +31,24 @@ public class FonteOrcamentariaService {
         return repository.findBy(Example.of(probe), q -> q.firstValue());
 
     }
-
-    public FonteOrcamentaria findOrCreate(String codigo, String nome) {
-
-        FonteOrcamentaria probeFonte = new FonteOrcamentaria();
-        probeFonte.setCodigo(codigo);
-
-        Optional<FonteOrcamentaria> optFonte = repository.findBy(Example.of(probeFonte), query -> query.first());
-        
-        if(optFonte.isPresent()) {
-            return optFonte.get();
-        } else {
-            FonteOrcamentaria novaFonte = new FonteOrcamentaria();
-
-            novaFonte.setCodigo(codigo);
-            novaFonte.setNome(nome);
-
-            return repository.save(novaFonte);
-        }
+    
+    public Optional<FonteOrcamentaria> findByCodigo(String codigo) {
+        return repository.findByCodigo(codigo);
     }
 
     public List<FonteOrcamentaria> findFontesExtras(){
         return repository.findFontesExtra();
     }
 
-    public String getCodById(String id){
+    public String getCodById(Long id){
         Optional<FonteOrcamentaria> optFonte = repository.findById(id);
 
-        if(optFonte.isPresent()){
-            return optFonte.get().getCodigo();
-        } else {
-            return null;
-        }
+        return optFonte.map(fonte -> fonte.getCodigo()).orElse(null);
+ 
+    }
+
+    public Optional<FonteOrcamentaria> findById(Long id){
+        return repository.findById(id);
     }
 
 }

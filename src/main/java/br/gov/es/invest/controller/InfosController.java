@@ -1,38 +1,15 @@
 package br.gov.es.invest.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-
 import br.gov.es.invest.dto.CardsTotaisDto;
 import br.gov.es.invest.dto.OrgaoDto;
 import br.gov.es.invest.dto.PapelDto;
 import br.gov.es.invest.dto.SetorDto;
 import br.gov.es.invest.dto.ValoresCusto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Usuario;
 import br.gov.es.invest.service.ACService;
 import br.gov.es.invest.service.AnoService;
-import br.gov.es.invest.service.CustoService;
 import br.gov.es.invest.service.FonteOrcamentariaService;
 import br.gov.es.invest.service.InfosService;
 import br.gov.es.invest.service.InvestimentosBIService;
@@ -40,30 +17,53 @@ import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/infos")
 @RequiredArgsConstructor
 public class InfosController {
-
-    @Value("${frontend.host}")
-    private String frontHost;
 
     private final InvestimentosBIService investimentosBIService;
 
     private final InfosService service;
     private final AnoService anoService;
     private final ACService aCService;
-    private final CustoService custoService;
     private final UnidadeOrcamentariaService unidadeService;
     private final PlanoOrcamentarioService planoService;
     private final FonteOrcamentariaService fonteService;
     private final TokenService tokenService;
     private final UsuarioService usuarioService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    
+    @PostMapping("/frontendError")
+    public void printFrontendError(
+            @RequestBody String error
+    ){
+        Logger.getGlobal().severe("frontend error: " + error);
+    }
 
     @GetMapping("/allAnos")
     public ResponseEntity<Set<Integer>> getTodosAnos() {
@@ -90,46 +90,49 @@ public class InfosController {
     
     @GetMapping("/papeis")
     public List<PapelDto> getPapeis(@RequestParam String setorGuid) {
-        return aCService.getPapeis(setorGuid);
+        return aCService.getPapeis(setorGuid).stream()
+                .sorted((p1, p2) -> p1.agenteNome().compareToIgnoreCase(p2.agenteNome()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/cardsTotais")
     public ResponseEntity<?> getCardsTotais(
         @RequestParam(required=false) String nome, @RequestParam Boolean podeVerUnidades, @RequestHeader("Authorization") String authToken,
-        @RequestParam(required=false) String idUo, @RequestParam(required=false) String idFonte,
+        @RequestParam(required=false) String idUo, @RequestParam(required=false) Long idFonte,
         @RequestParam(required=false) String idPo, @RequestParam Integer ano, @RequestParam(required = false) Integer gnd
         ) {
             try {
-                List<String> idsUo = null;
+                List<Long> idsUo = null;
                 if(idUo == null && !podeVerUnidades) {
                     
                     authToken = authToken.replace("Bearer ", "");
             
                     String sub = tokenService.validarToken(authToken);
                             
-                    Usuario usuario = usuarioService.getUserBySub(sub).orElse(null);
+                    Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                     
                    
-                    List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByOrgaoId(usuario.getSetor().getOrgao());
+                    List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
 
                     idsUo = unidades.stream().map(u -> u.getId()).toList();
                 } else if(idUo != null) {
-                    idsUo = new JsonMapper().readValue(idUo, new TypeReference<List<String>>() {});
+                    idsUo = new JsonMapper().readValue(idUo, new TypeReference<List<Long>>() {});
                 }
-                List<String> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<String>>() {});
+                List<Long> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<Long>>() {})
+                                       ;
 
-                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo);    
+                ValoresCusto totaisCusto = service.getTotaisInvestimento(nome, idFonte, ano, idsUo, idsPo, gnd);    
               
                 ArrayList<String> codsUo = new ArrayList<>();
                 ArrayList<String> codsPo = new ArrayList<>();
 
                 if(idsUo != null)
-                    for(String idUoS : idsUo) {
+                    for(Long idUoS : idsUo) {
                         codsUo.add(unidadeService.getCodById(idUoS));
                     }
                 
                 if(idsPo != null)
-                    for(String idPoS : idsPo) {
+                    for(Long idPoS : idsPo) {
                         codsPo.add(planoService.getCodById(idPoS));
                     }
                 String codUo = idsUo == null ? null : String.join(",", codsUo) ;
@@ -152,7 +155,7 @@ public class InfosController {
                 
                 
                  return ResponseEntity.ok(new CardsTotaisDto(
-                    totaisCusto.previsto(), 
+                    totaisCusto.planejado(), 
                     totaisCusto.contratado(), 
                     linhaResultado.get("orcado").asDouble(), 
                     linhaResultado.get("autorizado").asDouble(), 
@@ -161,7 +164,7 @@ public class InfosController {
                     linhaResultado.get("disponivel_sem_reserva").asDouble(), 
                     linhaResultado.get("pago").asDouble()
                     ));
-            } catch (Exception ex) {
+            } catch (JsonProcessingException | NumberFormatException ex) {
                 Logger.getGlobal().log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                 return MensagemErroRest.asResponseEntity(
                     HttpStatus.INTERNAL_SERVER_ERROR, 

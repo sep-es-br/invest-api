@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Modulo;
+import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.repository.GrupoRepository;
 import br.gov.es.invest.repository.ModuloRepository;
 
@@ -35,11 +38,11 @@ public class ModuloService {
         return repository.findByPathId(pathId);
     }
 
-    public boolean temAcessoPorDescedencia(String grupoId, String moduloId) {
+    public boolean temAcessoPorDescedencia(Long grupoId, Long moduloId) {
         return repository.temAcessoPorDescedencia(grupoId, moduloId);
     }
 
-    public boolean checarAcesso(String grupoId, String path){
+    public boolean checarAcesso(Long grupoId, String path){
         Modulo modulo = findByPathId(path);
 
         if(modulo == null) {
@@ -56,13 +59,40 @@ public class ModuloService {
         
     }
 
-    public boolean checarAcessoUsuario(String path, String userId){
-        
-        for(Grupo grupo : grupoRepository.getGruposByUsuario(userId)){
-            if(this.checarAcesso(grupo.getId(), path))
-                return true;
-        }
+    public boolean checarAcessoUsuario(String path, List<Papel> papeis){
 
+        
+        for(Papel papel : papeis){
+            if(papel.getId() != null) {
+                for(Grupo grupo : grupoRepository.getGruposByPapel(papel.getId())){
+                    if(this.checarAcesso(grupo.getId(), path))
+                        return true;
+                }
+            } else if(papel.getSetor() != null && papel.getPrioritario()) {
+                Setor setor = papel.getSetor();
+                
+                if(setor.getId() != null){
+                    for(Grupo grupo : grupoRepository.getGruposBySetor(setor.getId())){
+                        if(this.checarAcesso(grupo.getId(), path))
+                            return true;
+                    }
+                } else if(setor.getOrgao() != null) {
+                    
+                    Orgao orgao = setor.getOrgao();
+                    
+                    if(orgao.getId() != null){
+                        for(Grupo grupo : grupoRepository.getGruposByOrgao(orgao.getId())){
+                            if(this.checarAcesso(grupo.getId(), path))
+                                return true;
+                        }
+                    }
+                    
+                }
+                                
+            }
+            
+        }
+        
         return false;
         
     }

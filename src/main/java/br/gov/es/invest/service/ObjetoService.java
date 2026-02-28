@@ -1,58 +1,57 @@
 package br.gov.es.invest.service;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.core.Neo4jOperations;
-import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.dto.ObjetoFiltroDTO;
-import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import br.gov.es.invest.dto.ObjetoTiraDTO;
+import br.gov.es.invest.dto.OrdemItemDto;
 import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
-import br.gov.es.invest.model.Etapa;
+import br.gov.es.invest.model.EtapaEnum;
 import br.gov.es.invest.model.Fluxo;
-import br.gov.es.invest.model.Investimento;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.Status;
 import br.gov.es.invest.model.StatusEnum;
-import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ObjetoRepository;
 import br.gov.es.invest.utils.DataListResult;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jOperations;
+import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ObjetoService {
     
-    @Autowired
-    private ObjetoRepository repository;
+    private final ObjetoRepository repository;
 
-    @Autowired
-    private Neo4jOperations neo4jOperations;
+    private final Neo4jOperations neo4jOperations;
+    private final Neo4jClient neo4jClient;
 
     
-    private InvestimentoService investimentoService;
-    private  UnidadeOrcamentariaService unidadeService;
-    private  PlanoOrcamentarioService planoService;
-    private  ContaService contaService;
+    private final InvestimentoService investimentoService;
+    private final UnidadeOrcamentariaService unidadeService;
+    private final PlanoOrcamentarioService planoService;
+    private final ContaService contaService;
     
-    private  StatusService statusService;
+    private final StatusService statusService;
+    private final EtapaService etapaSrv;
 
-    private FluxoService fluxoService;
+    private final FluxoService fluxoService;
+    
+    private final TipoPlanoService tpPlanoSrv;
 
 
 
@@ -61,49 +60,18 @@ public class ObjetoService {
     }
 
     public Objeto save(Objeto objeto) {
-        UnidadeOrcamentaria unidade = unidadeService.findOrCreateByCod(objeto.getConta().getUnidadeOrcamentariaImplementadora());
         
-        // define o Investimento que vai ser associado
-
-        // se não tiver PO usa o investimento generico
-
-        Conta conta = null;
-        if(objeto.getConta().getPlanoOrcamentario() == null) {
-            conta = contaService.getGenericoByCodUnidade(unidade);
-        } else { // se não, busca o investimento
-
-            Optional<Investimento> optInvestimento = investimentoService.getByCodUoPo(
-                objeto.getConta().getUnidadeOrcamentariaImplementadora().getCodigo(), 
-                objeto.getConta().getPlanoOrcamentario().getCodigo()
-            );
-            Investimento investimento;
-
-            if(optInvestimento.isEmpty()){ // se não existir, cria um novo
-
-                    PlanoOrcamentario plano = planoService.findOrCreateByCod(objeto.getConta().getPlanoOrcamentario());
-
-                    investimento = new Investimento();
-                    investimento.setNome(objeto.getNome());
-                    investimento.setUnidadeOrcamentariaImplementadora(unidade);
-                    investimento.setPlanoOrcamentario(plano);
-            } else { // se existir usa o existente
-                investimento = optInvestimento.get();
-            }
-            
-            conta = investimento;
-
-        }
-        
-        objeto.setConta(conta);
 
         if(objeto.getEmStatus() == null) {
+            
+            ZonedDateTime agora = ZonedDateTime.now();
             
             Status novoStatus = statusService.getByStatusId(StatusEnum.SOLICITADO.name()).get();
 
             EmStatus emStatus = new EmStatus();
 
             emStatus.setStatus(novoStatus);
-            emStatus.setTimestamp(ZonedDateTime.now());
+            emStatus.setTimestamp(agora);
 
             objeto.setEmStatus(emStatus);
 
@@ -113,94 +81,239 @@ public class ObjetoService {
             emEtapa.setAtividade("Avaliar Solicitação");
             emEtapa.setDevolvido(false);
             emEtapa.setEtapa(fluxo.getEtapaInicial());
+            emEtapa.setTimestamp(agora);
             
-            objeto.setEmEtapa(emEtapa);
+            objeto.getEmEtapa().add(emEtapa);
             
-        }
-        
-        if(objeto.getId() != null) {
-            List<TipoPlano> filhoAtuais = repository.findById(objeto.getId()).get().getTiposPlano();
-
-            List<String> idsFilhoFinal = objeto.getTiposPlano().stream().map( filho -> filho.getId()).toList();
-
-            List<TipoPlano> orfaos = filhoAtuais.stream().filter(filho -> !idsFilhoFinal.contains(filho.getId())).toList();
-
-            if (!orfaos.isEmpty()) {
-                repository.removerTipos(orfaos.stream().map(orfao -> orfao.getId()).toList());
-            }
-
         }
 
         return repository.save(objeto);
     }
 
-    public Objeto findById(String id){
+    public Objeto findById(Long id){
         return repository.findById(id).orElse(null);
     }
+    
+    public List<String> listarHashUsadosPorDemandaPublica() {
+        
+        String cypher = 
+        """
+            MATCH (obj:Objeto)-[:DO_TIPO]->(n:TipoPlano) 
+            WHERE n.sigla = 'DA'
+              AND obj.hashProposta IS NOT NULL
+            RETURN obj.hashProposta AS hash
+        """;
 
-    public List<Objeto> getAllListByFilter(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String fonteId, Pageable pageable){
-        List<ObjetoTiraProjection> listTira = Arrays.asList();
+        return new ArrayList<>(neo4jClient
+                    .query(cypher)
+                    .fetchAs(String.class)
+                    .mappedBy((typeSystem, record) -> record.get("hash").asString())
+                    .all()
+        );
+        
+    }
 
+    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, Integer gnd, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){
+        
+        String cypherBase = """
+                MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
+                    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta)
+                WHERE
+                    ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
+                    AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
+                    AND ($idStatus IS NULL OR id(status) = $idStatus)
+                    AND ($gnd IS NULL OR obj.gnd = $gnd)
+
+                OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
+                WHERE $idsPo IS NULL OR id(plano) IN $idsPo
+
+
+                // Filtro decisivo para PO
+                WITH conta, obj, status, unidade, plano
+                WHERE $idsPo IS NULL OR NOT plano IS NULL
+
+                CALL(conta){
+                    MATCH (conta)
+                    OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vp:VINCULADA_POR]->(fonte:FonteOrcamentaria)
+                    WHERE
+                        exec.anoExercicio = $exercicio
+                        AND ($idFonte IS NULL OR $idFonte = id(fonte))
+                    RETURN
+                        SUM(vp.orcado) AS totalOrcado,
+                        SUM(vp.autorizado) AS totalAutorizado,
+                        SUM(vp.dispSemReserva) AS totalDisponivel,
+                        SUM(REDUCE(total=0,e IN vp.empenhado | total + e ))  AS totalEmpenhado
+                }
+                CALL(obj) {
+                    MATCH (obj)
+                    OPTIONAL MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[ip:INDICADA_POR]->(fonte:FonteOrcamentaria)
+                    WHERE 
+                        custo.anoExercicio = $exercicio
+                        AND ($idFonte IS NULL OR $idFonte = id(fonte))
+                    RETURN
+                        sum(ip.planejado) AS totalPlanejado, 
+                        sum(ip.contratado) AS totalContratado 
+                }
+
+                """;
+
+        Map<String, Object> params = new HashedMap<>();
+        params.put("exercicio", exercicio);
+        params.put("nome", nome);
+        params.put("idsUnidade", idUnidade);
+        params.put("idStatus", statusId);
+        params.put("idsPo", idPo);
+        params.put("idFonte", fonteId);
+        params.put("gnd", gnd);
+
+        String cypherQuery = cypherBase +
+                        """
+                        RETURN DISTINCT
+                            id(obj) AS id,
+                            unidade.codigo AS codUnidade,
+                            unidade.sigla AS siglaUnidade,
+                            unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,
+                            plano.codigo AS codPO,
+                            obj.nome AS nome,
+                            obj.tipo AS tipo,
+                            totalPlanejado,
+                            totalContratado,
+                            totalOrcado,
+                            totalAutorizado,
+                            totalEmpenhado,
+                            totalDisponivel,
+                            status.nome AS status
+
+                        """;
+
+        if(ordem != null && !ordem.isEmpty())
+            cypherQuery += "ORDER BY " + ordem.stream().map(item -> item.campo() + " " + item.direcao()).collect(Collectors.joining(", ")) + "\n";
+       
         if(pageable != null) {
-            listTira = repository.getAllListByFilter(exercicio, nome, idUnidade, idPo, statusId, pageable);
-        } else {
-            listTira = repository.getAllListByFilter(exercicio, nome, idUnidade, idPo, statusId);
+            cypherQuery += "SKIP $skip LIMIT $limit";
+            params.put("skip", pageable.getOffset());
+            params.put("limit", pageable.getPageSize());
         }
 
-        List<Objeto> objetoFiltrado = listTira.stream().map(Objeto::parse).toList();
+        String cypherCount = cypherBase +
+                            """
+                            RETURN
+                                count(DISTINCT obj)
+                            """;
 
-        if(statusId != null) {
-            objetoFiltrado = objetoFiltrado.stream()
-                            .filter( obj -> obj.getEmStatus().getStatus().getId().equals(statusId) )
-                            .toList();      
-        }
+        
 
-        for(Objeto objeto : objetoFiltrado) {
-            objeto.filtrar(exercicio, fonteId);
-        }
-
-        return objetoFiltrado;
+        return new DataListResult<>(
+            neo4jOperations.findAll(cypherQuery, params, ObjetoTiraDTO.class),
+            (int) neo4jOperations.count(cypherCount, params)
+            );
 
     }
 
-    public List<Objeto> getAllListByFilterEmProcessamento(Integer exercicio, String nome, List<String> idUnidade, List<String> idPo, String statusId, String etapaId, String fonteId, Pageable pageable){
-        List<ObjetoTiraProjection> listTira = Arrays.asList();
+    public DataListResult<ObjetoTiraDTO> getAllListByFilterEmProcessamento(Integer exercicio, Integer gnd, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long etapaId, Long fonteId, Pageable pageable){
+         
+        String cypherBase = """
+                MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
+                    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta), (obj)-[:EM]->(etapa:Etapa)
+                WHERE
+                    ($nome IS NULL OR apoc.text.clean(obj.nome) contains apoc.text.clean($nome))
+                     AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
+                     AND ($idStatus IS NULL OR id(status) = $idStatus)
+                     AND ($idEtapa IS NULL OR id(etapa) = $idEtapa)
+                     AND NOT EXISTS ((obj)-[:EM]->(:Status{statusId: 'CADASTRADO'}))
+                     AND ($gnd IS NULL OR obj.gnd = $gnd)
+
+                OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
+                WHERE $idsPo IS NULL OR id(plano) IN $idsPo
+
+
+                // Filtro decisivo para PO
+                WITH conta, obj, status, unidade, plano
+                WHERE $idsPo IS NULL OR NOT plano IS NULL
+
+                CALL(conta){
+                    MATCH (conta)
+                    OPTIONAL MATCH (conta)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vp:VINCULADA_POR]->(fonte:FonteOrcamentaria)
+                    WHERE
+                        exec.anoExercicio = $exercicio
+                        AND ($idFonte IS NULL OR $idFonte = id(fonte))
+                    RETURN
+                        SUM(vp.orcado) AS totalOrcado,
+                        SUM(vp.autorizado) AS totalAutorizado,
+                        SUM(vp.dispSemReserva) AS totalDisponivel,
+                        SUM(REDUCE(total=0,e IN vp.empenhado | total + e ))  AS totalEmpenhado
+                }
+                CALL(obj) {
+                    MATCH (obj)
+                    OPTIONAL MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[ip:INDICADA_POR]->(fonte:FonteOrcamentaria)
+                    WHERE 
+                        custo.anoExercicio = $exercicio
+                        AND ($idFonte IS NULL OR $idFonte = id(fonte))
+                    RETURN
+                        sum(ip.planejado) AS totalPlanejado, 
+                        sum(ip.contratado) AS totalContratado 
+                }
+
+                """;
+
+        Map<String, Object> params = new HashedMap<>();
+        params.put("exercicio", exercicio);
+        params.put("nome", nome);
+        params.put("idsUnidade", idUnidade);
+        params.put("idStatus", statusId);
+        params.put("idEtapa", etapaId);
+        params.put("idsPo", idPo);
+        params.put("idFonte", fonteId);
+        params.put("gnd", gnd);
+
+        String cypherQuery = cypherBase +
+                        """
+                        RETURN DISTINCT
+                            id(obj) AS id,
+                            unidade.codigo AS codUnidade,
+                            unidade.sigla AS siglaUnidade,
+                            unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,
+                            plano.codigo AS codPO,
+                            obj.nome AS nome,
+                            obj.tipo AS tipo,
+                            totalPlanejado,
+                            totalContratado,
+                            totalOrcado,
+                            totalAutorizado,
+                            totalEmpenhado,
+                            totalDisponivel,
+                            status.nome AS status
+                        ORDER BY codUnidade, codPO
+                        
+                        """;
 
         if(pageable != null) {
-            listTira = repository.getAllListByFilterEmProcessamento(exercicio, nome, idUnidade, idPo, statusId, pageable);
-        } else {
-            listTira = repository.getAllListByFilterEmProcessamento(exercicio, nome, idUnidade, idPo, statusId);
+            cypherQuery += "SKIP $skip LIMIT $limit";
+            params.put("skip", pageable.getOffset());
+            params.put("limit", pageable.getPageSize());
         }
 
-        // List<Objeto> objetoFiltrado = listTira.stream().map(Objeto::parse).filter(obj -> obj.getEmEtapa() != null).toList();
+        String cypherCount = cypherBase +
+                            """
+                            RETURN
+                                count(DISTINCT obj)
+                            """;
 
-        // if(statusId != null) {
-        //     objetoFiltrado = objetoFiltrado.stream()
-        //                     .filter( obj -> obj.getEmStatus().getStatus().getId().equals(statusId) )
-        //                     .toList();      
-        // }
+        
+        return new DataListResult<>(
+            neo4jOperations.findAll(cypherQuery, params, ObjetoTiraDTO.class),
+            (int) neo4jOperations.count(cypherCount, params)
+        );
 
-        // if(etapaId != null) {
-        //     objetoFiltrado = objetoFiltrado.stream()
-        //                     .filter( obj -> obj.getEmEtapa() != null && obj.getEmEtapa().getEtapa().getId().equals(etapaId) )
-        //                     .toList();      
-        // }
-
-        // for(Objeto objeto : objetoFiltrado) {
-        //     objeto.filtrar(exercicio, fonteId);
-        // }
-
-        return listTira.stream().map(Objeto::parse).toList();
-        // return objetoFiltrado;
 
     }
 
-    public List<Objeto> getAllByFilter(Integer exercicio, String nome, String idUnidade, String idPo, String statusId, Pageable pageable) {
+    public List<Objeto> getAllByFilter(Integer exercicio, String nome, Long idUnidade, String idPo, Long statusId, Pageable pageable) {
         
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
 
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         objetoProbe.setConta(contaProbe);
 
         if(nome != null) {
@@ -219,7 +332,7 @@ public class ObjetoService {
                 matcher = matcher.withMatcher("conta.planoOrcamentario", ExampleMatcher.GenericPropertyMatchers.exact()).withIncludeNullValues();
             } else {
                 PlanoOrcamentario planoProbe = new PlanoOrcamentario();
-                planoProbe.setId(idPo);
+                planoProbe.setId(Long.valueOf(idPo));
                 contaProbe.setPlanoOrcamentario(planoProbe);
             }
         }
@@ -236,7 +349,7 @@ public class ObjetoService {
 
         // }
 
-        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe));
+        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe, matcher));
 
         if(statusId != null) {
             objetoFiltrado = objetoFiltrado.stream()
@@ -257,14 +370,14 @@ public class ObjetoService {
     }
 
     public List<Objeto> findByFilter(
-        String nome, String unidadeId, String planoId,
-        Integer anoExercicio, String fonteId
+        String nome, Long unidadeId, String planoId,
+        Integer anoExercicio, Long fonteId
     ) {
 
         ExampleMatcher matcher = ExampleMatcher.matching();
         Objeto objetoProbe = new Objeto();
 
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         objetoProbe.setConta(contaProbe);
 
         if(nome != null) {
@@ -283,12 +396,12 @@ public class ObjetoService {
                 matcher = matcher.withMatcher("conta.planoOrcamentario", ExampleMatcher.GenericPropertyMatchers.exact()).withIncludeNullValues();
             } else {
                 PlanoOrcamentario planoProbe = new PlanoOrcamentario();
-                planoProbe.setId(planoId);
+                planoProbe.setId(Long.valueOf(planoId));
                 contaProbe.setPlanoOrcamentario(planoProbe);
             }
         }
 
-        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe));
+        List<Objeto> objetoFiltrado = repository.findAll(Example.of(objetoProbe, matcher));
 
         for(Objeto objeto : objetoFiltrado) {
             objeto.filtrar(anoExercicio, fonteId);
@@ -297,7 +410,7 @@ public class ObjetoService {
         return objetoFiltrado;
     }
 
-    public void updateStatus(String objId, Status novoStatus) {
+    public void updateStatus(Long objId, Status novoStatus) {
         Optional<Objeto> optObjeto = repository.findById(objId);
         
         if(optObjeto.isEmpty()) return;
@@ -310,47 +423,40 @@ public class ObjetoService {
 
     }
 
-    public Objeto getByCusto(Custo custo){
-        return repository.getByCusto(custo.getId());
-    }
-
-    public Optional<Objeto> getById(String id, boolean updateStatus) {
+    public Optional<Objeto> getById(Long id, boolean updateStatus) {
         Optional<Objeto> optObjeto = repository.findById(id);
         
         if(optObjeto.isPresent() 
-            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO) 
-            && updateStatus){
+            && updateStatus
+            && optObjeto.get().getEmStatus().getStatus().getStatusId().equals(StatusEnum.SOLICITADO)){
             Status novoStatus = statusService.getByStatusId(StatusEnum.EM_ANALISE.name()).get();
-
+            
+            
             statusService.aplicarStatus(optObjeto.get(), novoStatus);
+            
+            EmEtapa emEtapa = new EmEtapa();
+            emEtapa.setAtividade("Avaliar Solicitação");
+            emEtapa.setDevolvido(false);
+            emEtapa.setEtapa(etapaSrv.getEtapaByEtapaId(EtapaEnum.ANALISE_TECNICA));
+            emEtapa.setTimestamp(ZonedDateTime.now());
+            
+            etapaSrv.addEmEtapa(optObjeto.get(), emEtapa);
+            
             optObjeto = repository.findById(id);
         }
 
         return optObjeto;
     }
 
-    public Optional<Objeto> getById(String id) {
+    public Optional<Objeto> getById(Long id) {
         return this.getById(id, false);
     }
 
-    public List<Objeto> getAllByIds(List<String> ids) {
+    public List<Objeto> getAllByIds(List<Long> ids) {
         return repository.findAllById(ids);
     }
 
-    public int countByFilter(String nome, String codUnidade, String codPO, String status, Integer exercicio) {
-
-        return repository.countByFilter(nome, codUnidade, codPO, status, exercicio);
-    }
-
-    public int countByInvestimentoFilter(String nome, List<String> codUnidade, List<String> codPO, Integer exercicio) {
-        return repository.countByInvestimentoFilter(nome, codUnidade, codPO, exercicio);
-    }
-
-    public List<Status> findStatusCadastrados() {
-        return repository.findStatusCadastrados();
-    }
-
-    public Objeto removerObjeto(String objetoId) {
+    public Objeto removerObjeto(Long objetoId) {
         Optional<Objeto> optObjeto = repository.findById(objetoId);
 
         if(optObjeto.isEmpty())
@@ -364,9 +470,9 @@ public class ObjetoService {
         return this.findObjetoByConta(conta.getId());
     }
 
-    public List<Objeto> findObjetoByConta(String contaId) {
+    public List<Objeto> findObjetoByConta(Long contaId) {
         Objeto objetoProbe = new Objeto();
-        Conta contaProbe = new Conta();
+        Conta contaProbe = new Conta(null);
         contaProbe.setId(contaId);
         objetoProbe.setConta(contaProbe);
 
@@ -374,33 +480,34 @@ public class ObjetoService {
     }
 
     public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
-            String idConta, Integer exercicio, String idFonte, Integer gnd, Pageable pageable
+            Long idConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
     ) {
-        String cypher = "MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),\r\n" + //
-                        "        (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r\n" + //
-                        "WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                        "    AND (elementId(inv) = $idConta)\r\n" + //
-                        "CALL (obj) {\r\n" + //
-                        "    MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR elementId(fonteCusto) = $idFonte)\r\n" + //
-                        "        AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r\n" + //
-                        "        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r\n" + //
-                        "    RETURN \r\n" + //
-                        "        ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r\n" + //
-                        "        sum(indicada_por.previsto) AS totalPrevisto,\r\n" + //
-                        "        sum(indicada_por.contratado) AS totalContratado \r\n" + //
-                        "}\r\n" + //
-                        "CALL (inv) {\r\n" + //
-                        "    MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r\n" + //
-                        "    WHERE ($idFonte IS NULL OR elementId(fonteExec) = $idFonte)\r\n" + //
-                        "        AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r\n" + //
-                        "        AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r\n" + //
-                        "    RETURN\r\n" + //
-                        "        sum(vinculada_por.orcado) AS totalOrcado,\r\n" + //
-                        "        sum(vinculada_por.autorizado) AS totalAutorizado,\r\n" + //
-                        "        sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r\n" + //
-                        "        sum(vinculada_por.dispSemReserva) AS totalDisponivel\r\n" + //
-                        "}\r\n";
+        String cypher = """
+                        MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status{statusId: 'CADASTRADO'}),\r
+                                (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r
+                        WHERE (id(inv) = $idConta)\r
+                        CALL (obj) {\r
+                            MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r
+                            WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r
+                                AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r
+                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r
+                            RETURN \r
+                                ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r
+                                sum(indicada_por.planejado) AS totalPlanejado,\r
+                                sum(indicada_por.contratado) AS totalContratado \r
+                        }\r
+                        CALL (inv) {\r
+                            MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r
+                            WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r
+                                AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r
+                                AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r
+                            RETURN\r
+                                sum(vinculada_por.orcado) AS totalOrcado,\r
+                                sum(vinculada_por.autorizado) AS totalAutorizado,\r
+                                sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r
+                                sum(vinculada_por.dispSemReserva) AS totalDisponivel\r
+                        }\r
+                        """ ;
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("idConta", idConta);
@@ -412,14 +519,14 @@ public class ObjetoService {
 
         int count = (int) this.neo4jOperations.count(cypherCount, params);
         
-        String cypherQuery = cypher + "RETURN\r\n" + //
-                        "        elementId(obj) AS id,\r\n" + //
+        String cypherQuery = cypher + "RETURN DISTINCT \r\n" + //
+                        "        id(obj) AS id,\r\n" + //
                         "        obj.nome AS nome,\r\n" + //
                         "        po.codigo AS codPO,\r\n" + //
                         "        unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria,\r\n" + //
                         "        status.nome AS status,\r\n" + //
                         "        obj.tipo AS tipo,\r\n" + //
-                        "        totalPrevisto,\r\n" + //
+                        "        totalPlanejado,\r\n" + //
                         "        totalContratado,\r\n" + //
                         "        totalOrcado,\r\n" + //
                         "        totalAutorizado,\r\n" + //
@@ -438,7 +545,7 @@ public class ObjetoService {
     }
 
 
-    public List<Objeto> findObjetoByContaFiltrado(Conta conta, Integer exercicio, String fonteId) {
+    public List<Objeto> findObjetoByContaFiltrado(Conta conta, Integer exercicio, Long fonteId) {
         List<Objeto> todosObjetos = findObjetoByConta(conta);
 
         for(Objeto objeto : todosObjetos) {
@@ -447,36 +554,6 @@ public class ObjetoService {
 
         return todosObjetos;
     }
-
-    @Autowired
-    public void setInvestimentoService(InvestimentoService investimentoService) {
-        this.investimentoService = investimentoService;
-    }
-
-    @Autowired
-    public void setUnidadeService(UnidadeOrcamentariaService unidadeService) {
-        this.unidadeService = unidadeService;
-    }
-
-    @Autowired
-    public void setPlanoService(PlanoOrcamentarioService planoService) {
-        this.planoService = planoService;
-    }
-
-    @Autowired
-    public void setContaService(ContaService contaService) {
-        this.contaService = contaService;
-    }
-
-    @Autowired
-    public void setStatusService(StatusService statusService) {
-        this.statusService = statusService;
-    }
-
-    @Autowired
-    public void setEtapaService(FluxoService fluxoService) {
-        this.fluxoService = fluxoService;
-    }
-    
+   
 
 }

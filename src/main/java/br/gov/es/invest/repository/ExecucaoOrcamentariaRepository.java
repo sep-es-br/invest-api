@@ -1,24 +1,22 @@
 package br.gov.es.invest.repository;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 
-import br.gov.es.invest.dto.projection.AnoExercicioDtoProjection;
 import br.gov.es.invest.model.ExecucaoOrcamentaria;
 
-public interface ExecucaoOrcamentariaRepository extends Neo4jRepository<ExecucaoOrcamentaria, String> {
+public interface ExecucaoOrcamentariaRepository extends Neo4jRepository<ExecucaoOrcamentaria, Long> {
     
-
-    @Query("MATCH (execucao:ExecucaoOrcamentaria)-[:EM]->(ano:Ano)\r\n" + //
-                "WHERE ano.ano = $exercicio\r\n" + //
-                "RETURN SUM(execucao.orcamento)")
-    public Double getTotalOrcadoByAno(String exercicio);
 
     @Query("MATCH (execucao:ExecucaoOrcamentaria)\r\n" + //
             "RETURN DISTINCT execucao.anoExercicio")
     public Set<Integer> getAnosExercicio();
+
+    @Query("MATCH (exec:ExecucaoOrcamentaria)-[vinculada:VINCULADA_POR]->(fonte:FonteOrcamentaria)\r\n" + //
+                "WHERE exec.anoExercicio = $ano\r\n" + //
+                "SET vinculada.novo = $novo")
+    public void setaTudoNovo(Integer ano, boolean novo);
 
 }

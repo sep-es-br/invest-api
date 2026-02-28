@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,13 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import br.gov.es.invest.dto.EtapaDTO;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.model.Etapa;
-import br.gov.es.invest.model.Usuario;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.service.EtapaService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "${frontend.host}")
 @RestController
 @RequestMapping("/etapa")
 @RequiredArgsConstructor
@@ -49,12 +47,12 @@ public class EtapaController {
     }
 
     @GetMapping("/doUsuario")
-    public EtapaDTO getEtapaDoUsuario(@RequestParam(required = false) String userId,  @RequestHeader("Authorization") String authToken) {
+    public EtapaDTO getEtapaDoUsuario(@RequestParam(required = false) Long userId,  @RequestHeader("Authorization") String authToken) {
 
         if(userId == null) {
             String sub = tokenService.validarToken(authToken.replace("Bearer ", ""));
             
-            Usuario usuario = usuarioService.getUserBySub(sub).get();
+            Agente usuario = usuarioService.getUserBySub(sub).get();
 
             userId = usuario.getId();
         }

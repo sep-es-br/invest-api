@@ -22,8 +22,8 @@ public class ExecucaoOrcamentariaService {
         repository.saveAll(execucoesOrcamentarias);
     }
 
-    public Double getTotalOrcadoByAno(String ano) {
-        return repository.getTotalOrcadoByAno(ano);
+    public void setaTudoNovo(Integer ano, boolean novo){
+        repository.setaTudoNovo(ano, novo);
     }
 
 

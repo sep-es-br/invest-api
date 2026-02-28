@@ -18,11 +18,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class InvestimentoTiraDTO {
 
-    private String id;
+    private Long id;
     private String nome;
     private String codPO;
     private String unidadeOrcamentaria;
-    private Double totalPrevisto;
+    private Double totalPlanejado;
     private Double totalContratado;
     private Double totalOrcado;
     private Double totalAutorizado;
@@ -39,22 +39,20 @@ public class InvestimentoTiraDTO {
         UnidadeOrcamentaria unidadeOrcamentaria = investimento.getUnidadeOrcamentariaImplementadora();
         this.unidadeOrcamentaria = unidadeOrcamentaria.getCodigo() + " - " + unidadeOrcamentaria.getSigla();
 
-        this.objetos = objetos.stream().map(objeto -> {
-            return new ObjetoTiraDTO(objeto);
-        }).collect(Collectors.toList());
+        this.objetos = objetos.stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList());
 
-        this.totalPrevisto = 0d;
+        this.totalPlanejado = 0d;
         this.totalContratado = 0d;
         this.totalOrcado = 0d;
         this.totalAutorizado = 0d;
         this.totalDisponivel = 0d;
 
         this.objetos.forEach(obj -> {
-            this.totalPrevisto += obj.getTotalPrevisto();
-            this.totalContratado += obj.getTotalOrcado();
-            this.totalOrcado += obj.getTotalOrcado();
-            this.totalAutorizado += obj.getTotalAutorizado();
-            this.totalDisponivel += obj.getTotalDisponivel();
+            this.totalPlanejado += obj.totalPlanejado();
+            this.totalContratado += obj.totalContratado();
+            this.totalOrcado += obj.totalOrcado();
+            this.totalAutorizado += obj.totalAutorizado();
+            this.totalDisponivel += obj.totalDisponivel();
         });
 
     }
@@ -69,7 +67,7 @@ public class InvestimentoTiraDTO {
         investimentoTiraDTO.setCodPO(projection.codPO());
         investimentoTiraDTO.setNome(projection.nome());
         investimentoTiraDTO.setUnidadeOrcamentaria(projection.unidadeOrcamentaria());
-        investimentoTiraDTO.setTotalPrevisto(projection.totalPrevisto());
+        investimentoTiraDTO.setTotalPlanejado(projection.totalPlanejado());
         investimentoTiraDTO.setTotalContratado(projection.totalContratado());
         investimentoTiraDTO.setTotalDisponivel(projection.totalDisponivel());
         investimentoTiraDTO.setTotalEmpenhado(projection.totalEmpenhado());

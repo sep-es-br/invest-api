@@ -8,11 +8,13 @@ import br.gov.es.invest.dto.FonteOrcamentariaDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class FonteOrcamentaria extends Entidade implements Serializable {
 
     private String codigo;
@@ -23,7 +25,7 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
         this.nome = nome;
     }
 
-    public FonteOrcamentaria(String codigo, String nome) {
+    public FonteOrcamentaria(Long codigo, String nome) {
         this.setId(codigo);
         this.nome = nome;
     }

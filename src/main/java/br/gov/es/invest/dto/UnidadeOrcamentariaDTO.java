@@ -4,7 +4,7 @@ import br.gov.es.invest.dto.acessocidadaoapi.UnidadesACResponseDto;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 
 public record UnidadeOrcamentariaDTO(
-        String id,
+        Long id,
         String guid,
         String codigo,
         String nome,

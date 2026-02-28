@@ -4,11 +4,16 @@ import org.springframework.data.neo4j.core.schema.Node;
 
 import br.gov.es.invest.dto.CampoDTO;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Node
+@SuperBuilder
 public class Campo extends Entidade {
 
     public String campoId;
