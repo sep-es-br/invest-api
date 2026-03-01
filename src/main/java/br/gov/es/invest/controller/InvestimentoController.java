@@ -2,12 +2,15 @@ package br.gov.es.invest.controller;
 
 import br.gov.es.invest.dto.FiltroInvestimentoDto;
 import br.gov.es.invest.dto.InvestimentoTiraDTO;
+import br.gov.es.invest.dto.OrdemItemDto;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.investimento.InvestimentoCadastroDto;
 import br.gov.es.invest.dto.investimento.InvestimentoDetailDto;
 import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
+import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
+import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.InvestimentoFactory;
 import br.gov.es.invest.model.Agente;
@@ -20,11 +23,14 @@ import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,7 +63,7 @@ public class InvestimentoController {
     public ResponseEntity<?> getAllTiraByFilter(
             @RequestBody FiltroInvestimentoDto filtro, @RequestHeader("Authorization") String authToken
         ) {                
-            
+                        
             List<Long> idsUo = null;
             if(filtro.unidades() == null && !filtro.podeVerUnidades()) {
                 
@@ -76,23 +82,36 @@ public class InvestimentoController {
 
         
             List<Long> idsPo = filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList();
-        
-        
+            
+            Sort.Order[] orders = new Sort.Order[filtro.ordem().size()];
+            
+            for(int index = 0; index < filtro.ordem().size(); index++) {
+                OrdemItemDto ordemItem = filtro.ordem().get(index);
+                
+                orders[index] = new Sort.Order(Sort.Direction.valueOf(ordemItem.direcao()), ordemItem.campo());
+            }
+            
+            
             DataListResult<TiraInvestimentoProjection> dataList = service.findAllTiraBy(
                 filtro.nome(), idsUo, idsPo, filtro.ano(), filtro.fonte() == null ? null : filtro.fonte().getId(), 
-                filtro.gnd(), filtro.ordem(), PageRequest.of(filtro.numPag()-1, filtro.qtPorPag())
+                filtro.gnd(), filtro.ordem(), PageRequest.of(filtro.numPag()-1, filtro.qtPorPag(), Sort.by(orders))
             );
             
+            
+            List<TiraObjetoProjection> allObjProjection = objetoService.findObjetoCadastradoByContaBy(dataList.data().stream().map(TiraInvestimentoProjection::investimentoId).toList(), filtro.ano(), filtro.fonte() == null ? null : filtro.fonte().getId(), filtro.gnd(), null).data();
+            
+            Map<Long, List<TiraObjetoProjection>> mappedObjs = allObjProjection.stream().collect(Collectors.groupingBy(TiraObjetoProjection::invId));
+                     
             
             DataListResult<InvestimentoTiraDTO> dataListDto = new DataListResult<>(
                 dataList.data().stream().map(investimento -> {
                     return InvestimentoTiraDTO.parse(investimento, 
-                            objetoService.findObjetoCadastradoByContaBy(investimento.id(), filtro.ano(), filtro.fonte() == null ? null : filtro.fonte().getId(), filtro.gnd(), null)
+                            mappedObjs.get(investimento.investimentoId())
                         );
                 }).toList(), 
                 dataList.ammount()
             );
-
+            
             return ResponseEntity.ok(dataListDto);
     }
     

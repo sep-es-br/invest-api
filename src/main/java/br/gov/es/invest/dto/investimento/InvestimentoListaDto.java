@@ -4,13 +4,10 @@
  */
 package br.gov.es.invest.dto.investimento;
 
-import lombok.Builder;
-
 /**
  *
  * @author gean.carneiro
  */
-@Builder
 public record InvestimentoListaDto(
             Long id,
             String codUnidade,

@@ -63,7 +63,7 @@ public class InvestimentoTiraDTO {
         }
 
         InvestimentoTiraDTO investimentoTiraDTO = new InvestimentoTiraDTO();
-        investimentoTiraDTO.setId(projection.id());
+        investimentoTiraDTO.setId(projection.investimentoId());
         investimentoTiraDTO.setCodPO(projection.codPO());
         investimentoTiraDTO.setNome(projection.nome());
         investimentoTiraDTO.setUnidadeOrcamentaria(projection.unidadeOrcamentaria());
@@ -75,6 +75,29 @@ public class InvestimentoTiraDTO {
         investimentoTiraDTO.setTotalAutorizado(projection.totalAutorizado());
         
         investimentoTiraDTO.setObjetos(objetos.data().stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList()));
+
+        return investimentoTiraDTO;
+        
+    }
+
+    public static InvestimentoTiraDTO parse(TiraInvestimentoProjection projection, List<TiraObjetoProjection> objetos) {
+        if(projection == null) {
+            return null;
+        }
+
+        InvestimentoTiraDTO investimentoTiraDTO = new InvestimentoTiraDTO();
+        investimentoTiraDTO.setId(projection.investimentoId());
+        investimentoTiraDTO.setCodPO(projection.codPO());
+        investimentoTiraDTO.setNome(projection.nome());
+        investimentoTiraDTO.setUnidadeOrcamentaria(projection.unidadeOrcamentaria());
+        investimentoTiraDTO.setTotalPlanejado(projection.totalPlanejado());
+        investimentoTiraDTO.setTotalContratado(projection.totalContratado());
+        investimentoTiraDTO.setTotalDisponivel(projection.totalDisponivel());
+        investimentoTiraDTO.setTotalEmpenhado(projection.totalEmpenhado());
+        investimentoTiraDTO.setTotalOrcado(projection.totalOrcado());
+        investimentoTiraDTO.setTotalAutorizado(projection.totalAutorizado());
+        
+        investimentoTiraDTO.setObjetos(objetos.stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList()));
 
         return investimentoTiraDTO;
         
