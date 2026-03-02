@@ -1,6 +1,7 @@
 package br.gov.es.invest.service;
 
 import br.gov.es.invest.dto.PapelDto;
+import br.gov.es.invest.dto.grupo.GrupoDoUsuarioListDTO;
 import br.gov.es.invest.dto.projection.MembroGrupo;
 import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Grupo;
@@ -228,7 +229,7 @@ public class GrupoService {
         return this.repository.findById(grupoId).orElse(null);
     }
 
-    public List<Grupo> getGruposDoUsuario(Long usuarioId) {
+    public List<GrupoDoUsuarioListDTO> getGruposDoUsuario(Long usuarioId) {
 
         return this.repository.getGruposByUsuario(usuarioId);
     }
