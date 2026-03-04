@@ -2,7 +2,7 @@ package br.gov.es.invest.dto.projection;
 
 public interface IValoresIndicadaPor {
     
-    double getPrevisto();
+    double getPlanejado();
     double getContratado();
 
 

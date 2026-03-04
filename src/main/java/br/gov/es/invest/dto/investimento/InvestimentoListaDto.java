@@ -18,7 +18,7 @@ public record InvestimentoListaDto(
             String codPO,
             String nome,
             String tipo,
-            Double totalPrevisto,
+            Double totalPlanejado,
             Double totalContratado,
             Double totalOrcado,
             Double totalAutorizado,

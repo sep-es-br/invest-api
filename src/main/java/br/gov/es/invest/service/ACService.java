@@ -419,7 +419,7 @@ public class ACService {
         request = HttpRequest.newBuilder()
                                 .header("Content-type", "application/json")
                                 .header("Authorization", "Bearer " + token)
-                                .uri(new URI(this.webApiUrl + "/conjunto/" + setorGuid + "/papeis"))
+                                .uri(new URI(this.webApiUrl + "/conjunto/" + setorGuid + "/papeis?operacional=true"))
                                 .GET().build();
 
                                   

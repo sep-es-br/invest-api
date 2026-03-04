@@ -37,7 +37,7 @@ public class AutenticacaoService {
     private final OrgaoService orgaoService;
 
     public UsuarioDto autenticar(String accessToken) {
-        logger.info("Autenticar usuário SPO.");
+        logger.info("Autenticar usuário SPO");
 
         ACUserInfoDto userInfo = getUserInfo(accessToken);
         String token = tokenService.gerarToken(userInfo, accessToken);
@@ -91,9 +91,8 @@ public class AutenticacaoService {
          * 
          */
         
-        List<PapelACResponseDto> papeisPrioritarios = papeisAc.stream().filter(p -> p.Prioritario()).toList();
         
-        for(PapelACResponseDto papelAc : papeisPrioritarios.isEmpty() ? papeisAc : papeisPrioritarios ){
+        for(PapelACResponseDto papelAc :  papeisAc ){
             
             Optional<Papel> papelBanco = papelSrv.findByGuid(papelAc.Guid());
             
@@ -102,7 +101,7 @@ public class AutenticacaoService {
                     return true;
             }
             
-            if(papelAc.LotacaoGuid() != null) {
+            if(papelAc.LotacaoGuid() != null && papelAc.Prioritario()) {
                 
                 UnidadeACResponseDto setorAc = acService.getUnidadeInfoByGuid(papelAc.LotacaoGuid(), clientToken);
                 

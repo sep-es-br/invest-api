@@ -22,7 +22,7 @@ public class InvestimentoTiraDTO {
     private String nome;
     private String codPO;
     private String unidadeOrcamentaria;
-    private Double totalPrevisto;
+    private Double totalPlanejado;
     private Double totalContratado;
     private Double totalOrcado;
     private Double totalAutorizado;
@@ -41,14 +41,14 @@ public class InvestimentoTiraDTO {
 
         this.objetos = objetos.stream().map(ObjetoTiraDTO::parse).collect(Collectors.toList());
 
-        this.totalPrevisto = 0d;
+        this.totalPlanejado = 0d;
         this.totalContratado = 0d;
         this.totalOrcado = 0d;
         this.totalAutorizado = 0d;
         this.totalDisponivel = 0d;
 
         this.objetos.forEach(obj -> {
-            this.totalPrevisto += obj.totalPrevisto();
+            this.totalPlanejado += obj.totalPlanejado();
             this.totalContratado += obj.totalContratado();
             this.totalOrcado += obj.totalOrcado();
             this.totalAutorizado += obj.totalAutorizado();
@@ -67,7 +67,7 @@ public class InvestimentoTiraDTO {
         investimentoTiraDTO.setCodPO(projection.codPO());
         investimentoTiraDTO.setNome(projection.nome());
         investimentoTiraDTO.setUnidadeOrcamentaria(projection.unidadeOrcamentaria());
-        investimentoTiraDTO.setTotalPrevisto(projection.totalPrevisto());
+        investimentoTiraDTO.setTotalPlanejado(projection.totalPlanejado());
         investimentoTiraDTO.setTotalContratado(projection.totalContratado());
         investimentoTiraDTO.setTotalDisponivel(projection.totalDisponivel());
         investimentoTiraDTO.setTotalEmpenhado(projection.totalEmpenhado());

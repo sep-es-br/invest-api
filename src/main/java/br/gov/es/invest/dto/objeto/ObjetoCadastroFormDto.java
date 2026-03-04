@@ -18,6 +18,7 @@ import lombok.Builder;
 @Builder
 public record ObjetoCadastroFormDto(
             Long id,
+            Integer gnd,
             String tipoConta,
             String tipo,
             String hashProposta,
@@ -35,7 +36,7 @@ public record ObjetoCadastroFormDto(
         ) {
     public static record Custo(Integer ano, List<ValoresFonte> valoresFontes){}
     
-    public static record ValoresFonte(FonteOrcamentariaDTO fonte, Double previsto, Double contratado){}
+    public static record ValoresFonte(FonteOrcamentariaDTO fonte, Double planejado, Double contratado){}
 }
 
 

@@ -1,11 +1,9 @@
 package br.gov.es.invest.repository;
 
+import br.gov.es.invest.model.Conta;
 import java.util.List;
-
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
-
-import br.gov.es.invest.model.Conta;
 
 public interface ContaRepository extends Neo4jRepository<Conta, Long> {
     
@@ -15,10 +13,11 @@ public interface ContaRepository extends Neo4jRepository<Conta, Long> {
             "RETURN conta ")
     public Conta getGenericoByCodUnidade(String codUnidade);
 
-        @Query("MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)\r\n" + //
-                "WHERE id(conta) IN $ids \r\n" + //
-                "    AND NOT EXISTS((obj)-[:EM]->(:Etapa))\r\n" + //
-                "RETURN conta")
+        @Query("""
+               MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status{statusId: 'CADASTRADO'}
+               WHERE id(conta) IN $ids 
+               RETURN DISTINCT conta
+               """)
         public List<Conta> filtrarContasForaProcessamento(List<Long> ids);
 
 }

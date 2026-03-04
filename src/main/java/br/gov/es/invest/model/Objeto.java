@@ -12,12 +12,17 @@ import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Transient;
+import org.springframework.util.comparator.Comparators;
 
 @Getter
 @Setter
@@ -26,6 +31,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Objeto extends Entidade implements Serializable {
     
+    private Integer gnd;
     private String nome;
     private String hashProposta;
     private String descricao;
@@ -34,12 +40,14 @@ public class Objeto extends Entidade implements Serializable {
     private String infoComplementares;
     private String contrato;
     private String possuiOrcamento;
+    
+    private ZonedDateTime timestamp;
 
     @Relationship(type = "EM")
     private EmStatus emStatus;
 
     @Relationship(type = "EM")
-    private EmEtapa emEtapa;
+    private List<EmEtapa> emEtapa = new ArrayList<>();
 
     @Relationship(type = "SOBRE", direction = Direction.OUTGOING)
     private AreaTematica areaTematica;
@@ -67,12 +75,13 @@ public class Objeto extends Entidade implements Serializable {
 
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
+        this.gnd = dto.gnd();
         this.nome = dto.nome();
         this.hashProposta = dto.hashProposta();
         this.descricao = dto.descricao();
         this.tipo = dto.tipo();
         this.emStatus = EmStatus.parse(dto.emStatus());
-        this.emEtapa = EmEtapa.parse(dto.emEtapa());
+        this.emEtapa = Optional.ofNullable(dto.emEtapa()).map(l -> l.stream().map(EmEtapa::parse).toList()).orElse(null);
         this.conta = Conta.parse(dto.conta());
         
         this.infoComplementares = dto.infoComplementares();
@@ -88,6 +97,29 @@ public class Objeto extends Entidade implements Serializable {
         this.apontamentos = dto.apontamentos() == null ? null : dto.apontamentos().stream().map(Apontamento::parse).toList();
         this.pareceres = dto.pareceres() == null ? null : dto.pareceres().stream().map(Parecer::parse).toList();
         
+    }
+    
+    public Objeto aplicar(Objeto src) {
+        this.gnd = src.getGnd();
+        this.nome = src.getNome();
+        this.hashProposta = src.getHashProposta();
+        this.descricao = src.getDescricao();
+        this.tipo = src.getTipo();
+        this.conta = src.getConta();
+        
+        this.infoComplementares = src.getInfoComplementares();
+        this.contrato = src.getContrato();
+
+        this.possuiOrcamento = src.getPossuiOrcamento();
+
+        this.areaTematica = src.getAreaTematica();
+        this.tiposPlano = src.getTiposPlano();
+        this.custosEstimadores = src.getCustosEstimadores();
+        this.microrregiao = src.getMicrorregiao();
+        this.apontamentos = src.getApontamentos();
+        this.pareceres = src.getPareceres();
+        
+        return this;
     }
 
     public void filtrar(Integer anoExercicio, Long fonteId) {
@@ -124,7 +156,7 @@ public class Objeto extends Entidade implements Serializable {
         obj.setNome(projection.getNome());
         obj.setTipo(projection.getTipo());
         obj.setEmStatus(projection.getEmStatus());
-        obj.setEmEtapa(EmEtapa.parse(projection.getEmEtapa()));
+        obj.setEmEtapa(Optional.ofNullable(projection.getEmEtapa()).map(l -> l.stream().map(EmEtapa::parse).toList()).orElse(null));
         obj.setCustosEstimadores(projection.getCustosEstimadores());
         obj.setConta(projection.getConta());
 
@@ -152,12 +184,23 @@ public class Objeto extends Entidade implements Serializable {
                         .indicadaPor(custo.valoresFontes().stream().map(
                                 valores -> IndicadaPor.builder()
                                             .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
-                                            .previsto(Optional.ofNullable(valores.previsto()).orElse(Double.valueOf(0)))
+                                            .planejado(Optional.ofNullable(valores.planejado()).orElse(Double.valueOf(0)))
                                             .contratado(Optional.ofNullable(valores.contratado()).orElse(Double.valueOf(0)))
                                             .build()
                         ).collect(Collectors.toSet())).build()
         ).collect(Collectors.toList()));
         
+    }
+    
+    @Transient
+    public EmEtapa getEtapaAtual() {
+        if(this.getEmEtapa() == null || this.getEmEtapa().isEmpty()) {
+            return null;
+        }
+        
+        return this.getEmEtapa().stream()
+                .max(Comparator.comparing(EmEtapa::getTimestamp, Comparator.nullsLast(Comparator.naturalOrder())))
+                .orElse(null);
     }
 
 }

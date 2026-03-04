@@ -2,8 +2,8 @@ package br.gov.es.invest.controller;
 
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaBIService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,16 +30,25 @@ public class UnidadeOrcamentariaController {
     private final UnidadeOrcamentariaBIService biService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<UnidadeOrcamentariaDTO>> getAllByFiltro() {
+    public ResponseEntity<List<UnidadeOrcamentariaDTO>> getAllByFiltro(
+            @RequestParam(required = false, defaultValue = "") String version
+    ) {
 
         ArrayList<UnidadeOrcamentariaDTO> unidadesDTO = new ArrayList<>();
         
-        for(UnidadeOrcamentariaDTOProjection unidade: service.getAllSimples()) {
-            if(!unidade.codigo().startsWith("0") && !unidade.codigo().startsWith("8"))
-                unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.codigo(), unidade.nome(), unidade.sigla()));
+        List<UnidadeOrcamentariaDTOProjection> result;
+        
+        switch (version) {
+            case "fluxo" -> result = service.getAllSimplesForFluxo();
+            default -> result = service.getAllSimples();
         }
+        
+//        for(UnidadeOrcamentariaDTOProjection unidade: result) {;
+//            if(!unidade.codigo().startsWith("0") && !unidade.codigo().startsWith("8"))
+//                unidadesDTO.add(new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.codigo(), unidade.nome(), unidade.sigla()));
+//        }
 
-        return ResponseEntity.ok(unidadesDTO);
+        return ResponseEntity.ok(result.stream().map(unidade -> new UnidadeOrcamentariaDTO(unidade.id(), unidade.guid(), unidade.codigo(), unidade.nome(), unidade.sigla())).toList());
         
 
     }

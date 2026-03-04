@@ -10,8 +10,21 @@ import org.springframework.data.neo4j.repository.query.Query;
 public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOrcamentaria, Long> {
     
 
-    @Query("MATCH (unidade:UnidadeOrcamentaria) RETURN unidade ORDER BY unidade.codigo")
+    @Query("""
+           MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(:Objeto)-[:EM]-(s:Status)
+           WHERE s.statusId = "CADASTRADO"
+           RETURN DISTINCT unidade 
+           ORDER BY unidade.codigo
+           """)
     public List<UnidadeOrcamentariaDTOProjection> findAllUnidades();
+
+    @Query("""
+           MATCH (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:CUSTEADO]-(:Objeto)-[:EM]-(s:Status)
+           WHERE s.statusId <> "CADASTRADO"
+           RETURN DISTINCT unidade 
+           ORDER BY unidade.codigo
+           """)
+    public List<UnidadeOrcamentariaDTOProjection> findAllUnidadesForFluxo();
 
     @Query("MATCH (unidade:UnidadeOrcamentaria) WHERE unidade.guid = $guid RETURN unidade")
     public Optional<UnidadeOrcamentaria> findByGuid(String guid);

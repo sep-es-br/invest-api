@@ -1,7 +1,7 @@
 package br.gov.es.invest.dto;
 
 public record CardsTotaisDto(
-    Double previsto,
+    Double planejado,
     Double contratado,
     Double orcado,
     Double autorizado,

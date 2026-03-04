@@ -49,12 +49,11 @@ public class CustoFactory {
                 ip = new IndicadaPor();
 
                 ip.setFonteOrcamentaria(fonteFactory.fromDto(vf.fonte()));
-                ip.setGnd(4);
 
             }
 
             if(vf.contratado() != null) ip.setContratado(vf.contratado());
-            ip.setPrevisto(vf.previsto());
+            ip.setPlanejado(Optional.ofNullable(vf.planejado()).orElse(Double.valueOf(0)));
 
 
             setIndicadaPor.add(ip);

@@ -48,12 +48,16 @@ public class InvestimentoService {
         ) {
 
             String cypherBase = """
-                            MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto),
+                            MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status{statusId: 'CADASTRADO'}),
                                     (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
                             WHERE ($idPo IS NULL OR id(po) IN $idPo)
                                 AND ( $idUnidade IS NULL OR id(unidade) IN $idUnidade )
-                                AND NOT EXISTS((obj)-[:EM]->(:Etapa))
-                                AND ($nome IS NULL OR apoc.text.clean(po.nome) CONTAINS apoc.text.clean($nome))
+                                AND ($nome IS NULL OR CASE 
+                                                        WHEN inv.nome IS NULL 
+                                                            THEN apoc.text.clean(po.nome) CONTAINS apoc.text.clean($nome) 
+                                                        ELSE 
+                                                            apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome) 
+                                                       END )
                             CALL (obj) {
                                 MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                                 WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
@@ -61,7 +65,7 @@ public class InvestimentoService {
                                     AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
                                 RETURN 
                                     ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,
-                                    sum(indicada_por.previsto) AS totalPrevisto, 
+                                    sum(indicada_por.planejado) AS totalPlanejado, 
                                     sum(indicada_por.contratado) AS totalContratado 
                             } 
                             CALL (inv) {
@@ -79,14 +83,14 @@ public class InvestimentoService {
 
         String cypherQuery = cypherBase + 
                             """
-                            RETURN
+                            RETURN DISTINCT
                                 id(inv) AS id,
-                                po.nome AS nome, 
+                                coalesce(inv.nome, po.nome) AS nome, 
                                 po.codigo AS codPO,
                                 unidade.codigo AS codUnidade,
                                 unidade.sigla AS siglaUnidade,
                                 unidade.codigo + " - " + unidade.sigla AS unidadeOrcamentaria, 
-                                sum(totalPrevisto) AS totalPrevisto,
+                                sum(totalPlanejado) AS totalPlanejado,
                                 sum(totalContratado) AS totalContratado,
                                 totalOrcado,
                                 totalAutorizado, 
@@ -162,7 +166,7 @@ public class InvestimentoService {
                                    MATCH (conta)<-[:CUSTEADO]-(objeto:Objeto)-[]-(custo:Custo)-[vlr]-(:FonteOrcamentaria)
                                    WHERE custo.anoExercicio = date().year
                                    RETURN 
-                                     sum(vlr.previsto) as previsto,
+                                     sum(vlr.planejado) as planejado,
                                      sum(vlr.contratado) as contratado
                                  }
                                  
@@ -180,7 +184,7 @@ public class InvestimentoService {
                   po.codigo as codPO,
                   coalesce(conta.nome, po.nome) as nome,
                   head([l IN labels(conta) WHERE l <> 'Conta']) as tipo,
-                  previsto as totalPrevisto,
+                  planejado as totalPlanejado,
                   contratado as totalContratado,
                   autorizado as totalAutorizado,
                   orcado AS totalOrcado,

@@ -68,7 +68,7 @@ public class ModuloService {
                     if(this.checarAcesso(grupo.getId(), path))
                         return true;
                 }
-            } else if(papel.getSetor() != null) {
+            } else if(papel.getSetor() != null && papel.getPrioritario()) {
                 Setor setor = papel.getSetor();
                 
                 if(setor.getId() != null){

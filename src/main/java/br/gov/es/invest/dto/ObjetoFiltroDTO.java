@@ -7,6 +7,7 @@ public record ObjetoFiltroDTO(
     List<UnidadeOrcamentariaDTO> unidades,
     List<PlanoOrcamentarioDTO> planos,
     Integer exercicio,
+    Integer gnd,
     EtapaDTO etapa,
     StatusDTO status,
     boolean podeVerUnidades,

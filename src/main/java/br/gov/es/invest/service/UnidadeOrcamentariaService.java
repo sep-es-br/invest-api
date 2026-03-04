@@ -20,7 +20,11 @@ public class UnidadeOrcamentariaService {
     public List<UnidadeOrcamentariaDTOProjection> getAllSimples() {
         return repository.findAllUnidades();
     }
-
+    
+    public List<UnidadeOrcamentariaDTOProjection> getAllSimplesForFluxo() {
+        return repository.findAllUnidadesForFluxo();
+    }
+    
     public String getCodById(Long idUnidade) {
         return repository.getCodById(idUnidade);
     }

@@ -1,22 +1,20 @@
 package br.gov.es.invest.service;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import br.gov.es.invest.exception.SemApontamentosException;
 import br.gov.es.invest.model.Acao;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
-import br.gov.es.invest.model.Agente;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AcaoService {
@@ -28,17 +26,15 @@ public class AcaoService {
     @Transactional
     public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Agente usuario) throws SemApontamentosException{
         
-
         if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())
             throw new SemApontamentosException();
 
         ZonedDateTime agora = ZonedDateTime.now();
         
-
         Objeto objetoOriginal = objetoService.findById(objeto.getId());
-        objeto.setApontamentos(objetoOriginal.getApontamentos());
-        objeto.setPareceres(objetoOriginal.getPareceres());
-
+        objetoOriginal.aplicar(objeto);
+        
+        
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
                 
@@ -46,10 +42,9 @@ public class AcaoService {
                 emStatusTarget.setStatus(acao.getStatusFinal());
                 emStatusTarget.setTimestamp(agora);
 
-                objeto.setEmStatus(emStatusTarget); // aplica status final
-                objeto.setEmEtapa(null); // remove objeto do fluxo
+                objetoOriginal.setEmStatus(emStatusTarget); // aplica status final
 
-                return objetoService.save(objeto);
+                return objetoService.save(objetoOriginal);
             } else { // se não significa que o fluxo foi cancelado
                 return objetoService.removerObjeto(objeto.getId());
             }
@@ -60,7 +55,7 @@ public class AcaoService {
                 if(parecer != null) {
 
                     parecer.setEtapa(acao.getProxEtapa());
-                    parecer.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
+                    parecer.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
                     parecer.setTimestamp(agora);
                     parecer.setUsuario(usuario);
 
@@ -68,7 +63,7 @@ public class AcaoService {
                         objeto.getPareceres() == null ? Arrays.asList() : objeto.getPareceres()
                     ); 
                     todosPareceres.add(parecer);
-                    objeto.setPareceres(todosPareceres);
+                    objetoOriginal.setPareceres(todosPareceres);
 
 
                 } else if(apontamentos != null) {
@@ -87,33 +82,37 @@ public class AcaoService {
                     for(Apontamento apontamento : apontamentos.stream().filter(a -> a.getId() == null).toList()) {
     
                         apontamento.setEtapa(acao.getProxEtapa());
-                        apontamento.setGrupo(objeto.getEmEtapa().getEtapa().getGrupoResponsavel());
+                        apontamento.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
                         apontamento.setTimestamp(agora);
                         apontamento.setUsuario(usuario);
                         apontamento.setActive(true);
                         
                     }
     
-                    objeto.setApontamentos(apontamentos);
+                    objetoOriginal.setApontamentos(apontamentos);
                 }
 
                 
             }
             
+            objetoOriginal.getEtapaAtual().setAvaliadoEm(agora);
+            objetoOriginal.getEtapaAtual().setAvaliadoPorId(usuario.getId());
+            
             EmEtapa emEtapaTarget = new EmEtapa();
             emEtapaTarget.setDevolvido(!acao.getPositivo());
             emEtapaTarget.setEtapa(acao.getProxEtapa());
             emEtapaTarget.setAtividade(acao.getAtividadeFinal());
+            emEtapaTarget.setTimestamp(agora);
             
-            objeto.setEmEtapa(emEtapaTarget);
+            objetoOriginal.getEmEtapa().add(emEtapaTarget);
             
              
             EmStatus emStatusTarget = new EmStatus();
             emStatusTarget.setStatus(acao.getStatusFinal());
             emStatusTarget.setTimestamp(agora);
 
-            objeto.setEmStatus(emStatusTarget);
-            objetoService.save(objeto);
+            objetoOriginal.setEmStatus(emStatusTarget);
+            objetoService.save(objetoOriginal);
             return objetoService.findById(objeto.getId());
         }
         

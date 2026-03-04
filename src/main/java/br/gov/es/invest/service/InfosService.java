@@ -1,5 +1,9 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.dto.ValoresCusto;
+import br.gov.es.invest.dto.desserializer.GoogleIconsDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -9,17 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
-import br.gov.es.invest.dto.ValoresCusto;
-import br.gov.es.invest.dto.desserializer.GoogleIconsDeserializer;
 
 @Service
 public class InfosService {
@@ -71,10 +68,10 @@ public class InfosService {
     public ValoresCusto getTotaisInvestimento(String nome, Long idFonte, Integer exercicio, List<Long> idUnidade, List<Long> idPlano, Integer gnd){
 
         String cypher = """
-                        MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
+                        MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status{statusId: 'CADASTRADO'}),
                                 (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
-                        WHERE NOT EXISTS((obj)-[:EM]->(:Etapa))
-                            AND ($idUnidade IS NULL OR id(unidade) IN $idUnidade)
+                        WHERE 
+                            ($idUnidade IS NULL OR id(unidade) IN $idUnidade)
                             AND ($idPlano IS NULL OR id(po) IN $idPlano)
                             AND ($nome IS NULL OR apoc.text.clean(inv.nome) CONTAINS apoc.text.clean($nome))
                         CALL (obj) {
@@ -83,11 +80,11 @@ public class InfosService {
                                 AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)
                                 AND ($gnd IS NULL OR $gnd = indicada_por.gnd)
                             RETURN 
-                                sum(indicada_por.previsto) AS totalPrevisto,
+                                sum(indicada_por.planejado) AS totalPlanejado,
                                 sum(indicada_por.contratado) AS totalContratado 
                         } 
                         RETURN
-                                sum(totalPrevisto) AS previsto,
+                                sum(totalPlanejado) AS planejado,
                                 sum(totalContratado) AS contratado
                         """  ;
 

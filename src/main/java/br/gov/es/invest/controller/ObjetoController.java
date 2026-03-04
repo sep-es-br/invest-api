@@ -80,6 +80,7 @@ public class ObjetoController {
 
         DataListResult<ObjetoTiraDTO> objetos = service.getAllListByFilter(
             filtro.exercicio(), 
+            filtro.gnd(),
             filtro.nome(), 
             idsUo, idsPo, 
             filtro.status() == null ? null : filtro.status().id(), 
@@ -97,7 +98,7 @@ public class ObjetoController {
     
     @GetMapping("/allTiraEmProcessamento")
     public ResponseEntity<?> getAllByFiltroEmProcessamento(
-        @RequestParam(required = false) String nome, @RequestParam(required = false) Long statusId,
+        @RequestParam(required = false) String nome, @RequestParam(required = false) Long statusId, @RequestParam(required = false) Integer gnd,
         @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
         @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
         @RequestParam(required = false) Long etapaId, @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
@@ -123,7 +124,7 @@ public class ObjetoController {
             List<Long> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
-                service.getAllListByFilterEmProcessamento(ano, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1))
+                service.getAllListByFilterEmProcessamento(ano, gnd, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1))
             );
 
         } catch(JsonProcessingException e){
@@ -154,12 +155,13 @@ public class ObjetoController {
             Objeto objeto = optObjeto.get();
             
             if(objeto.getEmEtapa() != null){
-                objeto.getEmEtapa().getEtapa().setAcoes(
-                    objeto.getEmEtapa().getEtapa().getAcoes().stream().sorted((acao1, acao2) -> 
-                        getAsNumberValue(acao1.getPositivo()) - getAsNumberValue(acao2.getPositivo())
-                    
-                    ).toList()
-                );
+                if(objeto.getEtapaAtual() != null)
+                    objeto.getEtapaAtual().getEtapa().setAcoes(
+                        objeto.getEtapaAtual().getEtapa().getAcoes().stream().sorted((acao1, acao2) -> 
+                            getAsNumberValue(acao1.getPositivo()) - getAsNumberValue(acao2.getPositivo())
+
+                        ).toList()
+                    );
             }
             
             return ResponseEntity.ok(objFactory.fromModel(objeto));
@@ -181,6 +183,7 @@ public class ObjetoController {
 
         DataListResult<ObjetoTiraDTO> objetos = service.getAllListByFilterEmProcessamento(
             filtro.exercicio(), 
+            filtro.gnd(),
             filtro.nome(), 
             filtro.unidades() == null ? null : filtro.unidades().stream().map(UnidadeOrcamentariaDTO::id).toList(), 
             filtro.planos() == null ? null : filtro.planos().stream().map(PlanoOrcamentarioDTO::id).toList(), 
@@ -210,7 +213,7 @@ public class ObjetoController {
             objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
         }
         
-        service.save(objeto);
+        objeto = service.save(objeto);
         
         return ResponseEntity.ok(objFactory.fromModel(objeto));
     }
@@ -229,7 +232,7 @@ public class ObjetoController {
         
         service.removerObjeto(objetoId);
 
-        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get()));
+        return ResponseEntity.ok(this.objFactory.fromModel(optObjetoRemovido.get()));
 
     }
         

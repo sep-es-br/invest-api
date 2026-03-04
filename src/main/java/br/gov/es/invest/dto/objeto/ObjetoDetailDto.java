@@ -18,6 +18,7 @@ import lombok.Builder;
 @Builder
 public record ObjetoDetailDto(
         Long id,
+        Integer gnd,
         String hashProposta,
         String tipoInvestimento,
         String tipoObjeto,
@@ -36,12 +37,13 @@ public record ObjetoDetailDto(
         List<TipoPlano> tiposPlano,
         String contrato,
         Map<Integer, Map<String, Custo>> custos,
-        EmEtapaDTO emEtapa,
+        List<EmEtapaDTO> emEtapa,
         EmStatusDTO emStatus,
-        String possuiOrcamento
+        String possuiOrcamento,
+        String timestamp
     ) {
     
-    public static record Custo(Double previsto, Double contratado) {}
+    public static record Custo(Double planejado, Double contratado) {}
     
     public static record TipoPlano(Long id, String sigla, String nome){}
 }
