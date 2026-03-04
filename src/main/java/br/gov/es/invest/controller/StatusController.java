@@ -33,7 +33,7 @@ public class StatusController {
             switch (version) {
                 case "fluxo" -> result = statusService.findAllForFluxo();
                 default -> {
-                    result = statusService.findAll();
+                    result = statusService.findAllStatusObjeto();
                 }
             }
             

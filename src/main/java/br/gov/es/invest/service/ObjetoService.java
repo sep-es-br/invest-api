@@ -82,6 +82,7 @@ public class ObjetoService {
             emEtapa.setDevolvido(false);
             emEtapa.setEtapa(fluxo.getEtapaInicial());
             emEtapa.setTimestamp(agora);
+            emEtapa.setAvaliadoPorId(objeto.getResponsavel().getId());
             
             objeto.getEmEtapa().add(emEtapa);
             
