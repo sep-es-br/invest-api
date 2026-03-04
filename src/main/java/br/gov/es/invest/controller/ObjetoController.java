@@ -233,7 +233,7 @@ public class ObjetoController {
         
         service.removerObjeto(objetoId);
 
-        return ResponseEntity.ok(new ObjetoDto( optObjetoRemovido.get()));
+        return ResponseEntity.ok(this.objFactory.fromModel(optObjetoRemovido.get()));
 
     }
         

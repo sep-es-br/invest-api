@@ -95,6 +95,9 @@ public class AcaoService {
                 
             }
             
+            objetoOriginal.getEtapaAtual().setAvaliadoEm(agora);
+            objetoOriginal.getEtapaAtual().setAvaliadoPorId(usuario.getId());
+            
             EmEtapa emEtapaTarget = new EmEtapa();
             emEtapaTarget.setDevolvido(!acao.getPositivo());
             emEtapaTarget.setEtapa(acao.getProxEtapa());

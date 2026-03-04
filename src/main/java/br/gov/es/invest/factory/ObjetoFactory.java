@@ -55,6 +55,7 @@ public class ObjetoFactory {
     private final PlanoOrcamentarioService planoSrv;
     
     private final CustoFactory custoFactory;
+    private final EmEtapaFactory emEtapaFactory;
         
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
@@ -107,7 +108,7 @@ public class ObjetoFactory {
                             }
                         ))
                 )
-                .emEtapa(Optional.ofNullable(model.getEmEtapa()).map(l -> l.stream().map(EmEtapaDTO::parse).toList()).orElse(null))
+                .emEtapa(Optional.ofNullable(model.getEmEtapa()).map(l -> l.stream().map(this.emEtapaFactory::toDto).toList()).orElse(null))
                 .emStatus(EmStatusDTO.parse(model.getEmStatus()))
                 .hashProposta(model.getHashProposta())
                 .possuiOrcamento(model.getPossuiOrcamento())
