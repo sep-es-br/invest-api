@@ -1,5 +1,6 @@
 package br.gov.es.invest.dto;
 
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.utils.DateTimeUtils;
 import java.util.Optional;
@@ -9,16 +10,9 @@ public record EmEtapaDTO(
     EtapaDTO etapa,
     String atividade,
     boolean devolvido,
-    String timestamp
+    String timestamp,
+    String avaliadoEm,
+    String avaliadoPor
 ) {
-    public static EmEtapaDTO parse(EmEtapa model) {
-        return model == null ? null
-        : new EmEtapaDTO(
-            model.getId(), 
-            EtapaDTO.parse(model.getEtapa()), 
-            model.getAtividade(),
-            model.isDevolvido(),
-            Optional.ofNullable(model.getTimestamp()).map(DateTimeUtils::formatZonedDateTime).orElse(null)
-        );
-    }
+    
 }

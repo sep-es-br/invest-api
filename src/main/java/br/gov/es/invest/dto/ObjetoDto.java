@@ -32,33 +32,6 @@ public record ObjetoDto(
 
 ) {
     
-    public ObjetoDto(Objeto model) {
-        this(
-            model.getId(),
-            model.getGnd(),
-            "Investimento", 
-            model.getTipo(), 
-            model.getHashProposta(),
-            model.getNome(), 
-            EmStatusDTO.parse(model.getEmStatus()),
-            model.getEmEtapa().stream().map(EmEtapaDTO::parse).toList(),
-            model.getDescricao(), 
-            Optional.ofNullable(model.getMicrorregiao()).map(LocalidadeDto::new).orElse(null), 
-            model.getInfoComplementares(), 
-            Optional.ofNullable(model.getTiposPlano()).map(list -> list.stream().map(TipoPlanoDto::new).toList()).orElse(null),
-            model.getContrato(),
-            Optional.ofNullable(model.getAreaTematica()).map(AreaTematicaDto::new).orElse(null),
-
-            Optional.ofNullable(model.getCustosEstimadores()).orElse(new ArrayList<>()).stream()
-                    .sorted(Comparator.comparing(Custo::getAnoExercicio)).map(CustoDTO::parse).toList(),
-
-            UsuarioDto.parse(model.getResponsavel()),
-            new ContaDto(model.getConta()),
-            Optional.ofNullable(model.getApontamentos()).map(list -> list.stream().map(ApontamentoDTO::parse).toList()).orElse(null),
-            Optional.ofNullable(model.getPareceres()).map(list -> list.stream().map(ParecerDTO::parse).toList()).orElse(null),
-            model.getPossuiOrcamento()
-        );
-    }
 
 
 }

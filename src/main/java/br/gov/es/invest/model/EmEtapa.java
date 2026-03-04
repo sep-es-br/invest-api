@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.Transient;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +25,11 @@ public class EmEtapa extends Entidade {
     private boolean devolvido;
     
     private ZonedDateTime timestamp;
+    
+    private ZonedDateTime avaliadoEm;
+    
+    private long avaliadoPorId;
+      
 
     public static EmEtapa parse(EmEtapaDTO dto) {
         if(dto == null) {
