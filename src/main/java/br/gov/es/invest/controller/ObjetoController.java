@@ -9,8 +9,11 @@ import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.ObjetoFactory;
 import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.ConfigGerais;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.RevisadoPor;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.service.ConfigGeraisService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -19,6 +22,7 @@ import br.gov.es.invest.utils.DataListResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +56,7 @@ public class ObjetoController {
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    private final ConfigGeraisService cgSrv;
 
     @PostMapping("/allTira")
     public ResponseEntity<?> getAllByFiltro(
@@ -205,13 +210,26 @@ public class ObjetoController {
     public ResponseEntity<?> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = objFactory.fromDTO(cadastroForm);
+        ConfigGerais config = this.cgSrv.getConfig();
+        
+        auth = auth.replace("Bearer ", "");
+
+        String sub = tokenService.validarToken(auth);
+        
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         
         if(objeto.getResponsavel() == null) {
-            auth = auth.replace("Bearer ", "");
-
-            String sub = tokenService.validarToken(auth);
-
-            objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
+            
+            objeto.setResponsavel( usuario );
+        }
+        
+        ZonedDateTime agora = ZonedDateTime.now();
+        
+        if(config.emPeriodoRevisao(agora)){
+            RevisadoPor revisadoPor = Optional.ofNullable(objeto.getRevisor()).orElse(new RevisadoPor());
+            revisadoPor.setRevisor(usuario);
+            revisadoPor.setTimestamp(agora);
+            objeto.setRevisor(revisadoPor);
         }
         
         objeto = service.save(objeto);

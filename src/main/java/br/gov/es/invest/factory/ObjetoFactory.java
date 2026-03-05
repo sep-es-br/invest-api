@@ -56,6 +56,7 @@ public class ObjetoFactory {
     
     private final CustoFactory custoFactory;
     private final EmEtapaFactory emEtapaFactory;
+    private final RevisadoPorFactory revisadoFactory;
         
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
@@ -113,6 +114,7 @@ public class ObjetoFactory {
                 .hashProposta(model.getHashProposta())
                 .possuiOrcamento(model.getPossuiOrcamento())
                 .timestamp(Optional.ofNullable(model.getTimestamp()).map(DateTimeUtils::formatZonedDateTime).orElse(null))
+                .revisor(this.revisadoFactory.toDto(model.getRevisor()))
                 .build();
     }
     

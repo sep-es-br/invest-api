@@ -72,6 +72,9 @@ public class Objeto extends Entidade implements Serializable {
 
     @Relationship("POSSUI")
     private List<Parecer> pareceres;
+    
+    @Relationship("REVISADO_POR")
+    private RevisadoPor revisor;
 
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
