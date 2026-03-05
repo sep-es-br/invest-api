@@ -28,8 +28,8 @@ public class PlanoOrcamentarioService {
         repository.saveAll(planos);
     }
 
-    public List<PlanoOrcamentario> getAllSimples() {
-        return repository.getAllSimples();
+    public List<PlanoOrcamentario> getAllSimples(List<String> codsUnidade) {
+        return repository.getAllSimples(codsUnidade);
     }
 
     public String getCodById(Long idPlano) {

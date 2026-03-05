@@ -79,6 +79,7 @@ public class ObjetoController {
             
 
         DataListResult<ObjetoTiraDTO> objetos = service.getAllListByFilter(
+            filtro.audiencia(),
             filtro.exercicio(), 
             filtro.gnd(),
             filtro.nome(), 
