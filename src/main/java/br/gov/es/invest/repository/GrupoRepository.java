@@ -35,19 +35,19 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
     @Query("""
             MATCH (usuario)-[:MEMBRO_DE]->(grupo:Grupo)
             WHERE id(usuario) = $usuarioId
-            RETURN id(grupo) as idGrupo, grupo.sigla as sigla, grupo.descricao as descricao, usuario.papel as papel
+            RETURN id(grupo) as idGrupo, grupo.nome as nome,  grupo.sigla as sigla, grupo.descricao as descricao, usuario.papel as papel
             UNION
             MATCH (usuario)-[:POSSUI]->(papel:Papel)-[:MEMBRO_DE]->(grupo:Grupo)
             WHERE id(usuario) = $usuarioId
-            RETURN id(grupo) as idGrupo, grupo.sigla as sigla, grupo.descricao as descricao, papel.nome as papel
+            RETURN id(grupo) as idGrupo, grupo.nome as nome, grupo.sigla as sigla, grupo.descricao as descricao, papel.nome as papel
             UNION
             MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(setor:Setor)-[:MEMBRO_DE]->(grupo:Grupo)
             WHERE id(usuario) = $usuarioId
-            RETURN id(grupo) as idGrupo, grupo.sigla as sigla, grupo.descricao as descricao, 'Membro do ' + setor.sigla as papel
+            RETURN id(grupo) as idGrupo, grupo.nome as nome, grupo.sigla as sigla, grupo.descricao as descricao, 'Membro do ' + setor.sigla as papel
             UNION
             MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:PERTENCE_A]->(orgao:Orgao)-[:MEMBRO_DE]->(grupo:Grupo)
             WHERE id(usuario) = $usuarioId
-            RETURN id(grupo) as idGrupo, grupo.sigla as sigla, grupo.descricao as descricao, 'Membro de ' + orgao.sigla as papel
+            RETURN id(grupo) as idGrupo, grupo.nome as nome, grupo.sigla as sigla, grupo.descricao as descricao, 'Membro de ' + orgao.sigla as papel
             """)
     public List<GrupoDoUsuarioListDTO> getGruposByUsuario(Long usuarioId);
 

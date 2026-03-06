@@ -16,7 +16,7 @@ public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcame
                    WHEN $codsUnidade IS NULL THEN TRUE
                    ELSE unidade.codigo IN $codsUnidade 
                  END        
-           RETURN plano ORDER BY plano.codigo
+           RETURN DISTINCT plano ORDER BY plano.codigo
             """)
     
     public List<PlanoOrcamentario> getAllSimples(List<String> codsUnidade);
