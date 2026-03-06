@@ -10,7 +10,8 @@ public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcame
     
     @Query("""
            MATCH (plano:PlanoOrcamentario) 
-           OPTIONAL MATCH (plano)-[:ORIENTA]->(conta)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria), (conta)<-[:CUSTEADO]-(obj)
+           OPTIONAL MATCH (plano)-[:ORIENTA]->(conta)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria), 
+                            (conta)<-[:CUSTEADO]-(obj)-[:EM]->(:Status{statusId: 'CADASTRADO'})
            WITH plano, unidade
            WHERE CASE
                    WHEN $codsUnidade IS NULL THEN TRUE
