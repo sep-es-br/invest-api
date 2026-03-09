@@ -9,6 +9,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Status;
+import java.time.ZonedDateTime;
 
 public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
     
@@ -103,4 +104,18 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
                         "WHERE id(n) IN $ids\r\n" + //
                         "DELETE do_tipo")
         public void removerTipos(List<Long> ids);
+        
+        @Query("""
+               MATCH (o:Objeto)
+               WHERE id(o) = $objetoId
+               OPTIONAL MATCH (o)-[oldR:REVISADO_POR]-(:Agente)
+               DELETE oldR
+               WITH o
+               MATCH (usuario:Agente)
+               WHERE id(usuario) = $userId
+               MERGE (o)-[r:RevisadoPor]->(usuario)
+               SET r.timestamp = $timestamp
+               
+               """)
+        public void updateRevisor(Long objetoId, Long userId, ZonedDateTime timestamp);
 }

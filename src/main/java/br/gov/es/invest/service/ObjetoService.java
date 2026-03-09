@@ -58,6 +58,10 @@ public class ObjetoService {
     public void saveAll(List<Objeto> objetos) {
         repository.saveAll(objetos);
     }
+    
+    public void updateRevisor(Long objetoId, Long userId, ZonedDateTime timestamp){
+        this.repository.updateRevisor(objetoId, userId, timestamp);
+    }
 
     public Objeto save(Objeto objeto) {
         

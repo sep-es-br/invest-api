@@ -228,12 +228,7 @@ public class ObjetoController {
         
         if(config.emPeriodoRevisao(agora) && objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)){
             
-            RevisadoPor novoRevisor = new RevisadoPor();
-                    
-            novoRevisor.setRevisor(usuario);
-            novoRevisor.setTimestamp(agora);
-            
-            objeto.setRevisor(novoRevisor);
+            this.service.updateRevisor(objeto.getId(), usuario.getId(), agora);
         }
        
         return ResponseEntity.ok(objFactory.fromModel(service.save(objeto)));
