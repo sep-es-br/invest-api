@@ -140,7 +140,7 @@ public class Objeto extends Entidade implements Serializable {
                 custo.setIndicadaPor(
                     custo.getIndicadaPor().stream()
                     .filter(ip -> ip.getFonteOrcamentaria().getId().equals(fonteId) )
-                    .collect(Collectors.toSet())
+                    .collect(Collectors.toList())
                 );
 
             }
@@ -175,7 +175,7 @@ public class Objeto extends Entidade implements Serializable {
     
     public void setCustosEstimadores(List<Custo> custosEstimadores){
         
-        this.custosEstimadores = (ArrayList)custosEstimadores;
+        this.custosEstimadores = new ArrayList<>(custosEstimadores);
         
     }
     

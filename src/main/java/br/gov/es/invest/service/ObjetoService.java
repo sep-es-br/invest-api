@@ -87,6 +87,7 @@ public class ObjetoService {
             objeto.getEmEtapa().add(emEtapa);
             
         }
+        
 
         return repository.save(objeto);
     }

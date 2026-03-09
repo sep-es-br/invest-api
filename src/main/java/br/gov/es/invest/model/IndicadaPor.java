@@ -8,10 +8,13 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 
 import br.gov.es.invest.dto.IndicadaPorDto;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
+@Setter
 @RelationshipProperties
 @NoArgsConstructor
 @SuperBuilder

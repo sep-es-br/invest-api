@@ -8,6 +8,7 @@ import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.model.Custo;
 import br.gov.es.invest.model.IndicadaPor;
 import br.gov.es.invest.service.CustoService;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class CustoFactory {
     public Custo fromDto(ObjetoCadastroFormDto.Custo dto, Long objetoId) {
         
         Optional<Custo> optCusto = this.custoSrv.findByAnoExercicio(dto.ano(), objetoId);
-        Custo custo = optCusto.orElseGet(() -> Custo.builder().anoExercicio(dto.ano()).indicadaPor(new HashSet<>()).build());
+        Custo custo = optCusto.orElseGet(() -> Custo.builder().anoExercicio(dto.ano()).indicadaPor(new ArrayList<>()).build());
                     
         for(ObjetoCadastroFormDto.ValoresFonte vf : dto.valoresFontes()){
             List<IndicadaPor> ips = custo.getIndicadaPor().stream()
