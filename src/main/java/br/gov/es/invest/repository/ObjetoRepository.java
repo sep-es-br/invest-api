@@ -108,12 +108,12 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
         @Query("""
                MATCH (o:Objeto)
                WHERE id(o) = $objetoId
-               OPTIONAL MATCH (o)-[oldR:REVISADO_POR]-(:Agente)
+               OPTIONAL MATCH (o)-[oldR:REVISADO_POR]->(:Agente)
                DELETE oldR
                WITH o
                MATCH (usuario:Agente)
                WHERE id(usuario) = $userId
-               MERGE (o)-[r:RevisadoPor]->(usuario)
+               MERGE (o)-[r:REVISADO_POR]->(usuario)
                SET r.timestamp = $timestamp
                
                """)

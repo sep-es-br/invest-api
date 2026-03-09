@@ -226,12 +226,16 @@ public class ObjetoController {
         
         ZonedDateTime agora = ZonedDateTime.now();
         
+        
+        service.save(objeto);
+        
+        
         if(config.emPeriodoRevisao(agora) && objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)){
             
             this.service.updateRevisor(objeto.getId(), usuario.getId(), agora);
         }
        
-        return ResponseEntity.ok(objFactory.fromModel(service.save(objeto)));
+        return ResponseEntity.ok(null);
     }
 
     @DeleteMapping("")
