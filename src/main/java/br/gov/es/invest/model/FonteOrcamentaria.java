@@ -36,5 +36,6 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
         this.nome = dto.getNome();
         this.descricao = dto.getDescricao();
     }
+    
 
 }

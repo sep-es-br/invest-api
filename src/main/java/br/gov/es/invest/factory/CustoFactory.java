@@ -31,10 +31,7 @@ public class CustoFactory {
         
         Optional<Custo> optCusto = this.custoSrv.findByAnoExercicio(dto.ano(), objetoId);
         Custo custo = optCusto.orElseGet(() -> Custo.builder().anoExercicio(dto.ano()).indicadaPor(new HashSet<>()).build());
-        
-        
-        Set<IndicadaPor> setIndicadaPor = new HashSet<>();
-            
+                    
         for(ObjetoCadastroFormDto.ValoresFonte vf : dto.valoresFontes()){
             List<IndicadaPor> ips = custo.getIndicadaPor().stream()
                     .filter(ipm -> ipm.getFonteOrcamentaria().getCodigo().equals(vf.fonte().getCodigo()))
@@ -49,18 +46,15 @@ public class CustoFactory {
                 ip = new IndicadaPor();
 
                 ip.setFonteOrcamentaria(fonteFactory.fromDto(vf.fonte()));
-
+                
+                custo.getIndicadaPor().add(ip);
             }
 
             if(vf.contratado() != null) ip.setContratado(vf.contratado());
             ip.setPlanejado(Optional.ofNullable(vf.planejado()).orElse(Double.valueOf(0)));
 
-
-            setIndicadaPor.add(ip);
-
         }
 
-        custo.setIndicadaPor(setIndicadaPor);
         
         return custo;
     }

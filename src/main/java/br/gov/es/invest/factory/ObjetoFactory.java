@@ -180,7 +180,6 @@ public class ObjetoFactory {
         
         obj.setConta(conta);
         
-        obj.setCustosEstimadores(dto.recursos().stream().map(custo -> custoFactory.fromDto(custo, obj.getId())).collect(Collectors.toList()));
         
         return obj;
         

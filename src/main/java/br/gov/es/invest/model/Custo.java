@@ -22,6 +22,9 @@ import lombok.experimental.SuperBuilder;
 public class Custo extends Entidade implements Serializable {
      
     private Integer anoExercicio;
+    
+    @Relationship(type = "ESTIMADO", direction = Direction.OUTGOING)
+    private Objeto objeto;
 
     @Relationship(type = "INDICADA_POR", direction = Direction.OUTGOING)
     private Set<IndicadaPor> indicadaPor;

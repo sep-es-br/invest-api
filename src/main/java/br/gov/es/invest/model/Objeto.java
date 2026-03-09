@@ -179,21 +179,44 @@ public class Objeto extends Entidade implements Serializable {
         
     }
     
-    public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos){
-        
-        this.setCustosEstimadores((ArrayList) custos.stream().map(
-                custo -> Custo.builder()
-                        .anoExercicio(custo.ano())
-                        .indicadaPor(custo.valoresFontes().stream().map(
-                                valores -> IndicadaPor.builder()
-                                            .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
-                                            .planejado(Optional.ofNullable(valores.planejado()).orElse(Double.valueOf(0)))
-                                            .contratado(Optional.ofNullable(valores.contratado()).orElse(Double.valueOf(0)))
-                                            .build()
-                        ).collect(Collectors.toSet())).build()
-        ).collect(Collectors.toList()));
-        
-    }
+    public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos) {
+
+       custos.forEach(custo -> {
+
+           Custo custoModel = this.getCustosEstimadores().stream()
+                   .filter(c -> c.getAnoExercicio().equals(custo.ano()))
+                   .findFirst()
+                   .orElseGet(() -> {
+                       Custo novo = Custo.builder()
+                               .anoExercicio(custo.ano())
+                               .objeto(this)
+                               .build();
+                       this.getCustosEstimadores().add(novo);
+                       return novo;
+                   });
+
+           custo.valoresFontes().forEach(vf -> {
+
+               IndicadaPor ip = custoModel.getIndicadaPor().stream()
+                       .filter(_ip -> _ip.getFonteOrcamentaria()
+                               .getCodigo()
+                               .equals(vf.fonte().getCodigo()))
+                       .findFirst()
+                       .orElseGet(() -> {
+                           IndicadaPor novo = IndicadaPor.builder()
+                                   .fonteOrcamentaria(new FonteOrcamentaria(vf.fonte()))
+                                   .build();
+
+                           custoModel.getIndicadaPor().add(novo);
+
+                           return novo;
+                       });
+
+               ip.setContratado(Optional.ofNullable(vf.contratado()).orElse(0d));
+               ip.setPlanejado(vf.planejado());
+           });
+       });
+   }
     
     @Transient
     public EmEtapa getEtapaAtual() {
