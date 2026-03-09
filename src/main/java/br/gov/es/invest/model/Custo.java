@@ -36,9 +36,5 @@ public class Custo extends Entidade implements Serializable {
         this.anoExercicio = dto.anoExercicio();
         this.indicadaPor = dto.indicadaPor().stream().map(IndicadaPor::parse).collect(Collectors.toList());
     }
-    
-    public void setIndicadaPor(List<IndicadaPor> indicadaPor) {
-        this.indicadaPor = new ArrayList<>(indicadaPor);
-    }
 
 }

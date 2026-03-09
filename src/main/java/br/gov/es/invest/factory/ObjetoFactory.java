@@ -22,14 +22,17 @@ import br.gov.es.invest.model.TipoPlano;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.AreaTematicaService;
 import br.gov.es.invest.service.ContaService;
+import br.gov.es.invest.service.CustoService;
 import br.gov.es.invest.service.InvestimentoService;
 import br.gov.es.invest.service.LocalidadeService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.PlanoOrcamentarioService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.utils.DateTimeUtils;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +56,7 @@ public class ObjetoFactory {
     private final AreaTematicaService areaSrv;
     private final InvestimentoService investimentoSrv;
     private final PlanoOrcamentarioService planoSrv;
+    private final CustoService custoSrv;
     
     private final CustoFactory custoFactory;
     private final EmEtapaFactory emEtapaFactory;
@@ -140,7 +144,34 @@ public class ObjetoFactory {
         obj.setContrato(dto.contrato());
         obj.setAreaTematica(areaSrv.findById(dto.areaTematicaId()).orElseThrow());
         obj.setPossuiOrcamento(dto.possuiOrcamento());
+        
+        List<Custo> custoRemovidos = obj.getCustosEstimadores().stream()
+                                        .filter(custo -> {
+                                          return dto.recursos().stream().filter(c -> c.ano().equals(custo.getAnoExercicio())).findFirst().isEmpty();
+                                        
+                                        }).collect(Collectors.toCollection(ArrayList::new));
+        
+        this.custoSrv.deleteAll(custoRemovidos.stream().map(Custo::getId).collect(Collectors.toCollection(ArrayList::new)));
+        
         obj.setCustosEstimadoresFromDto(dto.recursos());
+        
+        
+        for (Custo custo : obj.getCustosEstimadores()) {
+
+            List<Map<String, Object>> valores =
+                custo.getIndicadaPor()
+                     .stream()
+                     .map(ip -> {
+                         Map<String, Object> map = new HashMap<>();
+                         map.put("fonte", ip.getFonteOrcamentaria().getCodigo());
+                         map.put("planejado", ip.getPlanejado());
+                         map.put("contratado", ip.getContratado());
+                         return map;
+                     })
+                     .collect(Collectors.toList());
+
+            custoSrv.updateCustos(custo.getId(), valores);
+        }
         
         UnidadeOrcamentaria unidade = unidadeSrv.findOrCreateByCod(dto.unidadeOrcamentaria());
         

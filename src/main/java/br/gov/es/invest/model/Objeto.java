@@ -172,13 +172,6 @@ public class Objeto extends Entidade implements Serializable {
     }
     
     
-    
-    public void setCustosEstimadores(List<Custo> custosEstimadores){
-        
-        this.custosEstimadores = new ArrayList<>(custosEstimadores);
-        
-    }
-    
     public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos) {
 
        custos.forEach(custo -> {
