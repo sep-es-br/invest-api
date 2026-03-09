@@ -210,7 +210,7 @@ public class ObjetoController {
     @PostMapping("")
     public ResponseEntity<?> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
         
-        final Objeto objeto = objFactory.fromDTO(cadastroForm);
+        Objeto objeto = objFactory.fromDTO(cadastroForm);
         ConfigGerais config = this.cgSrv.getConfig();
         
         auth = auth.replace("Bearer ", "");
@@ -227,15 +227,13 @@ public class ObjetoController {
         ZonedDateTime agora = ZonedDateTime.now();
         
         if(config.emPeriodoRevisao(agora) && objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)){
-            RevisadoPor revisadoPor = Optional.ofNullable(objeto.getRevisor())
-                    .orElseGet(() -> {
-                        RevisadoPor novoRevisor = new RevisadoPor();
-                        objeto.setRevisor(novoRevisor);
-                        return novoRevisor;
-                    });
-        
-            revisadoPor.setRevisor(usuario);
-            revisadoPor.setTimestamp(agora);
+            
+            if(objeto.getRevisor() == null)  {
+                objeto.setRevisor(new RevisadoPor());
+            }
+                    
+            objeto.getRevisor().setRevisor(usuario);
+            objeto.getRevisor().setTimestamp(agora);
         }
        
         return ResponseEntity.ok(objFactory.fromModel(service.save(objeto)));
