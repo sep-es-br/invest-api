@@ -12,6 +12,7 @@ import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.ConfigGerais;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.RevisadoPor;
+import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.ConfigGeraisService;
 import br.gov.es.invest.service.ObjetoService;
@@ -209,7 +210,7 @@ public class ObjetoController {
     @PostMapping("")
     public ResponseEntity<?> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
         
-        Objeto objeto = objFactory.fromDTO(cadastroForm);
+        final Objeto objeto = objFactory.fromDTO(cadastroForm);
         ConfigGerais config = this.cgSrv.getConfig();
         
         auth = auth.replace("Bearer ", "");
@@ -225,16 +226,19 @@ public class ObjetoController {
         
         ZonedDateTime agora = ZonedDateTime.now();
         
-        if(config.emPeriodoRevisao(agora)){
-            RevisadoPor revisadoPor = Optional.ofNullable(objeto.getRevisor()).orElse(new RevisadoPor());
+        if(config.emPeriodoRevisao(agora) && objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)){
+            RevisadoPor revisadoPor = Optional.ofNullable(objeto.getRevisor())
+                    .orElseGet(() -> {
+                        RevisadoPor novoRevisor = new RevisadoPor();
+                        objeto.setRevisor(novoRevisor);
+                        return novoRevisor;
+                    });
+        
             revisadoPor.setRevisor(usuario);
             revisadoPor.setTimestamp(agora);
-            objeto.setRevisor(revisadoPor);
         }
-        
-        objeto = service.save(objeto);
-        
-        return ResponseEntity.ok(objFactory.fromModel(objeto));
+       
+        return ResponseEntity.ok(objFactory.fromModel(service.save(objeto)));
     }
 
     @DeleteMapping("")
