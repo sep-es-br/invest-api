@@ -131,9 +131,9 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
                DELETE oldR              
                WITH o               
                MATCH (status:Status)
-               WHERE id(usuario) = $statusId
-               MERGE (o)-[r:ALTERADO_POR]->(usuario)
+               WHERE id(status) = $statusId
+               MERGE (o)-[r:ALTERADO_POR]->(status)
                SET r.timestamp = $timestamp
                """)
-        public void AlterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
+        public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
 }

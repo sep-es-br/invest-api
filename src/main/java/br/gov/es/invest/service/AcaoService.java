@@ -35,6 +35,8 @@ public class AcaoService {
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
                 
+                objetoOriginal = objetoService.save(objetoOriginal);
+                
                 objetoService.alterarStatus(objetoOriginal.getId(), acao.getStatusFinal().getId(), agora);
                 
                 return objetoService.findById(objetoOriginal.getId());
