@@ -66,6 +66,10 @@ public class ObjetoService {
     public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp){
         this.repository.addAlterador(objetoId, userId, timestamp);
     }
+    
+    public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp){
+        this.repository.addAlterador(objetoId, statusId, timestamp);
+    }
 
     public Objeto save(Objeto objeto) {
         

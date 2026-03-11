@@ -123,4 +123,17 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
                SET r.timestamp = $timestamp
                """)
         public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp);
+        
+        @Query("""
+               MATCH (o:Objeto)
+               WHERE id(o) = $objetoId
+               OPTIONAL MATCH (o)-[oldR:EM]-(:Status)
+               DELETE oldR              
+               WITH o               
+               MATCH (status:Status)
+               WHERE id(usuario) = $statusId
+               MERGE (o)-[r:ALTERADO_POR]->(usuario)
+               SET r.timestamp = $timestamp
+               """)
+        public void AlterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
 }

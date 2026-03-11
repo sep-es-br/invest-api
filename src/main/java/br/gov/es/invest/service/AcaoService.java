@@ -5,7 +5,6 @@ import br.gov.es.invest.model.Acao;
 import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Apontamento;
 import br.gov.es.invest.model.EmEtapa;
-import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
 import java.time.ZonedDateTime;
@@ -36,17 +35,9 @@ public class AcaoService {
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
                 
-                EmStatus emStatusTarget = new EmStatus();
-                emStatusTarget.setStatus(acao.getStatusFinal());
-                emStatusTarget.setTimestamp(agora);
+                objetoService.alterarStatus(objetoOriginal.getId(), acao.getStatusFinal().getId(), agora);
                 
-                objetoOriginal.setEmStatus(null);
-                
-                objetoService.save(objetoOriginal);
-
-                objetoOriginal.setEmStatus(emStatusTarget); // aplica status final
-
-                return objetoService.save(objetoOriginal);
+                return objetoService.findById(objetoOriginal.getId());
             } else { // se não significa que o fluxo foi cancelado
                 return objetoService.removerObjeto(objeto.getId());
             }
@@ -109,11 +100,8 @@ public class AcaoService {
             objetoOriginal.getEmEtapa().add(emEtapaTarget);
             
              
-            EmStatus emStatusTarget = new EmStatus();
-            emStatusTarget.setStatus(acao.getStatusFinal());
-            emStatusTarget.setTimestamp(agora);
-
-            objetoOriginal.setEmStatus(emStatusTarget);
+            objetoService.alterarStatus(objetoOriginal.getId(), acao.getStatusFinal().getId(), agora);
+            
             objetoService.save(objetoOriginal);
             return objetoService.findById(objeto.getId());
         }
