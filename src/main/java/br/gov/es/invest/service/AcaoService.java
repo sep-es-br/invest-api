@@ -41,6 +41,10 @@ public class AcaoService {
                 EmStatus emStatusTarget = new EmStatus();
                 emStatusTarget.setStatus(acao.getStatusFinal());
                 emStatusTarget.setTimestamp(agora);
+                
+                objetoOriginal.setEmStatus(null);
+                
+                objetoService.save(objetoOriginal);
 
                 objetoOriginal.setEmStatus(emStatusTarget); // aplica status final
 
