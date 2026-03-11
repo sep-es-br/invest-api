@@ -132,7 +132,7 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
                WITH o               
                MATCH (status:Status)
                WHERE id(status) = $statusId
-               MERGE (o)-[r:ALTERADO_POR]->(status)
+               MERGE (o)-[r:EM]->(status)
                SET r.timestamp = $timestamp
                """)
         public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
