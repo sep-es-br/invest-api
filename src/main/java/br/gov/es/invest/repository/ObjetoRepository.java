@@ -1,15 +1,13 @@
 package br.gov.es.invest.repository;
 
-import java.util.List;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.repository.Neo4jRepository;
-import org.springframework.data.neo4j.repository.query.Query;
-
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Status;
 import java.time.ZonedDateTime;
+import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.query.Query;
 
 public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
     
@@ -108,14 +106,21 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
         @Query("""
                MATCH (o:Objeto)
                WHERE id(o) = $objetoId
-               OPTIONAL MATCH (o)-[oldR:REVISADO_POR]->(:Agente)
-               DELETE oldR
-               WITH o
                MATCH (usuario:Agente)
                WHERE id(usuario) = $userId
                MERGE (o)-[r:REVISADO_POR]->(usuario)
                SET r.timestamp = $timestamp
-               
                """)
-        public void updateRevisor(Long objetoId, Long userId, ZonedDateTime timestamp);
+        public void addRevisor(Long objetoId, Long userId, ZonedDateTime timestamp);
+        
+        
+        @Query("""
+               MATCH (o:Objeto)
+               WHERE id(o) = $objetoId
+               MATCH (usuario:Agente)
+               WHERE id(usuario) = $userId
+               MERGE (o)-[r:ALTERADO_POR]->(usuario)
+               SET r.timestamp = $timestamp
+               """)
+        public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp);
 }

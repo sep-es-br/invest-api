@@ -1,6 +1,5 @@
 package br.gov.es.invest.controller;
 
-import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
@@ -11,7 +10,6 @@ import br.gov.es.invest.factory.ObjetoFactory;
 import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.ConfigGerais;
 import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.model.RevisadoPor;
 import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.service.ConfigGeraisService;
@@ -230,9 +228,15 @@ public class ObjetoController {
         service.save(objeto);
         
         
-        if(config.emPeriodoRevisao(agora) && objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)){
+        if(objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)) {
+            this.service.addAlterador(objeto.getId(), usuario.getId(), agora);
             
-            this.service.updateRevisor(objeto.getId(), usuario.getId(), agora);
+            if(config.emPeriodoRevisao(agora)){
+            
+                this.service.addRevisor(objeto.getId(), usuario.getId(), agora);
+
+            }
+        
         }
        
         return ResponseEntity.ok(null);

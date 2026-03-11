@@ -74,7 +74,10 @@ public class Objeto extends Entidade implements Serializable {
     private List<Parecer> pareceres;
     
     @Relationship("REVISADO_POR")
-    private RevisadoPor revisor;
+    private List<RevisadoPor> revistoPor;
+    
+    @Relationship("ALTERADO_POR")
+    private List<AlteradoPor> alteradoPor;
 
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
@@ -190,7 +193,14 @@ public class Objeto extends Entidade implements Serializable {
 
            custo.valoresFontes().forEach(vf -> {
 
-               IndicadaPor ip = custoModel.getIndicadaPor().stream()
+               IndicadaPor ip = Optional.ofNullable(custoModel.getIndicadaPor())
+                       .orElseGet(() -> {
+                            List<IndicadaPor> ipList = new ArrayList<>();
+
+                            custoModel.setIndicadaPor(ipList);
+
+                            return ipList;
+                        }).stream()
                        .filter(_ip -> _ip.getFonteOrcamentaria()
                                .getCodigo()
                                .equals(vf.fonte().getCodigo()))
