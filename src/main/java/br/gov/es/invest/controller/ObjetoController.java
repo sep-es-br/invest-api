@@ -143,7 +143,7 @@ public class ObjetoController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<?> getById(@RequestParam Long id, @RequestParam(required = false, defaultValue="true") boolean updateStatus) {
+    public ResponseEntity<?> getById(@RequestParam Long id, @RequestParam(required = false, defaultValue="false") boolean updateStatus) {
 
         try{
 
