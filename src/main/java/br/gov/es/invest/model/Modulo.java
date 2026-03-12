@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Node
 @SuperBuilder
-public class Modulo extends Entidade {
+public class Modulo extends NoEntidade {
     
     private String nome;
     private String path;

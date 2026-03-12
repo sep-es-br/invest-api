@@ -134,7 +134,7 @@ public class ContaService {
                         "    AND (_idsUnidade IS NULL OR id(unidade) IN _idsUnidade)\r\n" + //
                         "    AND (_idsPlano IS NULL OR id(po) IN _idsPlano)\r\n" + //
                         "OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonte)\r\n" + //
-                        "WHERE (_gnd IS NULL OR indicada_por.gnd = _gnd)\r\n" + //
+                        "WHERE (_gnd IS NULL OR obj.gnd = _gnd)\r\n" + //
                         "WITH \r\n" + //
                         "    unidade,\r\n" + //
                         "    conta,\r\n" + //
@@ -236,7 +236,7 @@ public class ContaService {
                             MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                             WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                                 AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio)
-                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                                AND ($gnd IS NULL OR obj.gnd = $gnd)
                             RETURN
                                 SUM(indicada_por.planejado) AS totalPlanejado,
                                 SUM(indicada_por.contratado) AS totalContratado

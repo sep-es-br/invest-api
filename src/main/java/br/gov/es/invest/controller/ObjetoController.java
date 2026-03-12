@@ -1,6 +1,5 @@
 package br.gov.es.invest.controller;
 
-import br.gov.es.invest.dto.ObjetoDto;
 import br.gov.es.invest.dto.ObjetoFiltroDTO;
 import br.gov.es.invest.dto.ObjetoTiraDTO;
 import br.gov.es.invest.dto.PlanoOrcamentarioDTO;
@@ -9,8 +8,11 @@ import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
 import br.gov.es.invest.factory.ObjetoFactory;
 import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.ConfigGerais;
 import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.model.StatusEnum;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.service.ConfigGeraisService;
 import br.gov.es.invest.service.ObjetoService;
 import br.gov.es.invest.service.TokenService;
 import br.gov.es.invest.service.UnidadeOrcamentariaService;
@@ -19,6 +21,7 @@ import br.gov.es.invest.utils.DataListResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +55,7 @@ public class ObjetoController {
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
     private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    private final ConfigGeraisService cgSrv;
 
     @PostMapping("/allTira")
     public ResponseEntity<?> getAllByFiltro(
@@ -79,6 +83,7 @@ public class ObjetoController {
             
 
         DataListResult<ObjetoTiraDTO> objetos = service.getAllListByFilter(
+            filtro.audiencia(),
             filtro.exercicio(), 
             filtro.gnd(),
             filtro.nome(), 
@@ -138,7 +143,7 @@ public class ObjetoController {
     }
 
     @GetMapping("/byId")
-    public ResponseEntity<?> getById(@RequestParam Long id, @RequestParam(required = false, defaultValue="true") boolean updateStatus) {
+    public ResponseEntity<?> getById(@RequestParam Long id, @RequestParam(required = false, defaultValue="false") boolean updateStatus) {
 
         try{
 
@@ -204,18 +209,37 @@ public class ObjetoController {
     public ResponseEntity<?> cadastrarObjeto(@RequestBody ObjetoCadastroFormDto cadastroForm, @RequestHeader("Authorization") String auth ) {
         
         Objeto objeto = objFactory.fromDTO(cadastroForm);
+        ConfigGerais config = this.cgSrv.getConfig();
+        
+        auth = auth.replace("Bearer ", "");
+
+        String sub = tokenService.validarToken(auth);
+        
+        Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         
         if(objeto.getResponsavel() == null) {
-            auth = auth.replace("Bearer ", "");
-
-            String sub = tokenService.validarToken(auth);
-
-            objeto.setResponsavel( usuarioService.getUserBySub(sub).orElse(null) );
+            
+            objeto.setResponsavel( usuario );
         }
         
-        objeto = service.save(objeto);
+        ZonedDateTime agora = ZonedDateTime.now();
         
-        return ResponseEntity.ok(objFactory.fromModel(objeto));
+        
+        service.save(objeto);
+        
+        
+        if(objeto.getEmStatus().getStatus().getStatusId().equals(StatusEnum.CADASTRADO)) {
+            this.service.addAlterador(objeto.getId(), usuario.getId(), agora);
+            
+            if(config.emPeriodoRevisao(agora)){
+            
+                this.service.addRevisor(objeto.getId(), usuario.getId(), agora);
+
+            }
+        
+        }
+       
+        return ResponseEntity.ok(null);
     }
 
     @DeleteMapping("")

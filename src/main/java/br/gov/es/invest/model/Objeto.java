@@ -29,7 +29,7 @@ import org.springframework.util.comparator.Comparators;
 @RequiredArgsConstructor
 @Node
 @SuperBuilder
-public class Objeto extends Entidade implements Serializable {
+public class Objeto extends NoEntidade implements Serializable {
     
     private Integer gnd;
     private String nome;
@@ -72,6 +72,12 @@ public class Objeto extends Entidade implements Serializable {
 
     @Relationship("POSSUI")
     private List<Parecer> pareceres;
+    
+    @Relationship("REVISADO_POR")
+    private List<RevisadoPor> revistoPor;
+    
+    @Relationship("ALTERADO_POR")
+    private List<AlteradoPor> alteradoPor;
 
     public Objeto(ObjetoDto dto) {
         this.setId(dto.id());
@@ -137,7 +143,7 @@ public class Objeto extends Entidade implements Serializable {
                 custo.setIndicadaPor(
                     custo.getIndicadaPor().stream()
                     .filter(ip -> ip.getFonteOrcamentaria().getId().equals(fonteId) )
-                    .collect(Collectors.toSet())
+                    .collect(Collectors.toList())
                 );
 
             }
@@ -169,28 +175,51 @@ public class Objeto extends Entidade implements Serializable {
     }
     
     
-    
-    public void setCustosEstimadores(List<Custo> custosEstimadores){
-        
-        this.custosEstimadores = (ArrayList)custosEstimadores;
-        
-    }
-    
-    public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos){
-        
-        this.setCustosEstimadores((ArrayList) custos.stream().map(
-                custo -> Custo.builder()
-                        .anoExercicio(custo.ano())
-                        .indicadaPor(custo.valoresFontes().stream().map(
-                                valores -> IndicadaPor.builder()
-                                            .fonteOrcamentaria(new FonteOrcamentaria(valores.fonte()))
-                                            .planejado(Optional.ofNullable(valores.planejado()).orElse(Double.valueOf(0)))
-                                            .contratado(Optional.ofNullable(valores.contratado()).orElse(Double.valueOf(0)))
-                                            .build()
-                        ).collect(Collectors.toSet())).build()
-        ).collect(Collectors.toList()));
-        
-    }
+    public void setCustosEstimadoresFromDto(List<ObjetoCadastroFormDto.Custo> custos) {
+
+       custos.forEach(custo -> {
+
+           Custo custoModel = this.getCustosEstimadores().stream()
+                   .filter(c -> c.getAnoExercicio().equals(custo.ano()))
+                   .findFirst()
+                   .orElseGet(() -> {
+                       Custo novo = Custo.builder()
+                               .anoExercicio(custo.ano())
+                               .objeto(this)
+                               .build();
+                       this.getCustosEstimadores().add(novo);
+                       return novo;
+                   });
+
+           custo.valoresFontes().forEach(vf -> {
+
+               IndicadaPor ip = Optional.ofNullable(custoModel.getIndicadaPor())
+                       .orElseGet(() -> {
+                            List<IndicadaPor> ipList = new ArrayList<>();
+
+                            custoModel.setIndicadaPor(ipList);
+
+                            return ipList;
+                        }).stream()
+                       .filter(_ip -> _ip.getFonteOrcamentaria()
+                               .getCodigo()
+                               .equals(vf.fonte().getCodigo()))
+                       .findFirst()
+                       .orElseGet(() -> {
+                           IndicadaPor novo = IndicadaPor.builder()
+                                   .fonteOrcamentaria(new FonteOrcamentaria(vf.fonte()))
+                                   .build();
+
+                           custoModel.getIndicadaPor().add(novo);
+
+                           return novo;
+                       });
+
+               ip.setContratado(Optional.ofNullable(vf.contratado()).orElse(0d));
+               ip.setPlanejado(vf.planejado());
+           });
+       });
+   }
     
     @Transient
     public EmEtapa getEtapaAtual() {

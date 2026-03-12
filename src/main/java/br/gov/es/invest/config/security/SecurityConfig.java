@@ -1,5 +1,6 @@
 package br.gov.es.invest.config.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,6 +53,11 @@ public class SecurityConfig {
                                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                                 .cors(Customizer.withDefaults())
                                 .exceptionHandling(Customizer.withDefaults())
+                                .exceptionHandling(ex -> ex
+                                    .authenticationEntryPoint((request, response, authException) -> {
+                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                    })
+                                )
                                 .build();
 
         }

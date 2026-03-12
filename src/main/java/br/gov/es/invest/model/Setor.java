@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Node
 @SuperBuilder
-public class Setor extends Entidade {
+public class Setor extends NoEntidade {
     private String guid;
     private String nome;
     private String sigla;

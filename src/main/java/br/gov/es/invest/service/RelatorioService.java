@@ -86,7 +86,7 @@ public class RelatorioService {
                             MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                             WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                                 AND ($exercicioInicio <= custo.anoExercicio AND $exercicioFim >= custo.anoExercicio )
-                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                                AND ($gnd IS NULL OR obj.gnd = $gnd)
                             RETURN
                                 sum(indicada_por.planejado) AS totalPlanejado,
                                 sum(indicada_por.contratado) AS totalContratado
@@ -441,7 +441,7 @@ public class RelatorioService {
 
                         MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(fonte:FonteOrcamentaria)
                         WHERE ($fonte IS NULL OR id(fonte) = $fonte)
-                            AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                            AND ($gnd IS NULL OR obj.gnd = $gnd)
 
                         OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)
                         OPTIONAL MATCH (obj)-[:ATENDE]->(microrregiao:Localidade)
@@ -582,7 +582,7 @@ public class RelatorioService {
                     WHERE 
                         ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                         AND (custo.anoExercicio = $exercicio)
-                        AND ($gnd IS NULL OR indicada_por.gnd = $gnd)
+                        AND ($gnd IS NULL OR obj.gnd = $gnd)
                     RETURN
                         SUM(indicada_por.planejado) AS planejado,
                         SUM(indicada_por.contratado) AS contratado

@@ -1,14 +1,13 @@
 package br.gov.es.invest.repository;
 
-import java.util.List;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.neo4j.repository.Neo4jRepository;
-import org.springframework.data.neo4j.repository.query.Query;
-
 import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Status;
+import java.time.ZonedDateTime;
+import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.query.Query;
 
 public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
     
@@ -103,4 +102,65 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
                         "WHERE id(n) IN $ids\r\n" + //
                         "DELETE do_tipo")
         public void removerTipos(List<Long> ids);
+        
+        @Query("""
+               MATCH (o:Objeto)
+               WHERE id(o) = $objetoId
+               MATCH (usuario:Agente)
+               WHERE id(usuario) = $userId
+               MERGE (o)-[r:REVISADO_POR]->(usuario)
+               SET r.timestamp = $timestamp
+               """)
+        public void addRevisor(Long objetoId, Long userId, ZonedDateTime timestamp);
+        
+        
+        @Query("""
+               MATCH (o:Objeto)
+               WHERE id(o) = $objetoId
+               MATCH (usuario:Agente)
+               WHERE id(usuario) = $userId
+               MERGE (o)-[r:ALTERADO_POR]->(usuario)
+               SET r.timestamp = $timestamp
+               """)
+        public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp);
+        
+        @Query("""
+               MATCH (o:Objeto)
+               WHERE id(o) = $objetoId
+               OPTIONAL MATCH (o)-[oldR:EM]-(:Status)
+               DELETE oldR              
+               WITH o               
+               MATCH (status:Status)
+               WHERE id(status) = $statusId
+               MERGE (o)-[r:EM]->(status)
+               SET r.timestamp = $timestamp
+               """)
+        public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
+        
+        
+        @Query("""
+                MATCH (o:Objeto)
+                WHERE id(o) = $objetoId        
+                MATCH (etapa:Etapa)
+                WHERE id(etapa) = $etapaId
+                MERGE (o)-[r:EM]->(etapa)
+                SET 
+                   r.timestamp = $timestamp,
+                   r.devolvido = $devolvido,
+                   r.atividade = $atividade
+                """)
+        public void addEtapa(Long objetoId, Long etapaId, Boolean devolvido, String atividade, ZonedDateTime timestamp);
+        
+        
+        @Query("""
+               MATCH (obj:Objeto)-[emEtapa:EM]->(:Etapa)
+               WHERE id(obj) = $objetoId
+               ORDER BY emEtapa.timestamp DESC
+               LIMIT 1
+               WITH emEtapa
+               SET 
+                   emEtapa.avaliadoEm = $avaliadoEm,
+                   emEtapa.avaliadoPorId = $avaliadoPorId
+               """)
+        public void updateUltimaEtapa(Long objetoId, ZonedDateTime avaliadoEm, Long avaliadoPorId);
 }

@@ -40,11 +40,13 @@ public class PlanoOrcamentarioController {
     
 
     @GetMapping("/all")
-    public ResponseEntity<List<PlanoOrcamentarioDTO>> getAllByFiltro() {
+    public ResponseEntity<List<PlanoOrcamentarioDTO>> getAllByFiltro(
+            @RequestParam(required = false) List<String> codsUnidade
+    ) {
 
         ArrayList<PlanoOrcamentarioDTO> planosDTO = new ArrayList<>();
 
-        service.getAllSimples().forEach(plano -> planosDTO.add(new PlanoOrcamentarioDTO(plano.getId(), plano.getCodigo(), plano.getNome())));
+        service.getAllSimples(codsUnidade).forEach(plano -> planosDTO.add(new PlanoOrcamentarioDTO(plano.getId(), plano.getCodigo(), plano.getNome())));
 
         return ResponseEntity.ok(planosDTO);
         

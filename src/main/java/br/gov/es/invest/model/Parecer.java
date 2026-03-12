@@ -17,7 +17,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Parecer extends Entidade {
+public class Parecer extends NoEntidade {
     
     private ZonedDateTime timestamp;
     private String texto;

@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class TipoPlano extends Entidade {
+public class TipoPlano extends NoEntidade {
     
     private String nome;
     private String sigla;

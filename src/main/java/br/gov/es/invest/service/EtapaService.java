@@ -1,5 +1,6 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.dto.grupo.GrupoDoUsuarioListDTO;
 import br.gov.es.invest.model.EmEtapa;
 import br.gov.es.invest.model.Etapa;
 import br.gov.es.invest.model.EtapaEnum;
@@ -39,14 +40,14 @@ public class EtapaService {
     }
 
     public Etapa getEtapaDoUsuario(Long userId) {
-        List<Grupo> gruposDoUser = grupoService.getGruposDoUsuario(userId);
+        List<GrupoDoUsuarioListDTO> gruposDoUser = grupoService.getGruposDoUsuario(userId);
 
         Grupo grupoProbe = new Grupo();
         Etapa etapaProbe = new Etapa();
         etapaProbe.setGrupoResponsavel(grupoProbe);
 
-        for(Grupo grupo : gruposDoUser) {
-            grupoProbe.setId(grupo.getId());
+        for(GrupoDoUsuarioListDTO grupo : gruposDoUser) {
+            grupoProbe.setId(grupo.idGrupo());
 
             Optional<Etapa> optEtapa = etapaRepository.findBy(Example.of(etapaProbe), q -> q.first());
 

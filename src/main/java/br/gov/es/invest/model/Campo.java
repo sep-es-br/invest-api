@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Campo extends Entidade {
+public class Campo extends NoEntidade {
 
     public String campoId;
     public String nome;

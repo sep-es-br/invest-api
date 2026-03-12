@@ -19,7 +19,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Apontamento extends Entidade{
+public class Apontamento extends NoEntidade{
     
     @CreatedDate
     private ZonedDateTime timestamp;
