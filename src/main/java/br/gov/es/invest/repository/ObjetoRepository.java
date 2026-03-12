@@ -136,4 +136,31 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
                SET r.timestamp = $timestamp
                """)
         public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
+        
+        
+        @Query("""
+                MATCH (o:Objeto)
+                WHERE id(o) = $objetoId        
+                MATCH (etapa:Etapa)
+                WHERE id(etapa) = $etapaId
+                MERGE (o)-[r:EM]->(etapa)
+                SET 
+                   r.timestamp = $timestamp,
+                   r.devolvido = $devolvido,
+                   r.atividade = $atividade
+                """)
+        public void addEtapa(Long objetoId, Long etapaId, Boolean devolvido, String atividade, ZonedDateTime timestamp);
+        
+        
+        @Query("""
+               MATCH (obj:Objeto)-[emEtapa:EM]->(:Etapa)
+               WHERE id(obj) = $objetoId
+               ORDER BY emEtapa.timestamp DESC
+               LIMIT 1
+               WITH emEtapa
+               SET 
+                   emEtapa.avaliadoEm = $avaliadoEm,
+                   emEtapa.avaliadoPorId = $avaliadoPorId
+               """)
+        public void updateUltimaEtapa(Long objetoId, ZonedDateTime avaliadoEm, Long avaliadoPorId);
 }
