@@ -101,10 +101,10 @@ public class AcaoService {
             
             objetoOriginal.getEmEtapa().add(emEtapaTarget);
             
+            objetoService.save(objetoOriginal);
              
             objetoService.alterarStatus(objetoOriginal.getId(), acao.getStatusFinal().getId(), agora);
             
-            objetoService.save(objetoOriginal);
             return objetoService.findById(objeto.getId());
         }
         
