@@ -12,31 +12,34 @@ import org.springframework.data.neo4j.repository.query.Query;
 public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
     
 
-    @Query("CALL () {\r\n" + //
-            "    MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),\r\n" + //
-            "    (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)\r\n" + //
-            "    OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario)\r\n" + //
-            "    OPTIONAL MATCH (fonteExec:FonteOrcamentaria)<-[vinculada:VINCULADA_POR]-(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)\r\n" + //
-            "    OPTIONAL MATCH (obj)-[emEtapa:EM]->(etapa:Etapa)\r\n" + //
-            "    ORDER BY unidade.codigo, plano.codigo\r\n" + //
-            "    RETURN obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa,\r\n" + //
-            "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
-            "} WITH  obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa, \r\n" + //
-            "        re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec\r\n" + //
-            "WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))\r\n" + //
-            "    AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)\r\n" + //
-            "    AND ($idUnidade IS NULL OR id(unidade) IN $idUnidade)\r\n" + //
-            "    AND ($statusId IS NULL OR id(status) = $statusId)\r\n" + //
-            "    AND (\r\n" + //
-            "        $idPo IS NULL\r\n" + //
-            "        OR (\"S.PO\" IN $idPo AND plano IS NULL)\r\n" + //
-            "        OR ( NOT \"S.PO\" IN $idPo AND id(plano) IN toInteger($idPo))\r\n" + //
-            "        )\r\n" + //
-            "RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),\r\n" + //
-            "    collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),\r\n" + //
-            "    collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),\r\n" + //
-            "    collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa) " + //
-            "SKIP $skip LIMIT $limit")
+    @Query("""
+            CALL () {
+                MATCH (conta:Conta)<-[rc:CUSTEADO]-(obj:Objeto)<-[re:ESTIMADO]-(custo:Custo)-[indicada:INDICADA_POR]->(fonteCusto:FonteOrcamentaria),
+                (unidade:UnidadeOrcamentaria)-[ri:IMPLEMENTA]->(conta), (obj)-[emStatus:EM]->(status:Status)
+                OPTIONAL MATCH (conta)<-[orienta:ORIENTA]-(plano:PlanoOrcamentario) 
+                OPTIONAL MATCH (fonteExec:FonteOrcamentaria)<-[vinculada:VINCULADA_POR]-(execucao:ExecucaoOrcamentaria)-[rd:DELIMITA]->(conta)
+                OPTIONAL MATCH (obj)-[emEtapa:EM]->(etapa:Etapa)
+                ORDER BY unidade.codigo, plano.codigo
+                RETURN obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa,
+                    re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec
+            } WITH  obj, rc, orienta, plano, ri, unidade, rd, execucao, emEtapa, etapa, 
+                    re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec
+                    re, custo, conta, emStatus, status, indicada, fonteCusto, vinculada, fonteExec
+            WHERE ($nome IS NULL OR apoc.text.clean(obj.nome) CONTAINS apoc.text.clean($nome))
+                AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio OR execucao.anoExercicio = $exercicio)
+                AND ($idUnidade IS NULL OR id(unidade) IN $idUnidade)
+                AND ($statusId IS NULL OR id(status) = $statusId)
+                AND (
+                    $idPo IS NULL
+                    OR (\"S.PO\" IN $idPo AND plano IS NULL)
+                    OR ( NOT \"S.PO\" IN $idPo AND id(plano) IN toInteger($idPo))
+                    )
+            RETURN distinct obj, collect(rc), collect(emStatus), collect (status), collect(indicada),
+                collect(conta), collect(orienta), collect(plano), collect(ri), collect(unidade),
+                collect(rd), collect(execucao), collect(re), collect(custo), collect(vinculada),
+                collect(fonteCusto), collect(fonteExec), collect(emEtapa), collect(etapa) 
+            SKIP $skip LIMIT $limit
+           """)
     public List<ObjetoTiraProjection> getAllListByFilter(Integer exercicio, String nome, List<Long> idUnidade, List<String> idPo, Long statusId, Pageable pageable);
 
         @Query("""
@@ -93,74 +96,74 @@ public interface ObjetoRepository extends Neo4jRepository<Objeto, Long> {
 
 
     @Query("MATCH (obj:Objeto)<-[:ESTIMADO]-(custo:Custo) \n" +
-                "WHERE id(obj) = $objetoId \n" + 
-                "DETACH DELETE obj, custo")
-        public void removerObjeto(Long objetoId);
+            "WHERE id(obj) = $objetoId \n" + 
+            "DETACH DELETE obj, custo")
+    public void removerObjeto(Long objetoId);
 
 
-        @Query("MATCH (n:TipoPlano)<-[do_tipo:DO_TIPO]-(:Objeto)\r\n" + //
-                        "WHERE id(n) IN $ids\r\n" + //
-                        "DELETE do_tipo")
-        public void removerTipos(List<Long> ids);
-        
-        @Query("""
-               MATCH (o:Objeto)
-               WHERE id(o) = $objetoId
-               MATCH (usuario:Agente)
-               WHERE id(usuario) = $userId
-               MERGE (o)-[r:REVISADO_POR]->(usuario)
-               SET r.timestamp = $timestamp
-               """)
-        public void addRevisor(Long objetoId, Long userId, ZonedDateTime timestamp);
-        
-        
-        @Query("""
-               MATCH (o:Objeto)
-               WHERE id(o) = $objetoId
-               MATCH (usuario:Agente)
-               WHERE id(usuario) = $userId
-               MERGE (o)-[r:ALTERADO_POR]->(usuario)
-               SET r.timestamp = $timestamp
-               """)
-        public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp);
-        
-        @Query("""
-               MATCH (o:Objeto)
-               WHERE id(o) = $objetoId
-               OPTIONAL MATCH (o)-[oldR:EM]-(:Status)
-               DELETE oldR              
-               WITH o               
-               MATCH (status:Status)
-               WHERE id(status) = $statusId
-               MERGE (o)-[r:EM]->(status)
-               SET r.timestamp = $timestamp
-               """)
-        public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
-        
-        
-        @Query("""
-                MATCH (o:Objeto)
-                WHERE id(o) = $objetoId        
-                MATCH (etapa:Etapa)
-                WHERE id(etapa) = $etapaId
-                MERGE (o)-[r:EM]->(etapa)
-                SET 
-                   r.timestamp = $timestamp,
-                   r.devolvido = $devolvido,
-                   r.atividade = $atividade
-                """)
-        public void addEtapa(Long objetoId, Long etapaId, Boolean devolvido, String atividade, ZonedDateTime timestamp);
-        
-        
-        @Query("""
-               MATCH (obj:Objeto)-[emEtapa:EM]->(:Etapa)
-               WHERE id(obj) = $objetoId
-               ORDER BY emEtapa.timestamp DESC
-               LIMIT 1
-               WITH emEtapa
-               SET 
-                   emEtapa.avaliadoEm = $avaliadoEm,
-                   emEtapa.avaliadoPorId = $avaliadoPorId
-               """)
-        public void updateUltimaEtapa(Long objetoId, ZonedDateTime avaliadoEm, Long avaliadoPorId);
+    @Query("MATCH (n:TipoPlano)<-[do_tipo:DO_TIPO]-(:Objeto)\r\n" + //
+                    "WHERE id(n) IN $ids\r\n" + //
+                    "DELETE do_tipo")
+    public void removerTipos(List<Long> ids);
+
+    @Query("""
+           MATCH (o:Objeto)
+           WHERE id(o) = $objetoId
+           MATCH (usuario:Agente)
+           WHERE id(usuario) = $userId
+           CREATE (o)-[r:REVISADO_POR]->(usuario)
+           SET r.timestamp = $timestamp
+           """)
+    public void addRevisor(Long objetoId, Long userId, ZonedDateTime timestamp);
+
+
+    @Query("""
+           MATCH (o:Objeto)
+           WHERE id(o) = $objetoId
+           MATCH (usuario:Agente)
+           WHERE id(usuario) = $userId
+           CREATE (o)-[r:ALTERADO_POR]->(usuario)
+           SET r.timestamp = $timestamp
+           """)
+    public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp);
+
+    @Query("""
+           MATCH (o:Objeto)
+           WHERE id(o) = $objetoId
+           OPTIONAL MATCH (o)-[oldR:EM]-(:Status)
+           DELETE oldR              
+           WITH o               
+           MATCH (status:Status)
+           WHERE id(status) = $statusId
+           MERGE (o)-[r:EM]->(status)
+           SET r.timestamp = $timestamp
+           """)
+    public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp);
+
+
+    @Query("""
+            MATCH (o:Objeto)
+            WHERE id(o) = $objetoId        
+            MATCH (etapa:Etapa)
+            WHERE id(etapa) = $etapaId
+            MERGE (o)-[r:EM]->(etapa)
+            SET 
+               r.timestamp = $timestamp,
+               r.devolvido = $devolvido,
+               r.atividade = $atividade
+            """)
+    public void addEtapa(Long objetoId, Long etapaId, Boolean devolvido, String atividade, ZonedDateTime timestamp);
+
+
+    @Query("""
+           MATCH (obj:Objeto)-[emEtapa:EM]->(:Etapa)
+           WHERE id(obj) = $objetoId
+           ORDER BY emEtapa.timestamp DESC
+           LIMIT 1
+           WITH emEtapa
+           SET 
+               emEtapa.avaliadoEm = $avaliadoEm,
+               emEtapa.avaliadoPorId = $avaliadoPorId
+           """)
+    public void updateUltimaEtapa(Long objetoId, ZonedDateTime avaliadoEm, Long avaliadoPorId);
 }

@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Fluxo extends Entidade {
+public class Fluxo extends NoEntidade {
     
     private String nome;
     private String fluxoId;

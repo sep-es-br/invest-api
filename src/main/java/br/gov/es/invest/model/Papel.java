@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Node
 @SuperBuilder
-public class Papel extends Entidade{
+public class Papel extends NoEntidade{
     
     private String nome;
     private String guid;

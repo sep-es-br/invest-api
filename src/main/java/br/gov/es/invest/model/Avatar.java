@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Avatar extends Entidade{
+public class Avatar extends NoEntidade{
     
     private String blob;
 

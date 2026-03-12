@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Custo extends Entidade implements Serializable {
+public class Custo extends NoEntidade implements Serializable {
      
     private Integer anoExercicio;
     

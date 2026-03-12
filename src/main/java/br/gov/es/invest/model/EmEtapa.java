@@ -15,7 +15,7 @@ import org.springframework.data.annotation.Transient;
 @NoArgsConstructor
 @RelationshipProperties
 @SuperBuilder
-public class EmEtapa extends Entidade {
+public class EmEtapa extends RelacionamentoEntidade {
     
     @TargetNode
     private Etapa etapa;

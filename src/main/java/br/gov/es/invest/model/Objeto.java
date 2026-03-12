@@ -29,7 +29,7 @@ import org.springframework.util.comparator.Comparators;
 @RequiredArgsConstructor
 @Node
 @SuperBuilder
-public class Objeto extends Entidade implements Serializable {
+public class Objeto extends NoEntidade implements Serializable {
     
     private Integer gnd;
     private String nome;

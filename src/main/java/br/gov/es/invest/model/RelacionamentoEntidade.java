@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Id;
+import org.springframework.data.neo4j.core.schema.RelationshipId;
 
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public abstract class Entidade {
+public abstract class RelacionamentoEntidade {
 
-    @Id @GeneratedValue
+    @RelationshipId @GeneratedValue
     private Long id;
 
       
