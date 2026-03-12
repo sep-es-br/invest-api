@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Etapa extends Entidade {
+public class Etapa extends NoEntidade {
 
     private Integer ordem;
     private String nome;

@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @RelationshipProperties
 @SuperBuilder
-public class Pode extends Entidade {
+public class Pode extends RelacionamentoEntidade {
     
     @TargetNode()
     private Modulo modulo;

@@ -19,7 +19,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 @Setter
 @NoArgsConstructor
 @RelationshipProperties
-public class RevisadoPor extends Entidade {
+public class RevisadoPor extends RelacionamentoEntidade {
     
     @TargetNode
     private Agente revisor;
