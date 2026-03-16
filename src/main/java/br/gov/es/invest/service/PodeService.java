@@ -1,18 +1,12 @@
 package br.gov.es.invest.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Pode;
-import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.repository.GrupoRepository;
+import java.util.ArrayList;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PodeService {

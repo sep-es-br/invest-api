@@ -1,7 +1,6 @@
 package br.gov.es.invest.service;
 
 import br.gov.es.invest.model.Apontamento;
-import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.repository.ApontamentoRepository;
 import java.util.List;
 import java.util.Optional;
@@ -30,12 +29,6 @@ public class ApontamentoService {
         } );
 
         
-    }
-
-    public void mergeObjetoApontamento(Apontamento apontamento, Objeto objeto){
-        apontamento = apontamentoRepository.save(apontamento);
-
-        apontamentoRepository.mergeObjetoApontamento(objeto.getId(), apontamento.getId());
     }
     
     public List<Apontamento> findByObjeto(Long idObjeto) {

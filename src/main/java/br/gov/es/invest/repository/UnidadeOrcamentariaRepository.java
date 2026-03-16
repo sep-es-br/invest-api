@@ -26,12 +26,18 @@ public interface UnidadeOrcamentariaRepository extends Neo4jRepository<UnidadeOr
            """)
     public List<UnidadeOrcamentariaDTOProjection> findAllUnidadesForFluxo();
 
-    @Query("MATCH (unidade:UnidadeOrcamentaria) WHERE unidade.guid = $guid RETURN unidade")
+    @Query("""
+           MATCH (unidade:UnidadeOrcamentaria) 
+           WHERE unidade.guid = $guid 
+           RETURN unidade
+           """)
     public Optional<UnidadeOrcamentaria> findByGuid(String guid);
 
-    @Query("MATCH (unidade:UnidadeOrcamentaria)\r\n" + //
-            "WHERE id(unidade) = $idUnidade\r\n" + //
-            "RETURN toString(unidade.codigo)")
+    @Query("""
+           MATCH (unidade:UnidadeOrcamentaria)
+           WHERE id(unidade) = $idUnidade
+           RETURN toString(unidade.codigo)
+           """)
     public String getCodById(Long idUnidade);
 
     @Query("""

@@ -2,12 +2,12 @@ package br.gov.es.invest.service;
 
 import br.gov.es.invest.dto.DadoConsolidadoDTO;
 import br.gov.es.invest.dto.DadosDetalhadoDTO;
-import br.gov.es.invest.dto.DadosDetalhadoValores;
 import br.gov.es.invest.model.Conta;
 import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ContaRepository;
 import br.gov.es.invest.utils.DataListResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +105,7 @@ public class ContaService {
         String tipoDespesa, Integer gnd, Integer exercicio, Long idFonte,
         Pageable pageable, List<Long> idsUnidade, List<Long> idsPlano
     ) {
-
+        
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("tipoDespesa", tipoDespesa);
         paramMap.put("gnd", gnd);
@@ -152,8 +152,8 @@ public class ContaService {
                         "    po,\r\n" + //
                         "    obj,\r\n" + //
                         "    custo,\r\n" + //
-                        "    tipoPlano,\r\n" + //
-                        "    collect({\r\n" + //
+                        "    collect(tipoPlano.sigla) AS tipoPlano,\r\n" + //
+                        "    collect(DISTINCT {\r\n" + //
                         "        valorPlanejado: valorPlanejado,\r\n" + //
                         "        valorContratado: valorContratado,\r\n" + //
                         "        idFonte: idFonte,\r\n" + //
@@ -161,18 +161,19 @@ public class ContaService {
                         "    }) AS valores\r\n";
         
         String cypherQuery = cypherBase + 
-                            "RETURN\r\n" + //
-                            "    unidade.codigo AS codUnidade,\r\n" + //
-                            "    id(conta) AS idUnidade,\r\n" + //
-                            "    unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,\r\n" + //
-                            "    id(po) AS idPO,\r\n" + //
-                            "    po.codigo AS codPO,\r\n" + //
-                            "    po.nome AS nomePO,\r\n" + //
-                            "    'E' IN collect(tipoPlano.sigla) AS projEstrategico,\r\n" + //
-                            "    obj.contrato AS contrato,\r\n" + //
-                            "    custo.anoExercicio AS anoExercicio,\r\n" + //
-                            "    valores\r\n" + //
-                            "ORDER BY codUnidade\r\n";
+                            "RETURN {\r\n" + //
+                            "    codUnidade: unidade.codigo,\r\n" + //
+                            "    idUnidade: id(conta),\r\n" + //
+                            "    unidadeResponsavel: unidade.codigo + ' - ' + unidade.sigla,\r\n" + //
+                            "    idPO: id(po),\r\n" + //
+                            "    codPO: po.codigo,\r\n" + //
+                            "    nomePO: po.nome,\r\n" + //
+                            "    projEstrategico: 'E' IN tipoPlano,\r\n" + //
+                            "    contrato: obj.contrato,\r\n" + //
+                            "    anoExercicio: custo.anoExercicio,\r\n" + //
+                            "    valores: valores"
+                            + "} AS row\r\n" + //
+                            "ORDER BY row.codUnidade\r\n";
 
         
         if(pageable != null) {
@@ -184,26 +185,9 @@ public class ContaService {
 
         // List<DadosConsolidadosDTO> dados = neo4jOperations.findAll(cypherQuery, paramMap, DadosConsolidadosDTO.class);
         Collection<DadosDetalhadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
-        .fetchAs(DadosDetalhadoDTO.class)
-        .mappedBy((typeSystem, record) -> new DadosDetalhadoDTO(
-            record.get("idUnidade").asLong(),
-            record.get("unidadeResponsavel").asString(),
-            record.get("idPO").asLong(),
-            record.get("codPO").asString(),
-            record.get("nomePO").asString(),
-            record.get("projEstrategico").asBoolean(),
-            record.get("contrato").isNull() || record.get("contrato").isEmpty() ? "-" : record.get("contrato") .asString(),
-            record.get("anoExercicio").asInt(),
-            record.get("valores").asList(value -> new DadosDetalhadoValores(
-                value.get("idFonte").asLong(),
-                value.get("nomeFonte").asString(),
-                value.get("valorPlanejado").asDouble(),
-                value.get("valorContratado").asDouble()
-            ))
-        ))
-        .all();
+        .fetchAs(DadosDetalhadoDTO.class).mappedBy((typeSystem, record) -> new ObjectMapper().convertValue(record.get("row").asMap(), DadosDetalhadoDTO.class)).all();
         
-
+        
         return new DataListResult<>(
             (List<DadosDetalhadoDTO>) dados, 
             (int) neo4jOperations.count(cypherCount, paramMap)

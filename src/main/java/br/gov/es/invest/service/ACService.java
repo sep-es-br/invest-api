@@ -14,7 +14,9 @@ import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Setor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -81,13 +83,12 @@ public class ACService {
         TokenResponseDto tokenResponse = new JsonMapper().readValue(response.body(), TokenResponseDto.class);
         return tokenResponse.access_token();
       } else {
-        Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+        Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
       }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("ACTokenUrl: " + ACTokenUrl);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "ACTokenUrl: {0}", ACTokenUrl);
     }
 
 
@@ -114,14 +115,13 @@ public class ACService {
           List<UnidadesACResponseDto> UnidadesResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<UnidadesACResponseDto>>(){});
           return UnidadesResponse.stream().map(unidadeResp -> new Orgao(unidadeResp)).toList();
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -153,14 +153,13 @@ public class ACService {
           List<PapelACResponseDto> papeisResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<PapelACResponseDto>>(){});
           return papeisResponse;
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -185,14 +184,13 @@ public class ACService {
             EmailResponseACDto emailResponse = new JsonMapper().readValue(response.body(), new TypeReference<EmailResponseACDto>(){});
           return Optional.ofNullable(emailResponse.corporativo()).orElse(emailResponse.email())  ;
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -217,14 +215,13 @@ public class ACService {
           PapelACResponseDto papelResponse = new JsonMapper().readValue(response.body(), new TypeReference<PapelACResponseDto>(){});
           return papelResponse;
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -249,14 +246,13 @@ public class ACService {
           UnidadeACResponseDto resp = new JsonMapper().readValue(response.body(), new TypeReference<UnidadeACResponseDto>(){});
           return resp;
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -361,14 +357,13 @@ public class ACService {
           OrganizacaoACResponseDto resp = new JsonMapper().readValue(response.body(), new TypeReference<OrganizacaoACResponseDto>(){});
           return resp;
         } else {
-          Logger.getGlobal().severe("token: " + token);
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "token: {0}", token);
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -399,10 +394,9 @@ public class ACService {
           Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
-      Logger.getGlobal().info("token: " + token);
-      e.printStackTrace();
+      Logger.getGlobal().log(Level.INFO, "token: {0}", token);
     }
 
     return null;
@@ -429,11 +423,11 @@ public class ACService {
           List<PapelACResponseDto> papeisResponse = new JsonMapper().readValue(response.body(), new TypeReference<List<PapelACResponseDto>>(){});
           return papeisResponse.stream().map(papelResp -> new PapelDto(papelResp)).toList();
         } else {
-          Logger.getGlobal().severe(response.statusCode() + ": " + response.body());
+          Logger.getGlobal().log(Level.SEVERE, "{0}: {1}", new Object[]{response.statusCode(), response.body()});
           
         }
 
-    } catch (Exception e) {
+    } catch (IOException | InterruptedException | URISyntaxException e) {
       // TODO Auto-generated catch block
       Logger.getGlobal().log(Level.SEVERE, e.getLocalizedMessage(), e);
     }

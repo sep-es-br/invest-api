@@ -14,9 +14,11 @@ public interface PapelRepository extends Neo4jRepository<Papel, Long> {
            """)
     public void deleteAllById(List<Long> ids);
            
-    @Query("MATCH (p:Papel)\r\n" + //
-            "WHERE id(p) = $id\r\n" + //
-            "DETACH DELETE p")
+    @Query("""
+           MATCH (p:Papel)
+           WHERE id(p) = $id
+           DETACH DELETE p
+           """)
     public void deleteById(Long id);
     
     @Query("""

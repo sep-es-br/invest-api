@@ -9,23 +9,29 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 public interface UsuarioRepository extends Neo4jRepository<Agente, Long> {
     
-    @Query("MATCH (usuario:Agente)\r\n" + //
-                "WHERE usuario.sub = $sub\r\n" + //
-                "RETURN id(usuario)")
+    @Query("""
+           MATCH (usuario:Agente)
+           WHERE usuario.sub = $sub
+           RETURN id(usuario)
+           """)
     public Optional<Long> getIdBySub(String sub);
 
-    @Query("MATCH (usuario:Agente) \r\n" + //
-            "WHERE usuario.sub = $sub \r\n" + //
-            "SET usuario.ACToken = $newACToken \r\n" + //
-            "RETURN usuario")
+    @Query("""
+           MATCH (usuario:Agente) 
+           WHERE usuario.sub = $sub 
+           SET usuario.ACToken = $newACToken 
+           RETURN usuario
+           """)
     public Optional<Agente> setNewACToken(String sub, String newACToken);
     
 
-    @Query("MATCH (g:Grupo)<-[oldR:MEMBRO_DE]-(u:Agente)-[:POSSUI]->(papel:Papel)\r\n" + //
-                "WHERE id(u) = $userId\r\n" + //
-                "    AND id(papel) = $papelId\r\n" + //
-                "MERGE (papel)-[:MEMBRO_DE]->(g)\r\n" + //
-                "DELETE oldR")
+    @Query("""
+           MATCH (g:Grupo)<-[oldR:MEMBRO_DE]-(u:Agente)-[:POSSUI]->(papel:Papel)
+           WHERE id(u) = $userId
+               AND id(papel) = $papelId
+           MERGE (papel)-[:MEMBRO_DE]->(g)
+           DELETE oldR 
+           """)
     public void transferirGrupo(Long userId, Long papelId);
     
     public Optional<Agente> findBySub(String sub);
@@ -39,8 +45,15 @@ public interface UsuarioRepository extends Neo4jRepository<Agente, Long> {
                                             """;
     
     @Query(
-            value = findAgentesSimples_base + " RETURN a, r, avatar ORDER BY apoc.text.clean(a.nomeCompleto) ASC SKIP $skip LIMIT $limit",
-            countQuery = findAgentesSimples_base + " RETURN count(DISTINCT a)"
+            value = findAgentesSimples_base + """
+                                              RETURN a, r, avatar 
+                                              ORDER BY apoc.text.clean(a.nomeCompleto) ASC 
+                                              SKIP $skip 
+                                              LIMIT $limit
+                                              """,
+            countQuery = findAgentesSimples_base + """
+                                                    RETURN count(DISTINCT a)
+                                                   """
     )
     public Page<Agente> findAgentesSimples(String term, Pageable pgRequest);
 

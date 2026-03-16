@@ -8,9 +8,11 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 public interface FonteOrcamentariaRepository extends Neo4jRepository<FonteOrcamentaria, Long>{
     
-    @Query("MATCH (n:FonteOrcamentaria) \r\n" + //
-            "WHERE toInteger(n.codigo) < 1000\r\n" + //
-            "RETURN n")
+    @Query("""
+           MATCH (n:FonteOrcamentaria)
+           WHERE toInteger(n.codigo) < 1000
+           RETURN n
+           """)
     public List<FonteOrcamentaria> findFontesExtra();
     
     public Optional<FonteOrcamentaria> findByCodigo(String codigo);

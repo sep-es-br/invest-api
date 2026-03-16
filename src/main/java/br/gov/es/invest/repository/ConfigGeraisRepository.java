@@ -16,13 +16,17 @@ import org.springframework.data.neo4j.repository.query.Query;
 public interface ConfigGeraisRepository extends Neo4jRepository<ConfigGerais, Long> {
     
     @Query("""
-        MERGE (c:ConfigGerais)
-        ON CREATE SET c.createdAt = datetime()
-        RETURN c
+            MERGE (c:ConfigGerais)
+            ON CREATE SET c.createdAt = datetime()
+            RETURN c
           """)
     ConfigGerais getOrCreate();
     
-    @Query("MATCH (c:ConfigGerais) RETURN c LIMIT 1")
+    @Query("""
+           MATCH (c:ConfigGerais) 
+           RETURN c 
+           LIMIT 1
+           """)
     Optional<ConfigGerais> getConfig();
     
 }

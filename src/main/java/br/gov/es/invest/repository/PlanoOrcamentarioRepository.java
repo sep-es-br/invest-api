@@ -22,9 +22,11 @@ public interface PlanoOrcamentarioRepository extends Neo4jRepository<PlanoOrcame
     
     public List<PlanoOrcamentario> getAllSimples(List<String> codsUnidade);
     
-    @Query("MATCH (plano:PlanoOrcamentario)\r\n" + //
-            "WHERE id(plano) = $idPlano\r\n" + //
-            "RETURN toString(plano.codigo)")
+    @Query("""
+           MATCH (plano:PlanoOrcamentario)
+           WHERE id(plano) = $idPlano
+           RETURN toString(plano.codigo)
+           """)
     public String getCodById(Long idPlano);
     
     public Optional<PlanoOrcamentario> findByCodigo(String codigo);
