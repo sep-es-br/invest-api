@@ -6,10 +6,10 @@ import br.gov.es.invest.dto.RegistroDadoDetalhadoValoresPorAno;
 import br.gov.es.invest.dto.RegistroDadoDetalhadoValoresPorFonte;
 import br.gov.es.invest.model.FonteOrcamentaria;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -72,6 +72,9 @@ public class RelatorioService {
 
     @Autowired
     private InvestimentosBIService investimentosBIService;
+    
+    @Autowired
+    private ObjectMapper objMapper;
 
     public RegistroDadoConsolidado cardsTotaisRelatorioConsolidado(
         String tipoDespesa, List<Long> idsUnidade, Long idFonte, Integer gnd, Integer anoInicio, Integer anoFim
@@ -103,11 +106,12 @@ public class RelatorioService {
                             SUM(totalPlanejado) as planejado,
                             SUM(totalContratado) as contratado,
                             totalAutorizado as autorizado
-                        RETURN
+                        RETURN {
                             SUM(planejado) as planejado,
                             SUM(contratado) as contratado,
                             SUM(autorizado) as autorizado,
                             SUM(autorizado) - SUM(contratado) as difAutorizadoContratado
+                        }
                         """;
         
         Map<String, Object> params = new HashMap<>();
@@ -126,13 +130,9 @@ public class RelatorioService {
         RegistroDadoConsolidado result = neo4jClient.query(cypher)
                                             .bindAll(params)
                                             .fetchAs(RegistroDadoConsolidado.class)
-                                            .mappedBy((typeSystem, record) ->  RegistroDadoConsolidado.builder()
-                                                                                .planejado(record.get("planejado").asDouble())
-                                                                                .contratado(record.get("contratado").asDouble())
-                                                                                .autorizado(exec.get("autorizado").asDouble())
-                                                                                .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())
-                                                                                .build())
-                                            .first().get();      
+                                            .mappedBy((typeSystem, record) -> 
+                                                    objMapper.convertValue(record.get(0).asMap(), RegistroDadoConsolidado.class)
+                                            ).first().get();      
 
         return result;
     }
@@ -215,7 +215,7 @@ public class RelatorioService {
             Row row = sheet.createRow(rowIndex++);
             
 
-            this.createCell(colIndex++, registroDadoDetalhado.getUnidadeResponsável(), style, row);
+            this.createCell(colIndex++, registroDadoDetalhado.getUnidadeResponsavel(), style, row);
             this.createCell(colIndex++, registroDadoDetalhado.getNomeResponsavel(), style, row);
             this.createCell(colIndex++, registroDadoDetalhado.getCodPo(), style, row);
             this.createCell(colIndex++, registroDadoDetalhado.getNomePo(), style, row);
@@ -431,136 +431,101 @@ public class RelatorioService {
         
 
         String cypher = """
-                        MATCH  
+                        MATCH 
                             (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),
-                            (conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status{statusId: 'CADASTRADO'})
+                            (conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status {statusId:'CADASTRADO'})
                         WHERE  
-                            $tipoDespesa IN LABELS(conta)
+                            $tipoDespesa IN labels(conta)
                             AND ($unidades IS NULL OR id(unidade) IN $unidades)
                             AND ($planos IS NULL OR id(po) IN $planos)
-
-                        MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(fonte:FonteOrcamentaria)
-                        WHERE ($fonte IS NULL OR id(fonte) = $fonte)
+                        
+                        MATCH (obj)<-[:ESTIMADO]-(:Custo)-[indicada_por:INDICADA_POR]->(fonteFiltro:FonteOrcamentaria)
+                        WHERE ($fonte IS NULL OR id(fonteFiltro) = $fonte)
                             AND ($gnd IS NULL OR obj.gnd = $gnd)
-
+                        
                         OPTIONAL MATCH (obj)-[:SOBRE]->(areaTematica:AreaTematica)
                         OPTIONAL MATCH (obj)-[:ATENDE]->(microrregiao:Localidade)
                         OPTIONAL MATCH (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)
                         OPTIONAL MATCH (obj)<-[:RESPONSAVEL_POR]-(usuario:Agente)
-
+                        
                         WITH 
                             unidade.codigo AS codUnidade,
                             unidade.codigo + ' - ' + unidade.sigla AS unidadeResponsavel,
                             COALESCE(usuario.nomeCompleto, "-") AS nomeResponsavel,
-                            po.codigo AS codPO,
-                            po.nome AS nomePO,
+                            po.codigo AS codPo,
+                            po.nome AS nomePo,
+                            obj,
                             obj.descricao AS descObjeto,
-                            CASE WHEN tipoPlano IS NULL THEN { sigla: 'PIP'} ELSE tipoPlano END AS tiposPo,
+                            CASE WHEN tipoPlano IS NULL THEN 'PIP' ELSE tipoPlano.sigla END AS tipoPo,
                             microrregiao.nome AS microrregiao,
                             areaTematica.nome AS areaTematica,
                             CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,
-                            COALESCE(indicada_por.gnd, -1) AS gnd,
-                            id(obj) AS objetoId
-
+                            COALESCE(indicada_por.gnd,-1) AS gnd
+                        
+                        CALL (obj){
+                            MATCH (fonte:FonteOrcamentaria)
+                            WHERE toInteger(fonte.codigo) < 10000
+                                AND ($fonte IS NULL OR id(fonte) = $fonte)
+                        
+                            WITH obj, fonte, range($anoInicio, $anoFim) AS anos
+                        
+                            UNWIND anos AS ano
+                        
+                            OPTIONAL MATCH (obj)<-[:ESTIMADO]-(c:Custo {anoExercicio: ano})
+                            OPTIONAL MATCH (c)-[ip:INDICADA_POR]->(fonte)
+                        
+                            WITH 
+                                fonte.nome AS fonteNome,
+                                ano,
+                                COALESCE(ip.planejado,0) AS planejado,
+                                COALESCE(ip.contratado,0) AS contratado
+                        
+                            WITH 
+                                fonteNome,
+                                collect({
+                                    ano: ano,
+                                    planejado: planejado,
+                                    contratado: contratado
+                                }) AS valoresPorAno
+                        
+                            RETURN collect({
+                                fonte: fonteNome,
+                                valoresPorAno: valoresPorAno
+                            }) AS valoresPorFonte
+                        }
+                        
                         RETURN DISTINCT
                             codUnidade,
                             unidadeResponsavel,
                             nomeResponsavel,
-                            codPO,
-                            nomePO,
+                            codPo,
+                            nomePo,
                             descObjeto,
-                            apoc.text.join(collect(DISTINCT tiposPo.sigla), '; ') AS tiposPo,
-                            COALESCE(microrregiao, ' - ') AS microrregiao,
-                            COALESCE(areaTematica, ' - ') AS areaTematica,
+                            apoc.text.join(collect(DISTINCT tipoPo), '; ') AS tipoDePlano,
+                            COALESCE(microrregiao,' - ') AS microrregiao,
+                            COALESCE(areaTematica,' - ') AS areaEstrategica,
                             contrato,
                             gnd,
-                            objetoId
+                            valoresPorFonte
+                        
                         ORDER BY codUnidade, codPO
                         """;
 
-        String cypherAnos = """
-                            MATCH (custo:Custo)
-                            WHERE $anoInicio <= custo.anoExercicio <= $anoFim
-                            RETURN DISTINCT custo.anoExercicio AS ano
-                            ORDER BY ano
-                            """;
-
-        Collection<Integer> allAnos = neo4jClient.query(cypherAnos)
-                                        .bind(anoInicio).to("anoInicio")
-                                        .bind(anoFim).to("anoFim")
-                                        .fetchAs(Integer.class).all();
-
-        Collection<FonteOrcamentaria> allFontes = fonteOrcamentariaService.findFontesExtras();
-        
         Map<String, Object> params = new HashMap<>();
         params.put("unidades", idsUnidade);
         params.put("planos", idsPlanos);
         params.put("fonte", idFonte);
         params.put("gnd", gnd);
         params.put("tipoDespesa", tipoDespesa);
-
-        String cypherPlanejadoContratado = """
-                                        MATCH (objeto:Objeto)
-                                        WHERE id(objeto) = $idObjeto
-                                        OPTIONAL MATCH (objeto)<-[:ESTIMADO]-(custo:Custo)
-                                        WHERE custo.anoExercicio = $ano
-                                        OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonteOrcamentaria:FonteOrcamentaria)\r
-                                        WHERE id(fonteOrcamentaria) = $idFonte
-                                        RETURN COALESCE(indicada_por.planejado, 0) AS planejado,
-                                                COALESCE(indicada_por.contratado, 0) AS contratado
-                                        """ ;
+        params.put("anoInicio", anoInicio);
+        params.put("anoFim", anoFim);
 
         Collection<RegistroDadoDetalhado> list = neo4jClient.query(cypher)
                                             .bindAll(params)
                                             .fetchAs(RegistroDadoDetalhado.class)
-                                            .mappedBy(((typeSystem, record) -> {
-
-                                                List<RegistroDadoDetalhadoValoresPorFonte> valoresPorFontes = new ArrayList<>();
-
-                                                // montar os valores
-                                                for(FonteOrcamentaria fonte : allFontes){
-                                                    
-                                                    List<RegistroDadoDetalhadoValoresPorAno> valoresPorAno = new ArrayList<>();
-
-                                                    for(Integer ano : allAnos ){
-
-                                                        RegistroDadoDetalhadoValoresPorAno valorPorAno = neo4jClient.query(cypherPlanejadoContratado)
-                                                                                                            .bindAll(Map.of(
-                                                                                                                "idObjeto", record.get("objetoId").asLong(),
-                                                                                                                "ano", ano,
-                                                                                                                "idFonte", fonte.getId()
-                                                                                                            )).fetchAs(RegistroDadoDetalhadoValoresPorAno.class)
-                                                                                                            .mappedBy((typeSystem2, valores) -> RegistroDadoDetalhadoValoresPorAno.builder()
-                                                                                                                                                .ano(ano)
-                                                                                                                                                .planejado(valores.get("planejado").asDouble())
-                                                                                                                                                .contratado(valores.get("contratado").asDouble())
-                                                                                                                                                .build()
-                                                                                                            ).first().get();
-                                                        valoresPorAno.add(valorPorAno);
-
-                                                    }
-
-                                                    valoresPorFontes.add(RegistroDadoDetalhadoValoresPorFonte.builder()
-                                                                            .fonte(fonte.getNome())
-                                                                            .valoresPorAno(valoresPorAno)
-                                                                            .build());
-
-                                                }
-
-                                                return RegistroDadoDetalhado.builder()
-                                                        .unidadeResponsável(record.get("unidadeResponsavel").asString().trim())
-                                                        .nomeResponsavel(record.get("nomeResponsavel").asString().trim())
-                                                        .codPo(record.get("codPO").asString().trim())
-                                                        .nomePo(record.get("nomePO").asString().trim())
-                                                        .descObjeto(record.get("descObjeto").asString().trim())
-                                                        .tipoDePlano(record.get("tiposPo").asString().trim())
-                                                        .microrregiao(record.get("microrregiao").asString().trim())
-                                                        .areaEstrategica(record.get("areaTematica").asString().trim())
-                                                        .contrato(record.get("contrato").asString().trim())
-                                                        .gnd(record.get("gnd").asInt())
-                                                        .valoresPorFonte(valoresPorFontes).build();
-                                            }))
-                                            .all();
+                                            .mappedBy((typeSystem, record) -> 
+                                                    objMapper.convertValue(record.asMap(), RegistroDadoDetalhado.class)
+                                            ).all();
 
         return (List<RegistroDadoDetalhado>) list;
 

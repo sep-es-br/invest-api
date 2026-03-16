@@ -1,12 +1,21 @@
 package br.gov.es.invest.controller;
 
+import br.gov.es.invest.dto.ContaTiraDTO;
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.model.Conta;
+import br.gov.es.invest.model.Objeto;
+import br.gov.es.invest.service.ContaService;
+import br.gov.es.invest.service.ObjetoService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,17 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import br.gov.es.invest.dto.ContaTiraDTO;
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.Conta;
-import br.gov.es.invest.model.Objeto;
-import br.gov.es.invest.service.ContaService;
-import br.gov.es.invest.service.ObjetoService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/conta")
@@ -83,7 +81,7 @@ public class ContaController {
             : new ObjectMapper().readValue(idsPlanos, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
-                service.getDadosDetalhados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList, idsPlanosList)
+                service.getDadosDetalhados(tipoDespesa, gnd, exercicio, idFonte, PageRequest.of(pag-1, pagSize, Sort.by(Sort.Order.asc("row.codUnidade"))), idsUnidadeList, idsPlanosList)
             );
 
         } catch (IOException ex) {
@@ -110,7 +108,7 @@ public class ContaController {
                     : new ObjectMapper().readValue(idsUnidade, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
-                service.getDadosConsolidados(tipoDespesa, gnd, exercicioInicio, exercicioFim, idFonte, PageRequest.of(pag-1, pagSize), idsUnidadeList)
+                service.getDadosConsolidados(tipoDespesa, gnd, exercicioInicio, exercicioFim, idFonte, PageRequest.of(pag-1, pagSize, Sort.by(Sort.Order.asc("codUnidade"))), idsUnidadeList)
             );
 
         } catch (IOException ex) {

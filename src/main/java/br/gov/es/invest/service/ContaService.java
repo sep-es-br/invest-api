@@ -7,6 +7,7 @@ import br.gov.es.invest.model.PlanoOrcamentario;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.ContaRepository;
 import br.gov.es.invest.utils.DataListResult;
+import br.gov.es.invest.utils.FunctionUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
 import java.util.HashMap;
@@ -114,72 +115,72 @@ public class ContaService {
         paramMap.put("idsUnidade", idsUnidade);
         paramMap.put("idsPlano", idsPlano);
 
-        String cypherBase = 
-                        "WITH\r\n" + //
-                        "    $tipoDespesa AS _tpDespesa,\r\n" + //
-                        "    $gnd AS _gnd,\r\n" + //
-                        "    $exercicio AS _exercicio,\r\n" + //
-                        "    $idFonte AS _idFonte,\r\n" + //
-                        "    $idsUnidade AS _idsUnidade,\r\n" + //
-                        "    $idsPlano AS _idsPlano\r\n" + //
-                        "MATCH \r\n" + //
-                        "    (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),\r\n" + //
-                        "    (conta)<-[:CUSTEADO]-(obj:Objeto)<-[:ESTIMADO]-(custo:Custo),\r\n" + //
-                        "    (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)\r\n" + //
-                        "MATCH (fonte:FonteOrcamentaria)\r\n" + //
-                        "WHERE\r\n" + //
-                        "    _tpDespesa IN LABELS(conta)\r\n" + //
-                        "    AND (_idFonte IS NULL OR id(fonte) = _idFonte)\r\n" + //
-                        "    AND custo.anoExercicio = _exercicio\r\n" + //
-                        "    AND (_idsUnidade IS NULL OR id(unidade) IN _idsUnidade)\r\n" + //
-                        "    AND (_idsPlano IS NULL OR id(po) IN _idsPlano)\r\n" + //
-                        "OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonte)\r\n" + //
-                        "WHERE (_gnd IS NULL OR obj.gnd = _gnd)\r\n" + //
-                        "WITH \r\n" + //
-                        "    unidade,\r\n" + //
-                        "    conta,\r\n" + //
-                        "    po,\r\n" + //
-                        "    obj,\r\n" + //
-                        "    custo,\r\n" + //
-                        "    tipoPlano,\r\n" + //
-                        "    sum(indicada_por.planejado) AS valorPlanejado,\r\n" + //
-                        "    sum(indicada_por.contratado) AS valorContratado,\r\n" + //
-                        "    id(fonte) AS idFonte,\r\n" + //
-                        "    fonte.nome AS nomeFonte\r\n" + //
-                        "WITH \r\n" + //
-                        "    unidade,\r\n" + //
-                        "    conta,\r\n" + //
-                        "    po,\r\n" + //
-                        "    obj,\r\n" + //
-                        "    custo,\r\n" + //
-                        "    collect(tipoPlano.sigla) AS tipoPlano,\r\n" + //
-                        "    collect(DISTINCT {\r\n" + //
-                        "        valorPlanejado: valorPlanejado,\r\n" + //
-                        "        valorContratado: valorContratado,\r\n" + //
-                        "        idFonte: idFonte,\r\n" + //
-                        "        nomeFonte: nomeFonte\r\n" + //
-                        "    }) AS valores\r\n";
+        String cypherBase = """
+                            WITH
+                                $tipoDespesa AS _tpDespesa,
+                                $gnd AS _gnd,
+                                $exercicio AS _exercicio,
+                                $idFonte AS _idFonte,
+                                $idsUnidade AS _idsUnidade,
+                                $idsPlano AS _idsPlano
+                            MATCH 
+                                (unidade:UnidadeOrcamentaria)-[:IMPLEMENTA]->(conta:Conta)<-[:ORIENTA]-(po:PlanoOrcamentario),
+                                (conta)<-[:CUSTEADO]-(obj:Objeto)<-[:ESTIMADO]-(custo:Custo),
+                                (obj)-[:DO_TIPO]->(tipoPlano:TipoPlano)
+                            MATCH (fonte:FonteOrcamentaria)
+                            WHERE
+                                _tpDespesa IN LABELS(conta)
+                                AND (_idFonte IS NULL OR id(fonte) = _idFonte)
+                                AND custo.anoExercicio = _exercicio
+                                AND (_idsUnidade IS NULL OR id(unidade) IN _idsUnidade)
+                                AND (_idsPlano IS NULL OR id(po) IN _idsPlano)
+                            OPTIONAL MATCH (custo)-[indicada_por:INDICADA_POR]->(fonte)
+                            WHERE (_gnd IS NULL OR obj.gnd = _gnd)
+                            WITH 
+                                unidade,
+                                conta,
+                                po,
+                                obj,
+                                custo,
+                                tipoPlano,
+                                sum(indicada_por.planejado) AS valorPlanejado,
+                                sum(indicada_por.contratado) AS valorContratado,
+                                id(fonte) AS idFonte,
+                                fonte.nome AS nomeFonte
+                            WITH 
+                                unidade,
+                                conta,
+                                po,
+                                obj,
+                                custo,
+                                collect(tipoPlano.sigla) AS tipoPlano,
+                                collect(DISTINCT {
+                                    valorPlanejado: valorPlanejado,
+                                    valorContratado: valorContratado,
+                                    idFonte: idFonte,
+                                    nomeFonte: nomeFonte
+                                }) AS valores                            
+                            """;
         
         String cypherQuery = cypherBase + 
-                            "RETURN {\r\n" + //
-                            "    codUnidade: unidade.codigo,\r\n" + //
-                            "    idUnidade: id(conta),\r\n" + //
-                            "    unidadeResponsavel: unidade.codigo + ' - ' + unidade.sigla,\r\n" + //
-                            "    idPO: id(po),\r\n" + //
-                            "    codPO: po.codigo,\r\n" + //
-                            "    nomePO: po.nome,\r\n" + //
-                            "    projEstrategico: 'E' IN tipoPlano,\r\n" + //
-                            "    contrato: obj.contrato,\r\n" + //
-                            "    anoExercicio: custo.anoExercicio,\r\n" + //
-                            "    valores: valores"
-                            + "} AS row\r\n" + //
-                            "ORDER BY row.codUnidade\r\n";
-
+                                """
+                                RETURN {
+                                    codUnidade: unidade.codigo,
+                                    idUnidade: id(conta),
+                                    unidadeResponsavel: unidade.codigo + ' - ' + unidade.sigla,
+                                    idPO: id(po),
+                                    codPO: po.codigo,
+                                    nomePO: po.nome,
+                                    projEstrategico: 'E' IN tipoPlano,
+                                    contrato: obj.contrato,
+                                    anoExercicio: custo.anoExercicio,
+                                    valores: valores
+                                } AS row
+                                """;
+        
         
         if(pageable != null) {
-            cypherQuery += "SKIP $skip LIMIT $limit";
-            paramMap.put("skip", pageable.getOffset());
-            paramMap.put("limit", pageable.getPageSize());
+            cypherQuery = FunctionUtils.aplicarPageable(cypherQuery, pageable, paramMap);
         }
         String cypherCount = cypherBase + "RETURN count(conta)";
 
@@ -239,33 +240,26 @@ public class ContaService {
         ;
         
         String cypherQuery = cypherBase + 
-                            "RETURN DISTINCT \r\n" + //
-                            "    unidade.codigo AS codUnidade,\r\n" + //
-                            "    unidade.codigo + ' - ' + unidade.sigla AS unidadeOperacional,\r\n" + //
-                            "    COALESCE(SUM(totalPlanejado), 0) AS planejado,\r\n" + //
-                            "    COALESCE(SUM(totalContratado), 0) AS contratado,\r\n" + //
-                            "    COALESCE(SUM(totalAutorizado), 0) AS autorizado,\r\n" + //
-                            "    COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0) AS difAutorizadoContratado\r\n" + //
-                            "ORDER BY codUnidade\r\n";
-
+                                """
+                                RETURN DISTINCT {
+                                    codUnidade: unidade.codigo,
+                                    unidadeOrcamentaria: unidade.codigo + ' - ' + unidade.sigla,
+                                    planejado: COALESCE(SUM(totalPlanejado), 0),
+                                    contratado: COALESCE(SUM(totalContratado), 0),
+                                    autorizado: COALESCE(SUM(totalAutorizado), 0),
+                                    difAutorizadoContratado: COALESCE(SUM(totalAutorizado), 0) - COALESCE(SUM(totalContratado), 0)
+                                } AS row
+                                """;
         
-        if(pageable != null) {
-            cypherQuery += "SKIP $skip LIMIT $limit";
-            paramMap.put("skip", pageable.getOffset());
-            paramMap.put("limit", pageable.getPageSize());
-        }
+        cypherQuery = FunctionUtils.aplicarPageable(cypherQuery, pageable, paramMap);
+
         String cypherCount = cypherBase + "RETURN count(DISTINCT unidade)";
 
         Collection<DadoConsolidadoDTO> dados = neo4jClient.query(cypherQuery).bindAll(paramMap)
         .fetchAs(DadoConsolidadoDTO.class)
-        .mappedBy((typeSystem, record) -> DadoConsolidadoDTO.builder()
-                                            .unidadeOrcamentaria(record.get("unidadeOperacional").asString())
-                                            .planejado(record.get("planejado").asDouble() )
-                                            .contratado(record.get("contratado").asDouble())
-                                            .autorizado(record.get("autorizado").asDouble())
-                                            .difAutorizadoContratado(record.get("difAutorizadoContratado").asDouble())
-                                            .build()
-                                    )
+        .mappedBy((typeSystem, record) -> 
+                new ObjectMapper().convertValue(record.get("row").asMap(), DadoConsolidadoDTO.class)
+        )
         .all();
         
 
