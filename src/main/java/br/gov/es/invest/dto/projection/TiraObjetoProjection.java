@@ -1,6 +1,7 @@
 package br.gov.es.invest.dto.projection;
 
 public record TiraObjetoProjection(
+    Long invId,
     Long id,
     String nome,
     String codPo,

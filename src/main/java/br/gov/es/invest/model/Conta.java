@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @RequiredArgsConstructor
 @Node
 @SuperBuilder
-public class Conta extends Entidade implements Serializable {
+public class Conta extends NoEntidade implements Serializable {
     
     public static enum TIPO_CONTA {
         INVESTIMENTO;

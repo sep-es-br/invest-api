@@ -17,10 +17,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Orgao extends Entidade{
+public class Orgao extends NoEntidade{
     
     private String guid;
-    private String codSigefes;
+    private String codigo;
     private String sigla;
     private String nome;
     

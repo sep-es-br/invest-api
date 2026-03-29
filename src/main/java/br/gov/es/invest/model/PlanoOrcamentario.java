@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class PlanoOrcamentario extends Entidade implements Serializable{
+public class PlanoOrcamentario extends NoEntidade implements Serializable{
     
     private String codigo;
     private String nome;

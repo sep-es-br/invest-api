@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 @Setter
 @NoArgsConstructor
 @SuperBuilder
-public class ConfigGerais extends Entidade {
+public class ConfigGerais extends NoEntidade {
     
     @Setter(AccessLevel.NONE)
     private ZonedDateTime inicioRevisaoPip;

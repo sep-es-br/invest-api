@@ -4,8 +4,6 @@ import br.gov.es.invest.exception.SemApontamentosException;
 import br.gov.es.invest.model.Acao;
 import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Apontamento;
-import br.gov.es.invest.model.EmEtapa;
-import br.gov.es.invest.model.EmStatus;
 import br.gov.es.invest.model.Objeto;
 import br.gov.es.invest.model.Parecer;
 import java.time.ZonedDateTime;
@@ -14,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AcaoService {
@@ -23,7 +20,6 @@ public class AcaoService {
     private ApontamentoService apontamentoService;
     private ObjetoService objetoService;
 
-    @Transactional
     public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Agente usuario) throws SemApontamentosException{
         
         if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())
@@ -38,13 +34,13 @@ public class AcaoService {
         if(acao.getProxEtapa() == null) { // ponta do fluxo
             if(acao.getPositivo()) { // ação positiva significa que terminou o fluxo
                 
-                EmStatus emStatusTarget = new EmStatus();
-                emStatusTarget.setStatus(acao.getStatusFinal());
-                emStatusTarget.setTimestamp(agora);
+                objetoOriginal = objetoService.save(objetoOriginal);
+                
+                objetoService.alterarStatus(objetoOriginal.getId(), acao.getStatusFinal().getId(), agora);
+                objetoService.updateUltimaEtapa(objetoOriginal.getId(), agora, usuario.getId());
 
-                objetoOriginal.setEmStatus(emStatusTarget); // aplica status final
-
-                return objetoService.save(objetoOriginal);
+                
+                return objetoService.findById(objetoOriginal.getId());
             } else { // se não significa que o fluxo foi cancelado
                 return objetoService.removerObjeto(objeto.getId());
             }
@@ -95,24 +91,14 @@ public class AcaoService {
                 
             }
             
-            objetoOriginal.getEtapaAtual().setAvaliadoEm(agora);
-            objetoOriginal.getEtapaAtual().setAvaliadoPorId(usuario.getId());
-            
-            EmEtapa emEtapaTarget = new EmEtapa();
-            emEtapaTarget.setDevolvido(!acao.getPositivo());
-            emEtapaTarget.setEtapa(acao.getProxEtapa());
-            emEtapaTarget.setAtividade(acao.getAtividadeFinal());
-            emEtapaTarget.setTimestamp(agora);
-            
-            objetoOriginal.getEmEtapa().add(emEtapaTarget);
-            
-             
-            EmStatus emStatusTarget = new EmStatus();
-            emStatusTarget.setStatus(acao.getStatusFinal());
-            emStatusTarget.setTimestamp(agora);
-
-            objetoOriginal.setEmStatus(emStatusTarget);
             objetoService.save(objetoOriginal);
+            
+            objetoService.updateUltimaEtapa(objetoOriginal.getId(), agora, usuario.getId());
+            
+            objetoService.addEtapa(objetoOriginal.getId(), acao.getProxEtapa().getId(), !acao.getPositivo(), acao.getAtividadeFinal(), agora);
+            
+            objetoService.alterarStatus(objetoOriginal.getId(), acao.getStatusFinal().getId(), agora);
+            
             return objetoService.findById(objeto.getId());
         }
         

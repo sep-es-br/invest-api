@@ -58,6 +58,26 @@ public class ObjetoService {
     public void saveAll(List<Objeto> objetos) {
         repository.saveAll(objetos);
     }
+    
+    public void addRevisor(Long objetoId, Long userId, ZonedDateTime timestamp){
+        this.repository.addRevisor(objetoId, userId, timestamp);
+    }
+    
+    public void addAlterador(Long objetoId, Long userId, ZonedDateTime timestamp){
+        this.repository.addAlterador(objetoId, userId, timestamp);
+    }
+    
+    public void alterarStatus(Long objetoId, Long statusId, ZonedDateTime timestamp){
+        this.repository.alterarStatus(objetoId, statusId, timestamp);
+    }
+    
+    public void addEtapa(Long objetoId, Long etapaId, Boolean devolvido, String atividade, ZonedDateTime timestamp){
+        this.repository.addEtapa(objetoId, etapaId, devolvido, atividade, timestamp);
+    }
+    
+    public void updateUltimaEtapa(Long objetoId, ZonedDateTime avaliadoEm, Long avaliadoPorId) {
+        this.repository.updateUltimaEtapa(objetoId, avaliadoEm, avaliadoPorId);
+    }
 
     public Objeto save(Objeto objeto) {
         
@@ -87,6 +107,7 @@ public class ObjetoService {
             objeto.getEmEtapa().add(emEtapa);
             
         }
+        
 
         return repository.save(objeto);
     }
@@ -114,7 +135,7 @@ public class ObjetoService {
         
     }
 
-    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Integer exercicio, Integer gnd, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){
+    public DataListResult<ObjetoTiraDTO> getAllListByFilter(Boolean audiencia, Integer exercicio, Integer gnd, String nome, List<Long> idUnidade, List<Long> idPo, Long statusId, Long fonteId, List<OrdemItemDto> ordem, Pageable pageable){
         
         String cypherBase = """
                 MATCH (conta:Conta)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status),
@@ -124,6 +145,10 @@ public class ObjetoService {
                     AND ($idsUnidade IS NULL OR id(unidade) IN $idsUnidade)
                     AND ($idStatus IS NULL OR id(status) = $idStatus)
                     AND ($gnd IS NULL OR obj.gnd = $gnd)
+                    AND CASE
+                            WHEN $audiencia THEN obj.hashProposta IS NOT NULL
+                            ELSE true
+                        END
 
                 OPTIONAL MATCH (conta)<-[:ORIENTA]-(plano:PlanoOrcamentario)
                 WHERE $idsPo IS NULL OR id(plano) IN $idsPo
@@ -166,6 +191,7 @@ public class ObjetoService {
         params.put("idsPo", idPo);
         params.put("idFonte", fonteId);
         params.put("gnd", gnd);
+        params.put("audiencia", audiencia);
 
         String cypherQuery = cypherBase +
                         """
@@ -481,58 +507,67 @@ public class ObjetoService {
     }
 
     public DataListResult<TiraObjetoProjection> findObjetoCadastradoByContaBy(
-            Long idConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
+            List<Long> idsConta, Integer exercicio, Long idFonte, Integer gnd, Pageable pageable
     ) {
         String cypher = """
-                        MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status{statusId: 'CADASTRADO'}),\r
+                        MATCH (inv:Investimento)
+                        WHERE id(inv) IN $idsConta
+                        WITH inv
+                        MATCH (inv)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(status:Status{statusId: 'CADASTRADO'}),\r
                                 (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)\r
-                        WHERE (id(inv) = $idConta)\r
-                        CALL (obj) {\r
-                            MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r
-                            WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r
-                                AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r
-                                AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r
-                            RETURN \r
-                                ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r
-                                sum(indicada_por.planejado) AS totalPlanejado,\r
-                                sum(indicada_por.contratado) AS totalContratado \r
-                        }\r
-                        CALL (inv) {\r
-                            MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r
-                            WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r
-                                AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r
-                                AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r
-                            RETURN\r
-                                sum(vinculada_por.orcado) AS totalOrcado,\r
-                                sum(vinculada_por.autorizado) AS totalAutorizado,\r
-                                sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r
-                                sum(vinculada_por.dispSemReserva) AS totalDisponivel\r
-                        }\r
                         """ ;
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("idConta", idConta);
+        params.put("idsConta", idsConta);
         params.put("exercicio", exercicio);
         params.put("idFonte", idFonte);
         params.put("gnd", gnd);
 
-        String cypherCount = cypher + "RETURN COUNT(*)";
+        String cypherCount = cypher + "RETURN COUNT(DISTINCT obj)";
 
         int count = (int) this.neo4jOperations.count(cypherCount, params);
         
-        String cypherQuery = cypher + "RETURN DISTINCT \r\n" + //
-                        "        id(obj) AS id,\r\n" + //
-                        "        obj.nome AS nome,\r\n" + //
-                        "        po.codigo AS codPO,\r\n" + //
-                        "        unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria,\r\n" + //
-                        "        status.nome AS status,\r\n" + //
-                        "        obj.tipo AS tipo,\r\n" + //
-                        "        totalPlanejado,\r\n" + //
-                        "        totalContratado,\r\n" + //
-                        "        totalOrcado,\r\n" + //
-                        "        totalAutorizado,\r\n" + //
-                        "        totalEmpenhado,\r\n" + //
-                        "        totalDisponivel\r\n";
+        String cypherQuery = cypher + 
+                
+                """
+                    CALL (obj) {\r
+                        MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)\r
+                        WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)\r
+                            AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)\r
+                            AND ($gnd IS NULL OR indicada_por.gnd = $gnd)\r
+                        RETURN \r
+                            ($gnd IS NULL OR indicada_por.gnd = $gnd) AS gnd,\r
+                            sum(indicada_por.planejado) AS totalPlanejado,\r
+                            sum(indicada_por.contratado) AS totalContratado \r
+                    }\r
+                    CALL (inv) {\r
+                        MATCH (inv)<-[:DELIMITA]-(exec:ExecucaoOrcamentaria)-[vinculada_por:VINCULADA_POR]->(fonteExec:FonteOrcamentaria)\r
+                        WHERE ($idFonte IS NULL OR id(fonteExec) = $idFonte)\r
+                            AND ($exercicio IS NULL OR exec.anoExercicio = $exercicio)\r
+                            AND ($gnd IS NULL OR vinculada_por.gnd = $gnd)\r
+                        RETURN\r
+                            sum(vinculada_por.orcado) AS totalOrcado,\r
+                            sum(vinculada_por.autorizado) AS totalAutorizado,\r
+                            sum(REDUCE(total=0,e IN vinculada_por.empenhado | total + e ))  AS totalEmpenhado,\r
+                            sum(vinculada_por.dispSemReserva) AS totalDisponivel\r
+                    }\r
+                    RETURN DISTINCT 
+                       id(inv) AS invId,
+                       id(obj) AS id,
+                       obj.nome AS nome,
+                       po.codigo AS codPO,
+                       unidade.codigo + \" - \" + unidade.sigla AS unidadeOrcamentaria,
+                       status.nome AS status,
+                       obj.tipo AS tipo,
+                       totalPlanejado,
+                       totalContratado,
+                       totalOrcado,
+                       totalAutorizado,
+                       totalEmpenhado,
+                       totalDisponivel
+                
+                """;
+                
                         
         if(pageable != null) {
             cypherQuery += "SKIP $skip LIMIT $limit";

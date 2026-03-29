@@ -1,5 +1,6 @@
 package br.gov.es.invest.repository;
 
+import br.gov.es.invest.dto.grupo.GrupoDoUsuarioListDTO;
 import br.gov.es.invest.model.Grupo;
 import java.util.List;
 import java.util.Optional;
@@ -31,22 +32,24 @@ public interface GrupoRepository extends Neo4jRepository<Grupo, Long> {
             "RETURN grupo, collect(pode), collect(modulo)")
     public Optional<Grupo> findByGrupoModulo(Long moduloId, Long grupoId);
 
-    @Query("MATCH (usuario)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE id(usuario) = $usuarioId\r\n" + //
-            "RETURN grupo\r\n" + //
-            "UNION\r\n" + //
-            "MATCH (usuario)-[:POSSUI]->(:Papel)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE id(usuario) = $usuarioId\r\n" + //
-            "RETURN grupo\r\n" + //
-            "UNION\r\n" + //
-            "MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE id(usuario) = $usuarioId\r\n" + //
-            "RETURN grupo\r\n" + //
-            "UNION\r\n" + //
-            "MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:PERTENCE_A]->(:Orgao)-[:MEMBRO_DE]->(grupo:Grupo)\r\n" + //
-            "WHERE id(usuario) = $usuarioId\r\n" + //
-            "RETURN grupo")
-    public List<Grupo> getGruposByUsuario(Long usuarioId);
+    @Query("""
+            MATCH (usuario)-[:MEMBRO_DE]->(grupo:Grupo)
+            WHERE id(usuario) = $usuarioId
+            RETURN id(grupo) as idGrupo, grupo.nome as nome,  grupo.sigla as sigla, grupo.descricao as descricao, usuario.papel as papel
+            UNION
+            MATCH (usuario)-[:POSSUI]->(papel:Papel)-[:MEMBRO_DE]->(grupo:Grupo)
+            WHERE id(usuario) = $usuarioId
+            RETURN id(grupo) as idGrupo, grupo.nome as nome, grupo.sigla as sigla, grupo.descricao as descricao, papel.nome as papel
+            UNION
+            MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(setor:Setor)-[:MEMBRO_DE]->(grupo:Grupo)
+            WHERE id(usuario) = $usuarioId
+            RETURN id(grupo) as idGrupo, grupo.nome as nome, grupo.sigla as sigla, grupo.descricao as descricao, 'Membro do ' + setor.sigla as papel
+            UNION
+            MATCH (usuario)-[:POSSUI]->(:Papel)-[:ATUA_EM]->(:Setor)-[:PERTENCE_A]->(orgao:Orgao)-[:MEMBRO_DE]->(grupo:Grupo)
+            WHERE id(usuario) = $usuarioId
+            RETURN id(grupo) as idGrupo, grupo.nome as nome, grupo.sigla as sigla, grupo.descricao as descricao, 'Membro de ' + orgao.sigla as papel
+            """)
+    public List<GrupoDoUsuarioListDTO> getGruposByUsuario(Long usuarioId);
 
     @Query("MATCH (grupo:Grupo)<-[:MEMBRO_DE]-(orgao:Orgao)\r\n" + //
                 "WHERE id(orgao) = $orgaoId\r\n" + //

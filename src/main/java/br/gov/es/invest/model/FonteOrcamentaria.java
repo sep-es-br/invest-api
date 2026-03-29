@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class FonteOrcamentaria extends Entidade implements Serializable {
+public class FonteOrcamentaria extends NoEntidade implements Serializable {
 
     private String codigo;
     private String nome;
@@ -36,5 +36,6 @@ public class FonteOrcamentaria extends Entidade implements Serializable {
         this.nome = dto.getNome();
         this.descricao = dto.getDescricao();
     }
+    
 
 }

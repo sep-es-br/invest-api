@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Grupo extends Entidade {
+public class Grupo extends NoEntidade {
     private String sigla;
     private String icone;
     private String nome;

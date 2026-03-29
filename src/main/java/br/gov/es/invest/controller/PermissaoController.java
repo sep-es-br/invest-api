@@ -3,6 +3,7 @@ package br.gov.es.invest.controller;
 import br.gov.es.invest.dto.ItemMenu;
 import br.gov.es.invest.dto.ModuloDto;
 import br.gov.es.invest.dto.PodeDto;
+import br.gov.es.invest.dto.grupo.GrupoDoUsuarioListDTO;
 import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Funcao;
 import br.gov.es.invest.model.Grupo;
@@ -118,8 +119,8 @@ public class PermissaoController {
 
         ArrayList<Pode> permissoes = new ArrayList<>();
         
-        for(Grupo grupo : grupoService.getGruposDoUsuario(usuario.getId())){
-            Pode pode = podeService.findByGrupoModulo(modulo.getId(), grupo.getId());
+        for(GrupoDoUsuarioListDTO grupo : grupoService.getGruposDoUsuario(usuario.getId())){
+            Pode pode = podeService.findByGrupoModulo(modulo.getId(), grupo.idGrupo());
             if(pode != null) {
                 permissoes.add(pode);
             }

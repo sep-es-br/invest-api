@@ -4,8 +4,10 @@
  */
 package br.gov.es.invest.dto.objeto;
 
+import br.gov.es.invest.dto.AlteradoPorDto;
 import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.EmStatusDTO;
+import br.gov.es.invest.dto.RevisorDto;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,9 @@ public record ObjetoDetailDto(
         List<EmEtapaDTO> emEtapa,
         EmStatusDTO emStatus,
         String possuiOrcamento,
-        String timestamp
+        String timestamp,
+        List<RevisorDto> revisor,
+        List<AlteradoPorDto> alterador
     ) {
     
     public static record Custo(Double planejado, Double contratado) {}

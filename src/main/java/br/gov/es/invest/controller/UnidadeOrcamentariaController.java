@@ -56,7 +56,7 @@ public class UnidadeOrcamentariaController {
     @GetMapping("/doSigefes")
     public ResponseEntity<List<UnidadeOrcamentariaDTO>> getAllDoSigefes() {
 
-        List<UnidadeOrcamentaria> unidades = biService.getTodasUnidades();
+        List<UnidadeOrcamentaria> unidades = biService.getTodasUnidades(null);
         
         return ResponseEntity.ok(unidades.stream().map(
             unidade -> new UnidadeOrcamentariaDTO(unidade)
@@ -72,7 +72,7 @@ public class UnidadeOrcamentariaController {
         String sub = tokenService.validarToken(authToken);
                 
         Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
-
+        
         List<UnidadeOrcamentaria> unidades = this.service.findByAgente(usuario.getId());
 
         return unidades.stream().map(UnidadeOrcamentariaDTO::new).toList();

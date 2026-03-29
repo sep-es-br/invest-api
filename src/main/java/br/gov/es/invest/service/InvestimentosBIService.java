@@ -20,12 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Service
 public class InvestimentosBIService extends PentahoBIService {
     
-    private final String arquivosPath = "src/main/resources/ArquivosMock/";
-
-    private final String cardsTotais = arquivosPath + "cardsTotais.result.txt";
-    private final String valorAno = arquivosPath + "valorAno.result.txt";
-    private final String valorMes = arquivosPath + "valorMes.result.txt";
-
     @Value("${pentahoBI.spo.path}") // /public/dashboard/spo
     private String spoPath;
 
@@ -37,39 +31,6 @@ public class InvestimentosBIService extends PentahoBIService {
 
     @Value("${pentahoBI.spo.valorAno}")
     private String targetValorAno;
-
-    private String getFileContent(String path){
-        StringBuilder sb = new StringBuilder();
-
-        ClassPathResource res = new ClassPathResource(path);
-
-        File file = new File(res.getPath());
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-
-            String line = br.readLine();
-            while(line != null){
-                sb.append(line);
-                sb.append(System.lineSeparator());
-                line = br.readLine();
-            }
-       
-
-        } catch(IOException ioException) {
-            Logger.getGlobal().info(file.getAbsolutePath());
-            Logger.getGlobal().log(Level.SEVERE, ioException.getLocalizedMessage(), ioException);
-            return "";
-        }
-
-
-        return sb.toString();
-    }
-
-    private List<Map<String, JsonNode>> extrairDados(String path) throws RuntimeException{
-        
-        return extractDataFromResponse(getFileContent(path));
-
-
-    }
 
     public List<Map<String, JsonNode>> getCardsTotais(
         String codFonte, Integer exercicio, String codUnidade, String codPlano, Integer gnd

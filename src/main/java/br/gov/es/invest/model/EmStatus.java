@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @RelationshipProperties
 @SuperBuilder
-public class EmStatus extends Entidade {
+public class EmStatus extends RelacionamentoEntidade {
     
     @TargetNode
     private Status status;

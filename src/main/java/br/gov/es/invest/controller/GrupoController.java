@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.es.invest.dto.CadastroMembroFormDto;
 import br.gov.es.invest.dto.GrupoDTO;
+import br.gov.es.invest.dto.grupo.GrupoDoUsuarioListDTO;
 import br.gov.es.invest.dto.projection.MembroGrupo;
 import br.gov.es.invest.exception.GrupoNaoEncotradoException;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
@@ -100,11 +101,11 @@ public class GrupoController {
     
 
     @GetMapping("/byUsuario")
-    public List<GrupoDTO> findByUsuario(
+    public List<GrupoDoUsuarioListDTO> findByUsuario(
             @RequestParam Long usuarioId
         ) {
         
-            return service.getGruposDoUsuario(usuarioId).stream().map(GrupoDTO::parse).toList();
+            return service.getGruposDoUsuario(usuarioId);
 
     }
 

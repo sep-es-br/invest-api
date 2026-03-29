@@ -2,11 +2,16 @@ package br.gov.es.invest.service;
 
 import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.projection.UnidadeOrcamentariaDTOProjection;
+import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
 import br.gov.es.invest.model.UnidadeOrcamentaria;
 import br.gov.es.invest.repository.UnidadeOrcamentariaRepository;
+import br.gov.es.invest.repository.UsuarioRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -16,6 +21,12 @@ public class UnidadeOrcamentariaService {
     
     @Autowired
     private UnidadeOrcamentariaRepository repository;
+    
+    @Autowired 
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private UnidadeOrcamentariaBIService biSrv;
 
     public List<UnidadeOrcamentariaDTOProjection> getAllSimples() {
         return repository.findAllUnidades();
@@ -34,7 +45,17 @@ public class UnidadeOrcamentariaService {
     }
     
     public List<UnidadeOrcamentaria> findByAgente(Long agenteId){
-        return repository.findAllById(repository.findByAgente(agenteId).stream().map(UnidadeOrcamentaria::getId).toList());
+        
+        Agente agente = this.usuarioRepository.findById(agenteId).orElseThrow();
+        
+        List<String> orgaoIds = agente.getPapeis().stream()
+                                .map(Papel::getSetor)
+                                .map(Setor::getOrgao)
+                                .map(Orgao::getCodigo)
+                                .collect(Collectors.toList());
+        
+        return orgaoIds.stream().flatMap(id -> this.biSrv.getTodasUnidades(id).stream()).collect(Collectors.toList());
+        
     }
 
     public Long getIdByCod(String cod) {
