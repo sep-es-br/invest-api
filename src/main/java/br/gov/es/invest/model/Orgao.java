@@ -20,7 +20,7 @@ import lombok.experimental.SuperBuilder;
 public class Orgao extends Entidade{
     
     private String guid;
-    private String codSigefes;
+    private String codigo;
     private String sigla;
     private String nome;
     

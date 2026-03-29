@@ -1,5 +1,10 @@
 package br.gov.es.invest.service;
 
+import br.gov.es.invest.feignClient.BiClient;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.Orgao;
+import br.gov.es.invest.model.Papel;
+import br.gov.es.invest.model.Setor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,23 +20,29 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import br.gov.es.invest.model.UnidadeOrcamentaria;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UnidadeOrcamentariaBIService extends PentahoBIService {
     @Value("${pentahoBI.spo.path}") // /public/dashboard/spo
     private String spoPath;
 
     @Value("${pentahoBI.spo.unidadesOrcamentarias}")
     private String unidadesTarget;
+    
+    @Value("${pentahoBI.spo.resouce.unidadeOrcamentaria}")
+    private String resourceUnidadeOrcamentaria;
 
-    @Autowired
-    private UnidadeOrcamentariaService unidadeOrcamentariaService;
+    private final UnidadeOrcamentariaService unidadeOrcamentariaService;
+    
+    private final BiClient biClient;
 
-    public List<UnidadeOrcamentaria> getTodasUnidades(){
+    public List<UnidadeOrcamentaria> getTodasUnidades(String codOrgao){
        
         try {
-            String url = buildEndpointUri(spoPath, unidadesTarget, null);
-            List<Map<String, JsonNode>> dados = extractDataFromResponse(doRequest(url));
+            List<Map<String, JsonNode>> dados = biClient.doQuery(resourceUnidadeOrcamentaria, Map.of("parampCodOrgao", Optional.ofNullable(codOrgao).orElse("todos")));
             
             List<UnidadeOrcamentaria> unidades = dados.stream()
             .filter( dado -> !dado.get("cod_uo").asText().startsWith("0") &&  !dado.get("cod_uo").asText().startsWith("8"))
