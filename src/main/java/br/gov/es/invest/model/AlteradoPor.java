@@ -13,17 +13,16 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 
 /**
  *
- * @author Cliente
+ * @author gean.carneiro
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @RelationshipProperties
-public class RevisadoPor extends RelacionamentoEntidade {
+public class AlteradoPor extends RelacionamentoEntidade {
     
     @TargetNode
-    private Agente revisor;
+    private Agente agente;
     
     private ZonedDateTime timestamp;
-    
 }

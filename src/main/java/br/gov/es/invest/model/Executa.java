@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @RelationshipProperties
 @SuperBuilder
-public class Executa extends Entidade {
+public class Executa extends NoEntidade {
     
     @TargetNode
     private Comando comando;

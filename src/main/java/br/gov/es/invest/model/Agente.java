@@ -24,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @Node
-public class Agente extends Entidade {
+public class Agente extends NoEntidade {
     
     private String sub;
     private String name;

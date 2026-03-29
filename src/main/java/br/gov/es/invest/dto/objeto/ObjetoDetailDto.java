@@ -4,6 +4,7 @@
  */
 package br.gov.es.invest.dto.objeto;
 
+import br.gov.es.invest.dto.AlteradoPorDto;
 import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.EmStatusDTO;
 import br.gov.es.invest.dto.RevisorDto;
@@ -42,7 +43,8 @@ public record ObjetoDetailDto(
         EmStatusDTO emStatus,
         String possuiOrcamento,
         String timestamp,
-        RevisorDto revisor
+        List<RevisorDto> revisor,
+        List<AlteradoPorDto> alterador
     ) {
     
     public static record Custo(Double planejado, Double contratado) {}

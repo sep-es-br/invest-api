@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class UnidadeOrcamentaria extends Entidade implements Serializable {
+public class UnidadeOrcamentaria extends NoEntidade implements Serializable {
     
     private String codigo;
     private String guid;

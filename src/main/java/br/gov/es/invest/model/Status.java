@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Status extends Entidade {
+public class Status extends NoEntidade {
     
     private String nome;
     private StatusEnum statusId;

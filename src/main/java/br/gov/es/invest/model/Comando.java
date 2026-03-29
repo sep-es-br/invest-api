@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Node
 @SuperBuilder
-public class Comando extends Entidade {
+public class Comando extends NoEntidade {
     
 
 }

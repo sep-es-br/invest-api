@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @RelationshipProperties
 @NoArgsConstructor
 @SuperBuilder
-public class IndicadaPor extends Entidade {
+public class IndicadaPor extends RelacionamentoEntidade {
     
     @TargetNode
     private FonteOrcamentaria fonteOrcamentaria;

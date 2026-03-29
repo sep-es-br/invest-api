@@ -4,7 +4,6 @@
  */
 package br.gov.es.invest.factory;
 
-import br.gov.es.invest.dto.EmEtapaDTO;
 import br.gov.es.invest.dto.EmStatusDTO;
 import br.gov.es.invest.dto.objeto.ObjetoCadastroFormDto;
 import br.gov.es.invest.dto.objeto.ObjetoDetailDto;
@@ -61,6 +60,7 @@ public class ObjetoFactory {
     private final CustoFactory custoFactory;
     private final EmEtapaFactory emEtapaFactory;
     private final RevisadoPorFactory revisadoFactory;
+    private final AlteradoPorFactory alteradoFactory;
         
     public ObjetoDetailDto fromModel(Objeto model) {
         return ObjetoDetailDto.builder()
@@ -118,7 +118,8 @@ public class ObjetoFactory {
                 .hashProposta(model.getHashProposta())
                 .possuiOrcamento(model.getPossuiOrcamento())
                 .timestamp(Optional.ofNullable(model.getTimestamp()).map(DateTimeUtils::formatZonedDateTime).orElse(null))
-                .revisor(this.revisadoFactory.toDto(model.getRevisor()))
+                .revisor(model.getRevistoPor().stream().map(this.revisadoFactory::toDto).toList())
+                .alterador(model.getAlteradoPor().stream().map(this.alteradoFactory::toDto).toList())
                 .build();
     }
     
