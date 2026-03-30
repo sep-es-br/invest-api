@@ -73,7 +73,7 @@ public class UnidadeOrcamentariaController {
                 
         Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
         
-        List<UnidadeOrcamentaria> unidades = this.service.findByAgente(usuario.getId());
+        List<UnidadeOrcamentaria> unidades = this.service.findByAgente(usuario.getId(), false);
 
         return unidades.stream().map(UnidadeOrcamentariaDTO::new).toList();
 

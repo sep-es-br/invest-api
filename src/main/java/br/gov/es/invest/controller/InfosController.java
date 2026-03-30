@@ -112,7 +112,7 @@ public class InfosController {
                     Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                     
                    
-                    List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+                    List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
                     idsUo = unidades.stream().map(u -> u.getId()).toList();
                 } else if(idUo != null) {
