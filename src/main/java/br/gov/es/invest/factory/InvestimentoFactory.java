@@ -94,13 +94,13 @@ public class InvestimentoFactory {
         
         Investimento investimentoParcial = cadastroDto.id() != null
                                             ? this.investimentoSrv.getById(cadastroDto.id()).orElseThrow()
-                                            : new Investimento();
+                                            : this.investimentoSrv.getByCodUoPo(cadastroDto.codUnidade(), cadastroDto.codPo()).orElse(new Investimento());
         
         investimentoParcial.setTipoConta(Conta.TIPO_CONTA.of(cadastroDto.tipo()));
         investimentoParcial.setNome(cadastroDto.nome());
         investimentoParcial.setDescricao(cadastroDto.descricao());
-        investimentoParcial.setUnidadeOrcamentariaImplementadora(unidade);
-        investimentoParcial.setPlanoOrcamentario(plano);
+        if(investimentoParcial.getUnidadeOrcamentariaImplementadora() == null) investimentoParcial.setUnidadeOrcamentariaImplementadora(unidade);
+        if(investimentoParcial.getPlanoOrcamentario() == null) investimentoParcial.setPlanoOrcamentario(plano);
         
         ArrayList<Objeto> objs = new ArrayList<>();
         
