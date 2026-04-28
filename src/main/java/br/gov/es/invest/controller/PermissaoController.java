@@ -147,7 +147,7 @@ public class PermissaoController {
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
                 
-        papeis = papeis.stream().filter(p -> p.getPrioritario()).toList();
+        papeis = papeis.stream().toList();
         
         Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
         
