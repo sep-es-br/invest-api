@@ -11,8 +11,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 public interface InvestimentoRepository extends  Neo4jRepository<Investimento, Long> {
 
     final String QUARY_BASE = """
-            MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status{statusId: 'CADASTRADO'}),
-                    (po:PlanoOrcamentario)-[:ORIENTA]->(inv)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
+            MATCH (po:PlanoOrcamentario)-[:ORIENTA]->(inv:Investimento)<-[:IMPLEMENTA]-(unidade:UnidadeOrcamentaria)
             WHERE ($idPo IS NULL OR id(po) IN $idPo)
                 AND ( $idUnidade IS NULL OR id(unidade) IN $idUnidade )
                 AND ($nome IS NULL OR CASE 
@@ -26,8 +25,9 @@ public interface InvestimentoRepository extends  Neo4jRepository<Investimento, L
     
     @Query(
             value = QUARY_BASE + """
-                            CALL (obj) {
-                                MATCH (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
+                            CALL (inv) {
+                                MATCH (inv:Investimento)<-[:CUSTEADO]-(obj:Objeto)-[:EM]->(:Status{statusId: 'CADASTRADO'}),
+                                            (obj)<-[:ESTIMADO]-(custo:Custo)-[indicada_por:INDICADA_POR]->(fonteCusto:FonteOrcamentaria)
                                 WHERE ($idFonte IS NULL OR id(fonteCusto) = $idFonte)
                                     AND ($exercicio IS NULL OR custo.anoExercicio = $exercicio)
                                     AND ($gnd IS NULL OR indicada_por.gnd = $gnd)

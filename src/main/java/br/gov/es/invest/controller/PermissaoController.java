@@ -6,7 +6,6 @@ import br.gov.es.invest.dto.PodeDto;
 import br.gov.es.invest.dto.grupo.GrupoDoUsuarioListDTO;
 import br.gov.es.invest.model.Agente;
 import br.gov.es.invest.model.Funcao;
-import br.gov.es.invest.model.Grupo;
 import br.gov.es.invest.model.Modulo;
 import br.gov.es.invest.model.Papel;
 import br.gov.es.invest.model.Pode;
@@ -143,12 +142,10 @@ public class PermissaoController {
         
         String acToken = acSrv.getClientToken();
         
-        List<Papel> papeis = acSrv.getPapeisBySub("e0473535-05af-4659-bae6-bfa84fbf50a3", acToken).stream()
+        List<Papel> papeis = acSrv.getPapeisBySub(sub, acToken).stream()
                                 .map(papel -> acSrv.gerarPapelFromRespSemSalvar(papel, acToken))
                                 .toList();
-                
-        papeis = papeis.stream().filter(p -> p.getPrioritario()).toList();
-        
+                        
         Agente usuario = usuarioService.getUserBySub(sub).orElseThrow();
         
         boolean isGestorMaster = testarFuncao(usuario.getRole(), "GESTOR_MASTER");
