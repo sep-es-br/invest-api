@@ -8,7 +8,6 @@ import br.gov.es.invest.dto.UnidadeOrcamentariaDTO;
 import br.gov.es.invest.dto.investimento.InvestimentoCadastroDto;
 import br.gov.es.invest.dto.investimento.InvestimentoDetailDto;
 import br.gov.es.invest.dto.investimento.InvestimentoListaDto;
-import br.gov.es.invest.dto.projection.ObjetoTiraProjection;
 import br.gov.es.invest.dto.projection.TiraInvestimentoProjection;
 import br.gov.es.invest.dto.projection.TiraObjetoProjection;
 import br.gov.es.invest.exception.mensagens.MensagemErroRest;
@@ -23,7 +22,6 @@ import br.gov.es.invest.service.UnidadeOrcamentariaService;
 import br.gov.es.invest.service.UsuarioService;
 import br.gov.es.invest.utils.DataListResult;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,7 +71,7 @@ public class InvestimentoController {
                         
                 Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(filtro.unidades() != null) {
@@ -133,7 +131,7 @@ public class InvestimentoController {
 
             Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
 
-            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
             idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
         }

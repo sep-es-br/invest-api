@@ -44,7 +44,7 @@ public class UnidadeOrcamentariaService {
         return repository.getCodsById(ids);
     }
     
-    public List<UnidadeOrcamentaria> findByAgente(Long agenteId){
+    public List<UnidadeOrcamentaria> findByAgente(Long agenteId, boolean findAll){
         
         Agente agente = this.usuarioRepository.findById(agenteId).orElseThrow();
         
@@ -55,6 +55,9 @@ public class UnidadeOrcamentariaService {
                                 .collect(Collectors.toList());
         
         return orgaoIds.stream().flatMap(id -> this.biSrv.getTodasUnidades(id).stream()).collect(Collectors.toList());
+        
+        
+        
         
     }
 

@@ -1,12 +1,21 @@
 package br.gov.es.invest.controller;
 
+import br.gov.es.invest.exception.mensagens.MensagemErroRest;
+import br.gov.es.invest.model.Agente;
+import br.gov.es.invest.model.UnidadeOrcamentaria;
+import br.gov.es.invest.service.RelatorioService;
+import br.gov.es.invest.service.TokenService;
+import br.gov.es.invest.service.UnidadeOrcamentariaService;
+import br.gov.es.invest.service.UsuarioService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -19,18 +28,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import br.gov.es.invest.exception.mensagens.MensagemErroRest;
-import br.gov.es.invest.model.UnidadeOrcamentaria;
-import br.gov.es.invest.model.Agente;
-import br.gov.es.invest.service.RelatorioService;
-import br.gov.es.invest.service.TokenService;
-import br.gov.es.invest.service.UnidadeOrcamentariaService;
-import br.gov.es.invest.service.UsuarioService;
-import lombok.RequiredArgsConstructor;
 
 
 
@@ -66,7 +63,7 @@ public class RelatorioController {
                         
                 Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(idsUnidade != null) {
@@ -117,7 +114,7 @@ public class RelatorioController {
                         
                 Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(idsUnidade != null) {
@@ -161,7 +158,7 @@ public class RelatorioController {
                         
                 Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
                 idsUo = unidades.stream().map(UnidadeOrcamentaria::getId).toList();
             } else if(idsUnidade != null) {

@@ -49,7 +49,9 @@ public class SecurityFilter extends OncePerRequestFilter {
             "/oauth2/authorization",
             "/acesso-cidadao-response",
             "acesso-cidadao-response.html",
-            "/importarPentaho"
+            "/importarPentaho",
+            "/swagger-ui",
+            "v3/api-docs"
         ))) {
             filterChain.doFilter(request, response);
             return;
@@ -132,7 +134,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private boolean checarWhiteList(HttpServletRequest request, List<String> whitelist){
         
         for(String endereco : whitelist) {
-            if(request.getRequestURI().endsWith(endereco)){
+            if(request.getRequestURI().contains(endereco)){
                 return true;
             }
         }

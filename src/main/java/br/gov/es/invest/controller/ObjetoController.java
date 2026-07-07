@@ -70,7 +70,7 @@ public class ObjetoController {
                     
             Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
             
-            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+            List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
             idsUo = unidades.stream().map(u -> u.getId()).toList();
 
@@ -106,7 +106,7 @@ public class ObjetoController {
         @RequestParam(required = false) String nome, @RequestParam(required = false) Long statusId, @RequestParam(required = false) Integer gnd,
         @RequestParam(required = false) String unidadeId, @RequestParam(required = false) Integer ano,
         @RequestParam(required = false) String idPo, @RequestParam int pgAtual, @RequestParam int tamPag,
-        @RequestParam(required = false) Long etapaId, @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
+        @RequestParam boolean podeVerUnidades, @RequestHeader("Authorization") String authToken
     ) {
 
         try{
@@ -120,7 +120,7 @@ public class ObjetoController {
                 Agente usuario = usuarioService.getUserBySub(sub).orElse(null);
                 
                 
-                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId());
+                List<UnidadeOrcamentaria> unidades = unidadeOrcamentariaService.findByAgente(usuario.getId(), false);
 
                 idsUo = unidades.stream().map(u -> u.getId()).toList();
             } else if(unidadeId != null) {
@@ -129,7 +129,7 @@ public class ObjetoController {
             List<Long> idsPo = idPo == null ? null : new JsonMapper().readValue(idPo, new TypeReference<List<Long>>(){});
 
             return ResponseEntity.ok(
-                service.getAllListByFilterEmProcessamento(ano, gnd, nome, idsUo, idsPo, statusId, etapaId, null, Pageable.ofSize(tamPag).withPage(pgAtual-1))
+                service.getAllListByFilterEmProcessamento(ano, gnd, nome, idsUo, idsPo, statusId, null, null, Pageable.ofSize(tamPag).withPage(pgAtual-1))
             );
 
         } catch(JsonProcessingException e){
