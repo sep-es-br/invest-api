@@ -10,6 +10,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,30 +65,51 @@ public class AcaoService {
                     objetoOriginal.setPareceres(todosPareceres);
 
 
-                } else if(apontamentos != null) {
-
-
+                } else if (apontamentos != null) {
+                    // 1. Obter a lista gerenciada atual
                     List<Apontamento> apontamentosAtuais = objetoOriginal.getApontamentos();
-                    List<Apontamento> apontamentosRemovidos = apontamentosAtuais.stream()
-                    .filter( apontamento -> {
-                            return !apontamentos.stream().map(a -> a.getId()).toList().contains(apontamento.getId());
-                        } ).toList();
+                    if (apontamentosAtuais == null) {
+                        apontamentosAtuais = new ArrayList<>();
+                        objetoOriginal.setApontamentos(apontamentosAtuais);
+                    }
 
-                    for(Apontamento removido : apontamentosRemovidos){
+                    // 2. Mapeia os IDs dos apontamentos que vieram na requisição
+                    Set<Long> idsMantidos = apontamentos.stream()
+                            .map(Apontamento::getId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toSet());
+
+                    // 3. Remove da coleção atual do grafo os que foram deletados
+                    // No SDN, remover o elemento da lista faz o Cypher deletar a aresta (RELATIONSHIP) ao salvar
+                    
+                    Set<Apontamento> apontamentosRemovidos = apontamentosAtuais.stream()
+                            .filter(a -> a.getId() != null && !idsMantidos.contains(a.getId()))
+                            .collect(Collectors.toSet());
+                    
+                    apontamentosAtuais.removeAll(apontamentosRemovidos);
+
+                    // 4. Deleta explicitamente no banco se tiver serviço próprio (opcional dependendo da sua regra)
+                    for (Apontamento removido : apontamentosRemovidos) {
                         apontamentoService.remover(removido);
                     }
 
-                    for(Apontamento apontamento : apontamentos.stream().filter(a -> a.getId() == null).toList()) {
-    
-                        apontamento.setEtapa(acao.getProxEtapa());
-                        apontamento.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
-                        apontamento.setTimestamp(agora);
-                        apontamento.setUsuario(usuario);
-                        apontamento.setActive(true);
-                        
+                    // 5. Adiciona os novos elementos na lista EXISTENTE do objeto
+                    for (Apontamento novoApontamento : apontamentos) {
+                        if (novoApontamento.getId() == null) {
+                            novoApontamento.setEtapa(acao.getProxEtapa());
+                            novoApontamento.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
+                            novoApontamento.setTimestamp(agora);
+                            novoApontamento.setUsuario(usuario);
+                            novoApontamento.setActive(true);
+
+                            // Adiciona na coleção original do nó pai
+                            apontamentosAtuais.add(novoApontamento);
+                        }
                     }
-    
-                    objetoOriginal.setApontamentos(apontamentos);
+
+                    // 6. NÂO faça: objetoOriginal.setApontamentos(apontamentos);
+                    // Salve o objeto pai no repositório Neo4j para persistir o grafo e as arestas
+                    // objetoRepository.save(objetoOriginal);
                 }
 
                 
