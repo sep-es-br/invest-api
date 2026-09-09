@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AcaoService {
@@ -23,6 +24,7 @@ public class AcaoService {
     private ApontamentoService apontamentoService;
     private ObjetoService objetoService;
 
+    @Transactional
     public Objeto executarAcao(Objeto objeto, List<Apontamento> apontamentos, Parecer parecer, Acao acao, Agente usuario) throws SemApontamentosException{
         
         if(acao.getPositivo() != null && apontamentos != null && !acao.getPositivo() && acao.getProxEtapa() != null && apontamentos.isEmpty())
@@ -59,19 +61,19 @@ public class AcaoService {
                     parecer.setUsuario(usuario);
 
                     ArrayList<Parecer> todosPareceres = new ArrayList<>(
-                        objeto.getPareceres() == null ? Arrays.asList() : objeto.getPareceres()
+                        objetoOriginal.getPareceres() == null ? Arrays.asList() : objetoOriginal.getPareceres()
                     ); 
                     todosPareceres.add(parecer);
                     objetoOriginal.setPareceres(todosPareceres);
 
 
                 } else if (apontamentos != null) {
-                    // 1. Obter a lista gerenciada atual
-                    List<Apontamento> apontamentosAtuais = objetoOriginal.getApontamentos();
-                    if (apontamentosAtuais == null) {
-                        apontamentosAtuais = new ArrayList<>();
-                        objetoOriginal.setApontamentos(apontamentosAtuais);
-                    }
+                    // A relação existente é a fonte de verdade; o objeto recebido na
+                    // requisição contém apenas os dados cadastrais.
+                    List<Apontamento> apontamentosAtuais = new ArrayList<>(
+                            apontamentoService.findByObjeto(objetoOriginal.getId())
+                    );
+                    objetoOriginal.setApontamentos(apontamentosAtuais);
 
                     // 2. Mapeia os IDs dos apontamentos que vieram na requisição
                     Set<Long> idsMantidos = apontamentos.stream()
@@ -93,23 +95,28 @@ public class AcaoService {
                         apontamentoService.remover(removido);
                     }
 
-                    // 5. Adiciona os novos elementos na lista EXISTENTE do objeto
-                    for (Apontamento novoApontamento : apontamentos) {
-                        if (novoApontamento.getId() == null) {
-                            novoApontamento.setEtapa(acao.getProxEtapa());
-                            novoApontamento.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
-                            novoApontamento.setTimestamp(agora);
-                            novoApontamento.setUsuario(usuario);
-                            novoApontamento.setActive(true);
+                    // 5. Persiste cada apontamento e garante explicitamente a relação
+                    // com o objeto. Os apontamentos existentes permanecem na coleção;
+                    // os novos são adicionados somente após receberem o ID do banco.
+                    for (Apontamento apontamento : apontamentos) {
+                        if (apontamento.getId() == null) {
+                            apontamento.setEtapa(acao.getProxEtapa());
+                            apontamento.setGrupo(objeto.getEtapaAtual().getEtapa().getGrupoResponsavel());
+                            apontamento.setTimestamp(agora);
+                            apontamento.setUsuario(usuario);
+                            apontamento.setActive(true);
 
-                            // Adiciona na coleção original do nó pai
-                            apontamentosAtuais.add(novoApontamento);
+                            Apontamento salvo = apontamentoService.mergeObjetoApontamento(apontamento, objetoOriginal);
+                            apontamentosAtuais.add(salvo);
+                        } else {
+                            for (Apontamento atual : apontamentosAtuais) {
+                                if (apontamento.getId().equals(atual.getId())) {
+                                    apontamentoService.mergeObjetoApontamento(atual, objetoOriginal);
+                                    break;
+                                }
+                            }
                         }
                     }
-
-                    // 6. NÂO faça: objetoOriginal.setApontamentos(apontamentos);
-                    // Salve o objeto pai no repositório Neo4j para persistir o grafo e as arestas
-                    // objetoRepository.save(objetoOriginal);
                 }
 
                 
