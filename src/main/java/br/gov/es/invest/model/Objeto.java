@@ -122,8 +122,6 @@ public class Objeto extends NoEntidade implements Serializable {
         this.tiposPlano = src.getTiposPlano();
         this.custosEstimadores = src.getCustosEstimadores();
         this.microrregiao = src.getMicrorregiao();
-        this.apontamentos = src.getApontamentos();
-        this.pareceres = src.getPareceres();
         
         return this;
     }
