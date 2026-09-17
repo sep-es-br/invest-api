@@ -459,7 +459,7 @@ public class RelatorioService {
                             microrregiao.nome AS microrregiao,
                             areaTematica.nome AS areaTematica,
                             CASE WHEN obj.contrato IS NULL OR obj.contrato = '' THEN '-' ELSE obj.contrato END AS contrato,
-                            COALESCE(indicada_por.gnd, -1) AS gnd,
+                            COALESCE(obj.gnd, -1) AS gnd,
                             id(obj) AS objetoId
 
                         RETURN DISTINCT
