@@ -32,10 +32,11 @@ public class ApontamentoService {
         
     }
 
-    public void mergeObjetoApontamento(Apontamento apontamento, Objeto objeto){
-        apontamento = apontamentoRepository.save(apontamento);
+    public Apontamento mergeObjetoApontamento(Apontamento apontamento, Objeto objeto){
+        Apontamento salvo = apontamentoRepository.save(apontamento);
 
-        apontamentoRepository.mergeObjetoApontamento(objeto.getId(), apontamento.getId());
+        apontamentoRepository.mergeObjetoApontamento(objeto.getId(), salvo.getId());
+        return salvo;
     }
     
     public List<Apontamento> findByObjeto(Long idObjeto) {
