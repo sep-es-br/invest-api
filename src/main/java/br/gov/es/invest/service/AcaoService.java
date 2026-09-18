@@ -123,6 +123,13 @@ public class AcaoService {
             }
             
             objetoService.save(objetoOriginal);
+
+            if (apontamentos != null) {
+                // O save do objeto pode sincronizar as relações do estado carregado
+                // antes dos novos apontamentos serem persistidos. Reaplica as arestas
+                // após o save final para garantir a relação no grafo.
+                apontamentoService.garantirRelacoesComObjeto(objetoOriginal);
+            }
             
             objetoService.updateUltimaEtapa(objetoOriginal.getId(), agora, usuario.getId());
             

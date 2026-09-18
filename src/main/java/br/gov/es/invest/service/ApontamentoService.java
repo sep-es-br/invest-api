@@ -38,6 +38,18 @@ public class ApontamentoService {
         apontamentoRepository.mergeObjetoApontamento(objeto.getId(), salvo.getId());
         return salvo;
     }
+
+    public void garantirRelacoesComObjeto(Objeto objeto) {
+        if (objeto == null || objeto.getId() == null || objeto.getApontamentos() == null) {
+            return;
+        }
+
+        for (Apontamento apontamento : objeto.getApontamentos()) {
+            if (apontamento != null && apontamento.getId() != null) {
+                apontamentoRepository.mergeObjetoApontamento(objeto.getId(), apontamento.getId());
+            }
+        }
+    }
     
     public List<Apontamento> findByObjeto(Long idObjeto) {
         List<Long> ids = this.apontamentoRepository.findIdsByObjeto(idObjeto);
